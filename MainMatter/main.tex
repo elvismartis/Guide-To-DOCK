@@ -3,31 +3,31 @@
 
 % % % % % % % % % % % % % % % % % % % % % % % %
 
-\documentclass[10pt, a4paper]{book}
+%\documentclass[10pt, a4paper]{book}
 %\usepackage[top=0.85in,left=2.75in,footskip=0.75in]{geometry}
-\usepackage[T1]{fontenc}
+%\usepackage[T1]{fontenc}
 % amsmath and amssymb packages, useful for mathematical formulas and symbols
-\usepackage{amsmath,amssymb}
+%\usepackage{amsmath,amssymb}
 % Use adjustwidth environment to exceed column width (see example table in text)
-\usepackage{changepage}
+%\usepackage{changepage}
 % textcomp package and marvosym package for additional characters
-\usepackage{textcomp,marvosym}
+%\usepackage{textcomp,marvosym}
 % cite package, to clean up citations in the main text. Do not remove.
-\usepackage{cite}
+%\usepackage{cite}
 % Use nameref to cite supporting information files (see Supporting Information section for more info)
-\usepackage{nameref,hyperref}
+%\usepackage{nameref,hyperref}
 % line numbers
-\usepackage[right]{lineno}
+%\usepackage[right]{lineno}
 % ligatures disabled
-\usepackage[nopatch=eqnum]{microtype}
+%\usepackage[nopatch=eqnum]{microtype}
 % color can be used to apply background shading to table cells only
-\usepackage[table]{xcolor}
+%\usepackage[table]{xcolor}
 % array package and thick  Tips for tables
-\usepackage{array}
+%\usepackage{array}
 % create "+"  Tip type for thick vertical lines
 
 % text Color
-\usepackage{xcolor}
+%\usepackage{xcolor}
 
 % \thickhline command for thick horizontal lines that span the table
 
@@ -44,12 +44,12 @@
 %\pagestyle{myheadings}
 
 %\setlength{\headheight}{27.023pt}
-%\lhead{\includegraphics[width=2.0in]{PLOS-submission.eps}}
+%\lhead{%\includegraphics[width=2.0in]{PLOS-submission.eps}}
 
 %% Include all macros below
 
 %% END MACROS SECTION
-\begin{document}
+%\begin{document}
 
 %\vspace*{0.2in}
 % Title must be 250 characters or less.
@@ -68,15 +68,15 @@ elvis.martis@univ-nantes.fr
 
 %\end{flushleft}
 % Please keep the abstract below 300 words
-\include{Abstract}
+%\include{Abstract}
 Molecular docking is a useful method for predicting the binding affinity and conformation of small chemical entities to support lead optimisation. It is also used to virtually screen a large chemical database to find new chemical entities. There are several docking programs available with different algorithms and varying preparation steps. We identify ten quick tips that apply to molecular docking irrespective of the program one might choose. Our objective is to provide the beginners with important things to keep in mind while using molecular docking for their research. We aim to ensure that experts and beginners can perform molecular docking to yield biologically relevant and reproducible results. 
 
-\include{Author summary}
+%\include{Author summary}
 The ten quick tips presented here are aimed at understanding the drug target thoroughly and performing molecular docking to ensure maximum precision and biological relevance. The emphasis is not on blindly trusting the results, but on thoroughly validating every step and parameter used in the docking programme. We aim to make beginners and experts aware of all the steps one needs to take care about to ensure reproducibility of the results. Further, these tips highlight the key areas to keep in mind while communicating the results to experts as well as nonexperts without ambiguity. 
 
-\linenumbers
+%\linenumbers
 
-\include{Chapter 1: Introduction}
+%\include{Chapter 1: Introduction}
 Drug discovery\cite{bib32} is an arduous journey with many unknowns all along the path, with several traps that lead to failure. To perform large number of trials in an iterative manner, computer simulations\cite{bib33, bib34} come in handy to perform tens of thousands of calculations to provide crucial insights and rule out dead ends. Structure-based drug discovery (SBDD) is one such approach that aids in designing and optimizing chemical entities by leveraging the tertiary structural information of biological targets. SBDD encompasses various strategies, including virtual screening, where large libraries of compounds are screened for its binding affinity with the target site. This process is also called as "hit identification", where hits are referred to as molecules that show weak yet measurable binding affinity. Hits generally contain most of the chemical framework capable of showing the desired pharmacological response, however, they need optimisation to improve the binding affinity, and other physicochemical properties essential for developing a clinical candidate. Most of the docking programs have shown great success at the lead modification stage, which involves evaluating the effect of the new substituents on the same central core (also called a parent nucleus)\cite{bib53}. 
 Another important method, called as \textit{de novo} drug design, involves constructing new molecules from molecular fragments within the binding site of the target.  Molecular docking\cite{bib35} is an important technique in structure-based drug discovery (SBDD) that predicts optimal binding conformation of a small molecule (ligand) within the binding site of a biological target. This process helps identify potential drug candidates by estimating their binding affinity and types of interactions to receptor atoms. The latter information is used to suggest modifications in the hit molecules, such that their binding affinity is improved. Iterative cycles of design, synthesis, and experimental validation refine these compounds to optimize their pharmacological properties, this process is called as "lead optimisation". 
 
@@ -92,7 +92,7 @@ Molecular docking has been used for more than four decades that serves to attain
 Despite classifying these objectives behind molecular docking into separate classes, their boundaries are not clearly demarcated. To attain these objectives, molecular docking programs must comprise components that can search the conformational space within the binding site and a scoring function that scores the conformations such that the biological relevant ones are ranked higher.
 
 
-\include{Chapter 2: Conformational Search Methods}
+%\include{Chapter 2: Conformational Search Methods}
 One of the most challenging aspect of pose prediction is the conformational search algorithm. In general, there are two main classes of conformational search methods, systematic and stochastic.  The users do not always have a choice to select the search algorithm because the developers usually select based on their expertise and code development. Nevertheless, there are programs, such as AutoDock\cite{bib22}, that allow users to select the search algorithm. Here, we succinctly discuss commonly used conformational search methods, however, the list is far from being comprehensive, interested readers are directed to consult the following papers for detailed discussion\cite{bib17, bib23}. 
 
 \subsubsection*{Systematic Methods:}
@@ -123,7 +123,7 @@ MD simulations and molecular docking are complementary\cite{bib25, bib26} that a
 
 
 
-\include{Chapter 3: Scoring Functions}
+%%\include{Chapter 3: Scoring Functions}
 Scoring functions are designed to reproduce the binding thermodynamics \cite{bib2, bib3}, \textit{i.e.}, binding enthalpy and entropy (see Eq \textbf{\ref{eq:free-energy}}).
 
 \begin{equation} 
@@ -205,11 +205,11 @@ Where $W_{1,2,3,..}$ are weights assigned to each of the ${scoring function}$ 1,
 
 
 
-\include{Chapter 4: Know your biological target and its functional state}
+%\include{Chapter 4: Know your biological target and its functional state}
 The quality and accuracy of the results obtained from molecular docking, largely depends on the quality of the tertiary structure of the biological target. The structures are resolved using X-ray crystallography, Nuclear Magnetic Resonance (NMR) spectroscopy, and Cryo-Electron microscopy (CryoEM). These methods provide with high quality structural data, however, introduce errors such as missing atom information or multiple amino acid rotamers\cite{bib55, bib56}. Furthermore, X-ray crystallographic and CryoEM resolved structures are single snapshot of the receptor structure, while NMR derived structures provide insights in to the dynamics. Hence, it is crucial to evaluate and correct these structural defects before using them for molecular docking. Emphasis should be on the binding site amino acids, their protonation states, and appropriate rotameric states. Furthermore, the receptor's conformational state or functional states are important. Since most of the experimental structures do not contain this information, use of multiple structures resolved experimentally under different conditions or use MD simulations is highly recommended to include target flexibility. The worldwide protein Data Bank (wwPDB) is the primary source for receptor structures\cite{bib41}. In the absence of experimental data, computational methods, like template-based modelling and \textit{ab initio} predictions, can be used to predict the tertiary structures from primary sequences.  These theoretical models require thorough validation to ensure accuracy of the predicted tertiary folds. With recent developments in AI-based methods in protein structure prediction, such as AlphaFold\cite{bib37}, high quality structure are readily available in the wwPDB annotated as \href{https://pdb101.rcsb.org/learn/guide-to-understanding-pdb-data/computed-structure-models}{\textit{Computed Structure Models (CSMs)}}.
 
 
-\include{Chapter 5: Choose the receptor entry in the {\color{red}{wwPDB}} that is closer to the biological problem at hand}
+%\include{Chapter 5: Choose the receptor entry in the {\color{red}{wwPDB}} that is closer to the biological problem at hand}
 {
 \color{red}{It is possible on many occasions that several entries for the same receptor are available on the wwPDB. One must choose based on the conformational state of the receptor that is desired. Then selecting the entry with a good resolution, in our opinion, a resolution below 2.0 \r{A} is a good choice whenever possible. There are other structure quality parameters, apart from the resolution, that provide useful information about the target. the b-factors or beta-factors provide key information on the flexibility of the atoms. It also holds key information on the confidence with the crystallographers are able to narrow down the atomic positions while fitting the electron density maps, for examples atoms with b-factors $\le40 $\r{A}$^2$$ $ provide good confidence in their assignments. While using the CSMs, predicted local distance difference test (pLDDT), ranges from 0 to 100, depicts a per-residue measure of local confidence that must be carefully examined. pLDDT values $\ge70$ suggest good confidence in the prediction, while values $<50$ indicate very low confidence. The users are directed to the \href{https://pdb101.rcsb.org/learn/guide-to-understanding-pdb-data/computed-structure-models}{\textit{Guide to Understanding PDB Data}} with a section dedicated to CSMs  The choice of receptor should also bear in mind if there exists an entry with a co-crystallised ligand in the binding site of interest.  While preparing the receptor, the atomic resolution limitation makes it difficult to locate the position of hydrogens, which must be added in the preparation step. Partial atomic charges are calculated and assigned for individual atoms.  The decision to keep important metals, co-factors, and water molecules in the docking site is made at this stage. If they are crucial for ligand binding, they must be retained; otherwise, they can be removed. Such decisions are far more complex than they appear at first sight. To come to a meaningful decision, the computational chemist must be well aware of the biology and functioning of the receptor in question (\textbf{see  Tip 1}). Recently, there has been a particular interest in developing tools that systematic evaluate the energetics of displacing water molecules from the binding site by the ligands. In doing so, they are well placed to predict crucial water molecules that may lead to significant entropic gains. The tools such as  waterMap\cite{bib48, bib49}, WaterDock\cite{bib47} and SSTmap\cite{bib50} are available that predicts the energetics of displacing water molecules from the binding site. Deleting co-factors, waters, or metal ions deemed important can lead to meaningless results, even though very high or favourable docking scores are observed.
 
@@ -224,10 +224,10 @@ The quality and accuracy of the results obtained from molecular docking, largely
 Generally, it is highly recommended to perform energy minimization using a force field compatible with the docking program. This step optimizes all the inconsistencies in the structure or shows warnings on the errors that can be detrimental to the reliability and accuracy of the results. 
 }}
 
-\include{Chapter 6 : {\color{red}{Druggability is the key when defining a potential binding site for docking}}}
+%\include{Chapter 6 : {\color{red}{Druggability is the key when defining a potential binding site for docking}}}
 Docking on a receptor structure is performed in a fixed space, called the binding site. Generally, one must choose the receptor structure from the {\color{red}{wwPDB}} that contains a co-crystallised ligand within the binding site of interest. The search space for docking is defined by selecting amino acid residues 3-6 \r{A} around the ligand.  However, we may not always have information on the location of the binding site; in such cases, we can perform a blind docking approach, wherein, the whole receptor surface is defined as the search space. Alternatively, several algorithms are available that can locate potential binding sites, which are ranked according to their likelihood of being a druggable site. Here are a few examples of programs used to locate potential binding sites, SiteMap\cite{bib7}, LIGSITE \cite{bib8} and Fpocket\cite{bib9} If the docking program allows target flexibility to accommodate conformational changes induced by the ligand, the number and identity of flexible amino acids and the degree of flexibility are defined. 
     
-\include{Chapter 7: Learn the fundamentals of the docking algorithm}
+%\include{Chapter 7: Learn the fundamentals of the docking algorithm}
 There are a plethora of docking programs available (\textbf{Table \ref{tab:List}}), some with commercial licenses and others with open-source licenses. Knowing every program to make a choice that best suits you is almost always impossible. However, this is also not necessary as there exists ample literature reporting the use of many of the tools. Irrespective of the choice of the docking program, the general steps will be same; for example, preparation of the receptor (\textbf{see  Tip 2}), defining the binding site as search space(\textbf{see Tip 3}), preparation of ligands (\textbf{see Tip 5}), specifying the docking parameters, validating the docking procedure, performing the docking calculations, and analysis and dissemination of the results.  In a nutshell, the general principles remain unchanged; however, there are differences in ligand format, docking methods, and scoring algorithms that are well-documented in the user manual. We strongly recommend that before using any docking algorithm, the user manual must be consulted to understand each parameter's importance. The developers present their report on several validation studies as a part of the software development which is a great resource to understand the effect of each parameter on the outcome. A literature survey of the program's usage will also be covered in the user manual. 
 
 \begin{table}[ht]
@@ -248,7 +248,7 @@ There are a plethora of docking programs available (\textbf{Table \ref{tab:List}
     \end{tabular}
 \end{table}
 
-\include{Chapter 8: Filter and prepare ligands to enhance accurancy and speed}
+%%\include{Chapter 8: Filter and prepare ligands to enhance accurancy and speed}
 In this case, the small molecules that are docked into a receptor pocket are referred to as ligands. It is not uncommon for the terms "ligands" and "drugs" to be used interchangeably. However, \textcolor{red}{it is important} to note that while all drugs are ligands, not all ligands are drugs. Ligands are typically represented as two-dimensional connectivity of atoms, and hence, called a 2D graph. These are converted to three-dimensional representations  and energy-minimized for docking.  When dealing with a large library of ligands\cite{bib10}(ranging from millions to billions), an initial filtering process is applied to select drug-like molecules. Various criteria are considered, such as molecular weight, log P, the number of rotatable bonds, and the number of hydrogen bond donors and acceptors. One such filtering  rule or criterion named "Lipinski's  Rule of Five" was put forth by Christopher Lipinski \cite{bib11}. {\color{red}{Since the first publication there have been significant amendments to this rule that have improved the ligand filtering criteria\cite{bib12}. These filtering criteria are applicable for orally administered drugs that do not involve any active or receptor-mediated transport across the bilayer membranes. Nevertheless, these filters may be used to discard chemical structures that are unlikely to be drug or drug-like molecules. Pan assay interference compounds (PAINS)\cite{bib63, bib64} is another filter that helps to weed out molecules that tend to show up as actives in all assays and hence must be treated as "False Positives."}} 
 
 Ligands undergo checks for proper geometry, ensuring that bond distances and angles are reasonable. If necessary, the conformation of the ligands can be minimized to achieve the correct geometry. {\color{red}{However, depending on the conformational search algorithm of the docking program, it would warrant the use multiple fixed conformations or allowing the conformations to be generated on the fly. The formers case is relevant for docking programs that inherently treat ligand and receptor rigid bodies, and there user-defined multiple conformations serves as a source of ligand flexibility. These days most of the docking programs are bundled with their own conformational search engine, while user can still instruct which of the torsional degrees are flexible or rigid (\textit{default settings treat all torsions are flexible}).}}
@@ -282,14 +282,14 @@ Ligands containing stereocenters are treated as independent enantiomers. A point
     \end{tabular}
 \end{table}
 
-\include{Chapter 9: Compare the docking outcome of known molecules with experimental data to validate the docking protocol}
+%%\include{Chapter 9: Compare the docking outcome of known molecules with experimental data to validate the docking protocol}
 One of the most important, albeit neglected, steps in molecular docking is validation. If the receptor was co-crystallised with a ligand in the receptor site of interest, the protocol must be validated by re-docking it and checking if the experimental binding conformation can be reproduced. However, when there are no bound ligands reported, we advise gathering from the literature a few molecules targeting the receptor in question with experimental binding affinity values reported. After docking these molecules, a rank ordering is carried out to understand if the docking parameters can reproduce the experimental binding affinities in the correct order. {\color{red}{We strongly recommend that trying to reproduce the binding affinity values as determined by experimental methods is extremely difficult to inherent limitations in the scoring functions. These limitations are outlined briefly in the previous section and we also direct the readers towards a comprehensive article for further explanation\cite{bib54}}} A large collection of data can be found in the \href{https://www.bindingdb.org/rwd/bind/index.jsp}{BindingDB} or  \href{https://www.ebi.ac.uk/chembl/}{ChemBL}. However, it must be noted that these data may contain results from different experimental protocols making a direct comparison difficult.
 
 {
 \color{red}{Another important yet neglected question that is not often raised is on the number poses that must be generated to ensure better predictions. The number of poses generated in molecular docking varies based on the docking software and the objective of the study. Generally, protocols aim for 10–20 poses per ligand (in our group the standard practice is to generate 10 poses minimum)\cite{bib10} to explore binding conformations effectively. While working with completely new scaffolds, it becomes difficult to establish which docking pose would be more physiologically relevant. In such case, we recommend evaluating at least 2-3 diverse poses and them using MD simulations followed by MM-GB/PB-SA methods for estimating the binding affinity(see \textbf{Tip 7}).
 }}
 
-\include{Chapter 10: Rescore the ligands with independent scoring methods to ensure reliability}
+%\include{Chapter 10: Rescore the ligands with independent scoring methods to ensure reliability}
 It's important to note that docking scores are mere estimations of the true binding constant (\textit{vide supra}). They rely on the non-covalent interactions between the ligand and receptor and often disregard the entropic component of binding. Therefore, rescoring must be performed with an independent scoring function to ensure reliability.
     Three post-docking corrections are outlined here:
     \begin{itemize}
@@ -299,7 +299,7 @@ It's important to note that docking scores are mere estimations of the true bind
     \end{itemize}
 Solvent plays a crucial role in ligand binding by forming specific interactions with ligands. The strength of electrostatic interactions depends on the dielectric screening effect of the solvent. Some docking algorithms consider solvent effects, while others do not. If solvent effects are not considered, including a solvation correction to the score can enhance the accuracy. MM-GB/SA and MM-PB/SA are well-known methods that \textcolor{red}{can be used} as rescoring methods that use implicit solvation correction to the gas phase energies\cite{bib13}. Consensus scoring, where the top hits from the docking exercise are rescored using different scoring algorithms, has been effective in improving accuracy. Hits that appear at the top of multiple lists are selected for further investigation. Free energy perturbation (FEP) calculations offer a rigorous way to measure the changes in free energy between unbound and bound complexes in the solvent.
 
-\include{Chapter 11: Be consistent with the atomic representations and figures}
+%\include{Chapter 11: Be consistent with the atomic representations and figures}
 In addition to advanced rescoring methods, it is also important to visually inspect the docking solution to assess if the protein-ligands show prominent interactions such as hydrogen bonds, salt bridges, water-mediated interactions, cation-$\pi$ and $\pi$-$\pi$. Since the results need to be communicated to a wider audience, the colour coding for receptor and ligand atoms must be distinct. The atom colouring and type of interactions must be explained clearly to avoid ambiguity. {\color{red}{Additionally, the docking figures should be consistent, and the orientation of the binding poses must clearly illustrate the molecular interactions. This approach will also enable straightforward comparisons of docking images within a congeneric series. Whenever feasible, the docking results for theoretical compounds should be discussed alongside the known molecules, as this will enhance confidence in the findings.
 
 Following are our recommendations while preparing the figures to illustrate the results in either 3-dimensional or 2-dimensional interactions. 
@@ -318,10 +318,10 @@ Following are our recommendations while preparing the figures to illustrate the 
 \end{enumerate}    
 }}
 
-\include{Chapter 12: Communicate the results to the experimentalists}
+%\include{Chapter 12: Communicate the results to the experimentalists}
 The results from molecular docking and other computational studies aim to inspire new experimental research or provide more insights to biological observations. While experimentalists may not be experts in computational methods, they are well-versed in the biological aspects being investigated. It is essential to communicate findings without using technical jargon that could hinder understanding. It is also important to acknowledge that experimentalists are not entirely unfamiliar with computational techniques. When presenting the results, each score should be explained as clearly as possible with its physiological significance. The experimentalists are more accustomed to reading new results with respect to standard data, in the context of molecular docking, the scores for new molecular designs can be explained in comparison to known drugs or reference molecules. This presents the results with the correct context and self-explanatory manner. 
     
-\include{Chapter 13: Share input files and docking parameters to comply with FAIR guidelines}
+%\include{Chapter 13: Share input files and docking parameters to comply with FAIR guidelines}
 There have been significant questions raised on the reproducibility of results reported in the area of computational science\cite{bib58, bib59}. Often times, the use of a proprietary software or data not available in public domain makes it difficult to assess the reliability of the methods, and hence the results. A recent criticism on publishing the AlphaFold3 paper in Nature\cite{bib57} has renewed the need to adopt policies that make data and methods accessible to all validate the findings and thus enhance its scope beyond what was envisioned by the authors. The FAIR (Findability, Accessibility, Interoperability, and Reusability) principles are guidelines established in \textbf{2016} to improve data management and sharing in scientific research\cite{bib60}. 
 We briefly explain each term as follows: 
 \begin{itemize}
@@ -353,7 +353,7 @@ All the input files, preparation steps, and docking parameters should be made av
 \end{table}
 
 
-\include{Important terminologies}
+%\include{Important terminologies}
 
 Following are some important terminologies that are often encountered in structure-based drug design in general and molecular docking in particular: 
 \begin{itemize}
@@ -364,13 +364,13 @@ Following are some important terminologies that are often encountered in structu
     \item \textbf{Solvent Accessible Surface Area (SASA):} The surface area of a molecule that can directly interact with the solvent. It usually measured by a sphere, called as "probe atom" that runs over the surface of the molecule. 
 \end{itemize}
 
-\include{Chapter 14: Summary and Take Home Message}
+%\include{Chapter 14: Summary and Take Home Message}
 \textit{"\textbf{Garbage-in Garbage-out}"}
 
 Molecular docking is a powerful computational technique that, when employed correctly, can substantially augment experimental research rather than supplant it. It is crucial to recognize that molecular docking merely provides an estimate of binding affinity. Consequently, relying solely on docking outcomes to categorize molecules as agonists or antagonists exceeds the capabilities of all docking methodologies. Even the most sophisticated docking and scoring algorithms are susceptible to limitations and may yield erroneous results. Therefore, it is highly recommended to validate all parameters before using them to identify lead compounds or support medicinal chemistry studies. It is advisable to refrain from comparing docking results obtained from disparate algorithms. Upon the identification of potential hits and the subsequent validation of chemical entities as active by experimentalists, the efficacy of molecular docking studies will undoubtedly lead to robust drug candidates. 
 
 
-\bibliography{references}
+%\bibliography{references}
 
-\end{document}
+%\end{document}
 
