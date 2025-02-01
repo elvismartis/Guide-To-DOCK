@@ -1,0 +1,34 @@
+\chapter*{Handling Small Molecules for Molecular Docking}
+In this case, the small molecules that are docked into a receptor pocket are referred to as ligands. It is not uncommon for the terms "ligands" and "drugs" to be used interchangeably. However, \textcolor{red}{it is important} to note that while all drugs are ligands, not all ligands are drugs. Ligands are typically represented as two-dimensional connectivity of atoms, and hence, called a 2D graph. These are converted to three-dimensional representations  and energy-minimized for docking.  When dealing with a large library of ligands\cite{bib10}(ranging from millions to billions), an initial filtering process is applied to select drug-like molecules. Various criteria are considered, such as molecular weight, log P, the number of rotatable bonds, and the number of hydrogen bond donors and acceptors. One such filtering  rule or criterion named "Lipinski's  Rule of Five" was put forth by Christopher Lipinski \cite{bib11}. {\color{red}{Since the first publication there have been significant amendments to this rule that have improved the ligand filtering criteria\cite{bib12}. These filtering criteria are applicable for orally administered drugs that do not involve any active or receptor-mediated transport across the bilayer membranes. Nevertheless, these filters may be used to discard chemical structures that are unlikely to be drug or drug-like molecules. Pan assay interference compounds (PAINS)\cite{bib63, bib64} is another filter that helps to weed out molecules that tend to show up as actives in all assays and hence must be treated as "False Positives."}} 
+
+Ligands undergo checks for proper geometry, ensuring that bond distances and angles are reasonable. If necessary, the conformation of the ligands can be minimized to achieve the correct geometry. {\color{red}{However, depending on the conformational search algorithm of the docking program, it would warrant the use multiple fixed conformations or allowing the conformations to be generated on the fly. The formers case is relevant for docking programs that inherently treat ligand and receptor rigid bodies, and there user-defined multiple conformations serves as a source of ligand flexibility. These days most of the docking programs are bundled with their own conformational search engine, while user can still instruct which of the torsional degrees are flexible or rigid (\textit{default settings treat all torsions are flexible}).}}
+Ligands containing stereocenters are treated as independent enantiomers. A point to remember, in molecular mechanics the tautomers are treated as different molecules as opposed to quantum mechanics. {\color{red}{When one wants to evaluate the binding affinity of tautomers, they must be prepared and docked separately. This is particularly important in evaluating which of the tautomeric states are more suitable for binding. A case study on why tautomeric states should be treated with great care is exemplified by chemical of biguanides and can be found in ref\cite{bib42}}} Furthermore, the protonation states are selected based on the pH that closely mimics the physiological or experimental conditions. {\color{red}{Protonation states can be predicted using software tool like Epik\cite{bib45, bib46}, PlayMolecule pKAce\cite{bib43} or Dimorphite-DL\cite{bib44}}}. \textbf{Table \ref{tab:list2}} enlists commonly used tools for ligand preparation and format conversion. 
+
+\subsubsection*{File formats for Ligands:}
+\begin{enumerate}
+        \item \textit{SMILES (Simplified Molecular Input Line Entry System):} A text-based representation of molecular structures. These are 1-Dimensional strings that are suitable for large chemical databases that need to store billions of molecules. 
+	   \item \textit{MOL/MOL2:} Describes molecular structures, including 3-Dimensional coordinates and atom types; widely used in docking.
+	   \item \textit{SDF (Structure Data File):} Stores multiple molecules with detailed information like bonds and charges, and various descriptors and other related data. 
+	   \item \textit{PDBQT:} Specific to AutoDock and Vina, includes torsional degrees of freedom for ligands. Q denotes charges and T denotes torsional degrees of freedom. This file format can be considered as extension or variant of PDB with additional details on charged and torsions not included in the PDB format. 
+	   \item \textit{CML:} Chemical Markup Language): XML-based format for storing chemical information
+\end{enumerate}
+
+
+\begin{table}[ht]
+    \centering
+    \caption{{\color{red}{List of Tools for Ligand preparation and format conversion}}}
+    \label{tab:list2}
+    \begin{tabular}{|c|c|c|}
+    \hline
+         \textbf{Software} & \textbf{License type} & \textbf{Link to access} \\
+    \hline
+        RDkit & Open Source & \href{https://github.com/rdkit/rdkit}{RDkit} \\
+        Auto3D & Open Source & \href{https://github.com/isayevlab/Auto3D_pkg}{Auto3D}  \\
+        OpenBabel & Open Source & \href{https://github.com/openbabel/openbabel}{OpenBabel}  \\
+        LigPrep & Commercial & \href{https://www.schrodinger.com/platform/products/ligprep/}{LigPrep} \\
+        Avogadro & Open Source & \href{https://avogadro.cc/}{Avogadro}  \\
+        MGLTools & Open Source & \href{https://ccsb.scripps.edu/mgltools/downloads/}{MGLTools} \\
+    \hline
+    \end{tabular}
+\end{table}
+

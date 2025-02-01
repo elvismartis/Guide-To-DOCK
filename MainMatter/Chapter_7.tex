@@ -1,0 +1,22 @@
+\chapter*{Molecular Docking Methods and Programs}
+There are a plethora of docking programs available (\textbf{Table \ref{tab:List}}), some with commercial licenses and others with open-source licenses. Knowing every program to make a choice that best suits you is almost always impossible. However, this is also not necessary as there exists ample literature reporting the use of many of the tools. Irrespective of the choice of the docking program, the general steps will be same; for example, preparation of the receptor (\textbf{see  Tip 2}), defining the binding site as search space(\textbf{see Tip 3}), preparation of ligands (\textbf{see Tip 5}), specifying the docking parameters, validating the docking procedure, performing the docking calculations, and analysis and dissemination of the results.  In a nutshell, the general principles remain unchanged; however, there are differences in ligand format, docking methods, and scoring algorithms that are well-documented in the user manual. We strongly recommend that before using any docking algorithm, the user manual must be consulted to understand each parameter's importance. The developers present their report on several validation studies as a part of the software development which is a great resource to understand the effect of each parameter on the outcome. A literature survey of the program's usage will also be covered in the user manual. 
+
+\begin{table}[ht]
+    \centering
+    \caption{List of common molecular docking software}
+    \label{tab:List}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+         \textbf{Software} & \textbf{License type} & {\color{red}{\textbf{Scoring Function}}} & \textbf{Link to access} \\
+    \hline
+        AutoDock & Open Source & {\color{red}{Force field}} & \href{https://autodock.scripps.edu/download-autodock4/}{AutoDock}  \\
+        AutoDock-Vina & Open Source &{\color{red}{Empirical}} & \href{https://github.com/ccsb-scripps/AutoDock-Vina/releases}{AutoDock-Vina}  \\
+        DOCK & Open Source (Academic) & {\color{red}{Force field}}  & \href{https://dock.compbio.ucsf.edu}{DOCK}  \\
+        GOLD &  Commercial & {\color{red}{Multiple options}} & \href{https://www.ccdc.cam.ac.uk/solutions/software/gold/}{GOLD} \\
+        FlexX &  Commercial & {\color{red}{Empirical}}   & \href{https://www.biosolveit.de/products/#FlexX}{FlexX}  \\
+        Glide &  Commercial & {\color{red}{Empirical}}  & \href{https://www.schrodinger.com/platform/products/glide/}{Glide} \\
+    \hline
+    \end{tabular}
+\end{table}
+
+

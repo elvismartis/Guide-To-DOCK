@@ -2,7 +2,7 @@
 \documentclass[openright, twoside, british]{book}
 
 % Load the blindtext package, which provides commands for generating dummy text.
-\usepackage{blindtext}
+%\usepackage{blindtext}
 
 % Load the ptmt package, presumably for formatting.
 \usepackage{ptmt}
@@ -49,11 +49,48 @@
 % Main matter section.
 \mainmatter
 
-% Part 1: Preliminaries.
-\part{Preliminaries}
-
 % Include Chapter 1 from the MainMatter subfolder.
-\include{./MainMatter/main}
+\part{Introduction}
+\include{./MainMatter/Chapter_1}
+
+\part{Conformational Search Methods}
+\include{./MainMatter/Chapter_2}
+
+\part{Scoring Functions in Molecular Docking}
+\include{./MainMatter/Chapter_3}
+
+\part{Macromolecular Structures as Receptors}
+\include{./MainMatter/Chapter_4}
+
+\part{Evaluating Quality of Receptors for Molecular Docking}
+\include{./MainMatter/Chapter_5}
+
+\part{Finding Binding Sites for Molecular Docking}
+\include{./MainMatter/Chapter_6}
+
+\part{Molecular Docking Methods and Programs}
+\include{./MainMatter/Chapter_7}
+
+\part{Handling Small Molecules for Molecular Docking}
+\include{./MainMatter/Chapter_8}
+
+\part{Preparing Small Molecule Library for Validation and Virtual Screening}
+\include{./MainMatter/Chapter_9}
+
+\part{Rescoring in Molecular Docking}
+\include{./MainMatter/Chapter_10}
+
+\part{Analysing Results from Molecular Docking}
+\include{./MainMatter/Chapter_11}
+
+\part{Communicating Results from Molecular Docking}
+\include{./MainMatter/Chapter_12}
+
+\part{Reproducibility and Data Integrity}
+\include{./MainMatter/Chapter_13}
+
+\part{Conclusions}
+\include{./MainMatter/Chapter_14}
 
 % Appendices section.
 \appendix

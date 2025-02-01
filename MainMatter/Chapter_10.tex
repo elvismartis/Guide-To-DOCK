@@ -1,0 +1,9 @@
+\chapter*{Rescoring in Molecular Docking}
+It's important to note that docking scores are mere estimations of the true binding constant (\textit{vide supra}). They rely on the non-covalent interactions between the ligand and receptor and often disregard the entropic component of binding. Therefore, rescoring must be performed with an independent scoring function to ensure reliability.
+    Three post-docking corrections are outlined here:
+    \begin{itemize}
+        \item Estimating the impact of solvent
+        \item Using consensus scoring, and 
+        \item Calculating the absolute or relative free energy of binding.
+    \end{itemize}
+Solvent plays a crucial role in ligand binding by forming specific interactions with ligands. The strength of electrostatic interactions depends on the dielectric screening effect of the solvent. Some docking algorithms consider solvent effects, while others do not. If solvent effects are not considered, including a solvation correction to the score can enhance the accuracy. MM-GB/SA and MM-PB/SA are well-known methods that \textcolor{red}{can be used} as rescoring methods that use implicit solvation correction to the gas phase energies\cite{bib13}. Consensus scoring, where the top hits from the docking exercise are rescored using different scoring algorithms, has been effective in improving accuracy. Hits that appear at the top of multiple lists are selected for further investigation. Free energy perturbation (FEP) calculations offer a rigorous way to measure the changes in free energy between unbound and bound complexes in the solvent.
