@@ -1,9 +1,5 @@
-Sure! Here's a sample `README.md` for a book on molecular docking by Elvis Martis:
-
----
-
-# Molecular Docking: Principles, Applications, and Techniques  
-*by Elvis Martis*
+# A Practical Guide To Molecular Docking  
+*by Elvis A. F.  Martis*
 
 Welcome to the official repository for *Molecular Docking: Principles, Applications, and Techniques* by Elvis Martis. This book is a comprehensive guide designed to equip students, researchers, and professionals with the knowledge and tools needed to master molecular docking techniques and their real-world applications in drug discovery, structural biology, and more.
 
@@ -62,7 +58,7 @@ This book is ideal for:
 
 We encourage feedback, suggestions, and contributions! If you're reading the book and would like to share your thoughts, have questions, or need further clarifications, feel free to reach out.
 
-- **Email**: [author@elvismartis.com](mailto:elvis.martis@univ-nantes.fr)
+- **Email**: [elvis.martis@univ-nantes.fr](mailto:elvis.martis@univ-nantes.fr)
 - **LinkedIn**: [Elvis Martis](https://www.linkedin.com/in/elvisadrianmartis)
 
 
@@ -73,6 +69,3 @@ Detailed installation instructions are available in the book, as well as on the 
 
 This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 
----
-
-Let me know if you'd like me to adjust or add anything!
