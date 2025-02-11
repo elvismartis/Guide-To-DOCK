@@ -1,7 +1,7 @@
 # A Practical Guide To Molecular Docking  
 *by Elvis A. F.  Martis*
 
-Welcome to the official repository for *Molecular Docking: Principles, Applications, and Techniques* by Elvis Martis. This book is a comprehensive guide designed to equip students, researchers, and professionals with the knowledge and tools needed to master molecular docking techniques and their real-world applications in drug discovery, structural biology, and more.
+Welcome to the official repository for **A Practical Guide To Molecular Docking** by Elvis A. F. Martis. This book is a comprehensive guide designed to equip students, researchers, and professionals with the knowledge and tools needed to master molecular docking techniques and their real-world applications in drug discovery. The objective of this textbook is server a handy "user manual" that can be explain key steps and points to keep in mind while performing molecular docking.
 
 ## Overview
 
@@ -19,28 +19,35 @@ In this book, we explore the underlying principles of molecular docking, discuss
 
 ## Table of Contents
 
-1. **Introduction to Molecular Docking**
-   - What is Molecular Docking?
-   - Overview of Docking Methods
-   - Applications in Drug Discovery
-2. **Ligand and Receptor Preparation**
-   - Preparing Ligands for Docking
-   - Preparing Receptors for Docking
-3. **Docking Algorithms**
-   - Grid-based vs. Search-based Docking
-   - Molecular Dynamics and Monte Carlo Simulations
-4. **Scoring Functions and Ranking**
-   - Types of Scoring Functions
-   - Evaluating Docking Results
-5. **Practical Guide to Using Docking Software**
-   - Introduction to AutoDock
-   - Working with DOCK and other Software Tools
-6. **Virtual Screening and High-Throughput Docking**
-   - Techniques for Screening Large Compound Libraries
-   - Case Studies in Virtual Screening
-7. **Challenges and Future Directions**
-   - Limitations of Docking Studies
-   - The Future of Molecular Docking in Drug Design
+1. **Chapter 1: Introduction**
+
+2. **Chapter 2: Conformational Search Methods**
+
+3. **Chapter 3: Scoring Functions in Molecular Docking**
+
+4. **Chapter 4: Macromolecular Structures as Receptors**
+
+5. **Chapter 5: Evaluating Quality of Receptors for Molecular Docking**
+
+6. **Chapter 6: Finding Binding Sites for Molecular Docking**
+
+7. **Chapter 7: Handling Small Molecules for Molecular Docking**
+
+8. **Chapter 8: Preparing Small Molecule Library for Validation and Virtual Screening**
+
+9. **Chapter 9: Molecular Docking Methods and Programs**
+
+10. **Chapter 10: {Rescoring in Molecular Docking**
+
+11. **Chapter 11: Analysing Results from Molecular Docking**
+
+12. **Chapter 12: Communicating Results from Molecular Docking**
+
+13. **Chapter 13: Integration of Artificial Intelligence in Molecular Docking**
+
+14. **Chapter 14: Reproducibility and Data Integrity** 
+
+15. **Chapter 15: Conclusions**
 
 ## Who Should Read This Book?
 
@@ -52,7 +59,7 @@ This book is ideal for:
 
 ## About the Author
 
-**Elvis Martis** is an experienced researcher in computational biology and drug design. With years of expertise in molecular docking, he has contributed to numerous publications and projects in the field. His deep understanding of computational techniques and passion for advancing scientific discovery has made him a trusted figure in molecular modeling and bioinformatics.
+**Elvis Martis** is an experienced researcher in computational biology and drug design. With over 10 years of expertise in molecular docking, he has contributed to numerous publications and projects in the field. His deep understanding of computational techniques and passion for advancing scientific discovery has made him a trusted figure in molecular modeling and bioinformatics.
 
 ## Get Involved
 
@@ -61,9 +68,6 @@ We encourage feedback, suggestions, and contributions! If you're reading the boo
 - **Email**: [elvis.martis@univ-nantes.fr](mailto:elvis.martis@univ-nantes.fr)
 - **LinkedIn**: [Elvis Martis](https://www.linkedin.com/in/elvisadrianmartis)
 
-
-
-Detailed installation instructions are available in the book, as well as on the associated website.
 
 ## License
 
