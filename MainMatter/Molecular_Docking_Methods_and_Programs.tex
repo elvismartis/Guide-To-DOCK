@@ -1,0 +1,55 @@
+\chapter*{Molecular Docking Methods and Programs}
+\section*{Introduction}
+There are a plethora of docking programs available (\textbf{Table \ref{tab:List}}), some with commercial licenses and others with open-source licenses. Knowing every program to make a choice that best suits you is almost always impossible. However, this is also not necessary as there exists ample literature reporting the use of many of the tools. Irrespective of the choice of the docking program, the general steps will be same; for example, preparation of the receptor (\textbf{see chapter \ref{receptors}}), defining the binding site as search space(\textbf{see chapter \ref{binding_sites}}), preparation of ligands (\textbf{see chapter \ref{ligprep}}), specifying the docking parameters, validating the docking procedure, performing the docking calculations, and analysis and dissemination of the results.  In a nutshell, the general principles remain unchanged; however, there are differences in ligand format, docking methods, and scoring algorithms that are well-documented in the user manual. We strongly recommend that before using any docking algorithm, the user manual must be consulted to understand each parameter's importance. The developers present their report on several validation studies as a part of the software development which is a great resource to understand the effect of each parameter on the outcome. A literature survey of the program's usage will also be covered in the user manual. 
+
+\begin{table}[ht]
+    \centering
+    \caption{List of common molecular docking software}
+    \label{tab:List}
+    \begin{tabular}{|c|c|c|c|}
+    \hline
+         \textbf{Software} & \textbf{License type} & {\color{red}{\textbf{Scoring Function}}} & \textbf{Link to access} \\
+    \hline
+        AutoDock & Open Source & {\color{red}{Force field}} & \href{https://autodock.scripps.edu/download-autodock4/}{AutoDock}  \\
+        AutoDock-Vina & Open Source &{\color{red}{Empirical}} & \href{https://github.com/ccsb-scripps/AutoDock-Vina/releases}{AutoDock-Vina}  \\
+        DOCK & Open Source (Academic) & {\color{red}{Force field}}  & \href{https://dock.compbio.ucsf.edu}{DOCK}  \\
+        GOLD &  Commercial & {\color{red}{Multiple options}} & \href{https://www.ccdc.cam.ac.uk/solutions/software/gold/}{GOLD} \\
+        FlexX &  Commercial & {\color{red}{Empirical}}   & \href{https://www.biosolveit.de/products/#FlexX}{FlexX}  \\
+        Glide &  Commercial & {\color{red}{Empirical}}  & \href{https://www.schrodinger.com/platform/products/glide/}{Glide} \\
+    \hline
+    \end{tabular}
+\end{table}
+
+
+\section*{Molecular Docking Programs:}
+
+\subsection*{DOCK}
+The DOCK program is considered as the first tool developed for molecular docking in 1982\cite{bib71}. It was developed by the University of California, San Francisco (UCSF) in the group of Irwin Kuntz. It aims to predict the most favorable binding configurations of small molecules (ligands) within the active sites of macromolecular targets, such as proteins. This computational resource simulates molecular interactions to identify low-energy binding poses, making it an essential asset for drug discovery and structure-based design initiatives. Originally created to tackle rigid-body docking, DOCK utilizes a geometric matching algorithm that aligns the ligand with a negative representation of the receptor's binding pocket. Over the years, its functionality has evolved to incorporate features such as force-field-based scoring, real-time optimization, and algorithms for flexible ligand docking\cite{bib18}. The program employs scoring functions to assess and rank potential binding poses according to their predicted binding affinities. It accommodates various input file formats, including PDB, MOL2, and SDF, and is extensively utilized for virtual screening and lead optimization in drug development. DOCK continues to be a fundamental tool in computational chemistry, renowned for its efficiency in exploring molecular interactions and its ability to adapt to new advancements in docking techniques.
+
+\subsubsection*{Methodology:} The method for docking described in the sources involves a geometric approach to explore feasible alignments of ligands and receptors of known structure. We describe the process as shown in the original publication\cite{bib71} as follows:
+
+\begin{enumerate}
+    \item \textit{Representation}: The receptor and ligand structures are represented using spheres to fill pockets and grooves on the receptor's surface and the space occupied by the ligand. These spheres are generated based on the molecular surface, which is defined using a probe sphere to determine contact and re-entrant points. The spheres are constructed such that each sphere touches the molecular surface at two points and has its center on the surface normal. The number of spheres is reduced by keeping only the smallest radius spheres, filtering based on the angle formed by the two surface points and the sphere centre, and by only retaining one sphere per atom. Receptor spheres are grouped into potential binding sites based on whether they overlap.
+   
+    \item \textit{Matching}: The ligand spheres are paired with the receptor spheres by comparing internal distances. A ligand sphere can be paired with a receptor sphere if the internal distances of all the spheres in the ligand set match all the internal distances within the receptor set, within an error limit. The pairing process starts by systematically pairing each ligand sphere with each receptor sphere and then finding subsequent pairs based on whether their internal distances match. If the number of assignable pairs is less than four, the match is rejected. To reduce computation time, only ligand and receptor spheres whose centers are approximately the same distance from the centroid of each respective representation are accepted.
+
+   \item \textit{Optimization}: The suggested pairings are explored by rotating the ligand spheres onto the corresponding receptor spheres using a least-squares algorithm. The rotation/translation matrix generated from the spheres is applied to all ligand atoms. The optimization procedure manipulates the ligand atom coordinates to reduce atom overlaps, ensure hydrogen-bonding partners and place ligand atoms within receptor spheres. An overlap error is calculated based on the van der Waals' radii of the ligand and receptor atoms. The ligand is moved further into the receptor site by using the receptor sphere center as a target for each ligand atom. Displacements are calculated for any ligand atom that violates the overlap constraint or is too far from a receptor polar atom, and the ligand is then moved to reduce these errors.
+   
+\end{enumerate}
+
+\subsubsection*{scoring:}
+The output is a set of ligand conformations/poses with scores based on the degree of overlap. Geometrically similar structures are grouped together. The method uses a simplified interaction function that considers hard sphere repulsions and hydrogen bonding. It is important to note that this method assumes rigid molecules and requires prior knowledge of the two structures to atomic detail. The calculated structures are intended as starting points for further refinement using molecular mechanics or interactive computer graphics. The approach also has independent applications such as the location of binding sites and the design of new ligands.
+
+\subsection*{GLIDE}
+
+\subsection*{AUTODOCK}
+
+\subsection*{AUTODOCK-VINA}
+
+\subsection*{FLEXX}
+
+\subsection*{SURFLEX}
+
+
+\subsection*{GOLD}
+
