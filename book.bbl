@@ -1,0 +1,216 @@
+\begin{thebibliography}{10}
+
+\bibitem{bib32}
+J.~Drews, ``Drug discovery: a historical perspective,'' {\em science}, vol.~287, no.~5460, pp.~1960--1964, 2000.
+
+\bibitem{bib33}
+G.~Sliwoski, S.~Kothiwale, J.~Meiler, E.~W. Lowe~Jr, and E.~L. Barker, ``Computational methods in drug discovery,'' {\em Pharmacological reviews}, vol.~66, no.~1, pp.~334--395, 2014.
+
+\bibitem{bib34}
+S.~P. Leelananda and S.~Lindert, ``Computational methods in drug discovery,'' {\em Beilstein journal of organic chemistry}, vol.~12, no.~1, pp.~2694--2718, 2016.
+
+\bibitem{bib53}
+E.~A. Martis, B.~Joseph, S.~P. Gupta, E.~C. Coutinho, I.~Hdoufane, I.~Bjij, and D.~Cherqaoui, ``Flexibility of important hiv-1 targets and in silico design of anti-hiv drugs,'' {\em Current Chemical Biology}, vol.~12, no.~1, pp.~23--39, 2018.
+
+\bibitem{bib35}
+D.~A. Gschwend, A.~C. Good, and I.~D. Kuntz, ``Molecular docking towards drug discovery,'' {\em Journal of Molecular Recognition: An Interdisciplinary Journal}, vol.~9, no.~2, pp.~175--186, 1996.
+
+\bibitem{bib37}
+J.~Jumper, R.~Evans, A.~Pritzel, T.~Green, M.~Figurnov, O.~Ronneberger, K.~Tunyasuvunakool, R.~Bates, A.~{\v{Z}}{\'\i}dek, A.~Potapenko, {\em et~al.}, ``Highly accurate protein structure prediction with alphafold,'' {\em nature}, vol.~596, no.~7873, pp.~583--589, 2021.
+
+\bibitem{bib38}
+R.~Krishna, J.~Wang, W.~Ahern, P.~Sturmfels, P.~Venkatesh, I.~Kalvet, G.~R. Lee, F.~S. Morey-Burrows, I.~Anishchenko, I.~R. Humphreys, {\em et~al.}, ``Generalized biomolecular modeling and design with rosettafold all-atom,'' {\em Science}, vol.~384, no.~6693, p.~eadl2528, 2024.
+
+\bibitem{bib36}
+K.-K. Mak, Y.-H. Wong, and M.~R. Pichika, ``Artificial intelligence in drug discovery and development,'' {\em Drug discovery and evaluation: safety and pharmacokinetic assays}, pp.~1461--1498, 2024.
+
+\bibitem{bib39}
+X.~Zhang, C.~Shen, H.~Zhang, Y.~Kang, C.-Y. Hsieh, and T.~Hou, ``Advancing ligand docking through deep learning: Challenges and prospects in virtual screening,'' {\em Accounts of Chemical Research}, vol.~57, no.~10, pp.~1500--1509, 2024.
+
+\bibitem{bib40}
+S.~Vittorio, F.~Lunghini, P.~Morerio, D.~Gadioli, S.~Orlandini, P.~Silva, J.~Martinovic, A.~Pedretti, D.~Bonanni, A.~Del~Bue, {\em et~al.}, ``Addressing docking pose selection with structure-based deep learning: Recent advances, challenges and opportunities,'' {\em Computational and Structural Biotechnology Journal}, 2024.
+
+\bibitem{bib1}
+J.~Fan, A.~Fu, and L.~Zhang, ``Progress in molecular docking,'' {\em Quantitative Biology}, vol.~7, pp.~83--89, 2019.
+
+\bibitem{bib22}
+G.~M. Morris, D.~S. Goodsell, R.~S. Halliday, R.~Huey, W.~E. Hart, R.~K. Belew, and A.~J. Olson, ``Automated docking using a lamarckian genetic algorithm and an empirical binding free energy function,'' {\em Journal of computational chemistry}, vol.~19, no.~14, pp.~1639--1662, 1998.
+
+\bibitem{bib17}
+R.~Dias, J.~de~Azevedo, and F.~Walter, ``Molecular docking algorithms,'' {\em Current drug targets}, vol.~9, no.~12, pp.~1040--1047, 2008.
+
+\bibitem{bib23}
+Q.~Xia, Q.~Fu, C.~Shen, R.~Brenk, and N.~Huang, ``Assessing small molecule conformational sampling methods in molecular docking,'' {\em Journal of Computational Chemistry}, vol.~46, no.~1, p.~e27516, 2025.
+
+\bibitem{bib14}
+D.~D. Beusen, E.~B. Shands, S.~Karasek, G.~R. Marshall, and R.~A. Dammkoehler, ``Systematic search in conformational analysis,'' {\em Journal of Molecular Structure: THEOCHEM}, vol.~370, no.~2-3, pp.~157--171, 1996.
+
+\bibitem{bib15}
+R.~A. Friesner, J.~L. Banks, R.~B. Murphy, T.~A. Halgren, J.~J. Klicic, D.~T. Mainz, M.~P. Repasky, E.~H. Knoll, M.~Shelley, J.~K. Perry, {\em et~al.}, ``Glide: a new approach for rapid, accurate docking and scoring. 1. method and assessment of docking accuracy,'' {\em Journal of medicinal chemistry}, vol.~47, no.~7, pp.~1739--1749, 2004.
+
+\bibitem{bib16}
+J.~A. Grant, M.~A. Gallardo, and B.~T. Pickup, ``A fast method of molecular shape comparison: A simple application of a gaussian description of molecular shape,'' {\em Journal of computational chemistry}, vol.~17, no.~14, pp.~1653--1666, 1996.
+
+\bibitem{bib19}
+M.~Rarey, B.~Kramer, T.~Lengauer, and G.~Klebe, ``A fast flexible docking method using an incremental construction algorithm,'' {\em Journal of molecular biology}, vol.~261, no.~3, pp.~470--489, 1996.
+
+\bibitem{bib18}
+W.~J. Allen, T.~E. Balius, S.~Mukherjee, S.~R. Brozell, D.~T. Moustakas, P.~T. Lang, D.~A. Case, I.~D. Kuntz, and R.~C. Rizzo, ``Dock 6: Impact of new features and current docking performance,'' {\em Journal of computational chemistry}, vol.~36, no.~15, pp.~1132--1156, 2015.
+
+\bibitem{bib20}
+G.~Jones, P.~Willett, R.~C. Glen, A.~R. Leach, and R.~Taylor, ``Development and validation of a genetic algorithm for flexible docking,'' {\em Journal of molecular biology}, vol.~267, no.~3, pp.~727--748, 1997.
+
+\bibitem{bib21}
+J.~Fuhrmann, A.~Rurainski, H.-P. Lenhof, and D.~Neumann, ``A new lamarckian genetic algorithm for flexible ligand-receptor docking,'' {\em Journal of computational chemistry}, vol.~31, no.~9, pp.~1911--1918, 2010.
+
+\bibitem{bib24}
+B.~J. Alder and T.~E. Wainwright, ``Studies in molecular dynamics. i. general method,'' {\em The Journal of Chemical Physics}, vol.~31, no.~2, pp.~459--466, 1959.
+
+\bibitem{bib25}
+L.~H. Santos, R.~S. Ferreira, and E.~R. Caffarena, ``Integrating molecular docking and molecular dynamics simulations,'' {\em Docking screens for drug discovery}, pp.~13--34, 2019.
+
+\bibitem{bib26}
+V.~Salmaso and S.~Moro, ``Bridging molecular docking to molecular dynamics in exploring ligand-protein recognition process: An overview,'' {\em Frontiers in pharmacology}, vol.~9, p.~923, 2018.
+
+\bibitem{bib2}
+R.~Perozzo, G.~Folkers, and L.~Scapozza, ``Thermodynamics of protein--ligand interactions: history, presence, and future aspects,'' {\em Journal of Receptors and Signal Transduction}, vol.~24, no.~1-2, pp.~1--52, 2004.
+
+\bibitem{bib3}
+T.~S. Olsson, M.~A. Williams, W.~R. Pitt, and J.~E. Ladbury, ``The thermodynamics of protein--ligand interaction and solvation: insights for ligand design,'' {\em Journal of molecular biology}, vol.~384, no.~4, pp.~1002--1017, 2008.
+
+\bibitem{bib61}
+A.~E. Mark and W.~F. Van~Gunsteren, ``Decomposition of the free energy of a system in terms of specific interactions: implications for theoretical and experimental studies,'' {\em Journal of molecular biology}, vol.~240, no.~2, pp.~167--176, 1994.
+
+\bibitem{bib62}
+S.~Boresch and M.~Karplus, ``The meaning of component analysis: decomposition of the free energy in terms of specific interactions,'' {\em Journal of molecular biology}, vol.~254, no.~5, pp.~801--807, 1995.
+
+\bibitem{bib51}
+A.~N. Jain, ``Scoring functions for protein-ligand docking,'' {\em Current Protein and Peptide Science}, vol.~7, no.~5, pp.~407--420, 2006.
+
+\bibitem{bib52}
+F.~Sapundzhi, K.~Prodanova, and M.~Lazarova, ``Survey of the scoring functions for protein-ligand docking,'' in {\em AIP Conference Proceedings}, vol.~2172, p.~100008, AIP Publishing, 2019.
+
+\bibitem{bib4}
+N.~Huang, B.~K. Shoichet, and J.~J. Irwin, ``Benchmarking sets for molecular docking,'' {\em Journal of medicinal chemistry}, vol.~49, no.~23, pp.~6789--6801, 2006.
+
+\bibitem{bib5}
+J.~M. Paggi, A.~Pandit, and R.~O. Dror, ``The art and science of molecular docking,'' {\em Annual Review of Biochemistry}, vol.~93, 2024.
+
+\bibitem{bib6}
+T.~Danel, J.~{\L}{\k{e}}ski, S.~Podlewska, and I.~T. Podolak, ``Docking-based generative approaches in the search for new drug candidates,'' {\em Drug Discovery Today}, vol.~28, no.~2, p.~103439, 2023.
+
+\bibitem{bib28}
+R.~R. Pissurlenkar, M.~S. Shaikh, R.~P. Iyer, and E.~C. Coutinho, ``Molecular mechanics force fields and their applications in drug design,'' {\em Anti-Infective Agents in Medicinal Chemistry (Formerly Current Medicinal Chemistry-Anti-Infective Agents)}, vol.~8, no.~2, pp.~128--150, 2009.
+
+\bibitem{bib29}
+A.~V. Onufriev and D.~A. Case, ``Generalized born implicit solvent models for biomolecules,'' {\em Annual review of biophysics}, vol.~48, no.~1, pp.~275--296, 2019.
+
+\bibitem{bib30}
+B.~Honig and A.~Nicholls, ``Classical electrostatics in biology and chemistry,'' {\em Science}, vol.~268, no.~5214, pp.~1144--1149, 1995.
+
+\bibitem{bib31}
+G.~E. Marlow, J.~S. Perkyns, and B.~M. Pettitt, ``Salt effects in peptide solutions: theory and simulations,'' {\em Chemical reviews}, vol.~93, no.~7, pp.~2503--2521, 1993.
+
+\bibitem{bib27}
+I.~Halperin, B.~Ma, H.~Wolfson, and R.~Nussinov, ``Principles of docking: An overview of search algorithms and a guide to scoring functions,'' {\em Proteins: Structure, Function, and Bioinformatics}, vol.~47, no.~4, pp.~409--443, 2002.
+
+\bibitem{bib55}
+A.~M. Davis, S.~A. St-Gallay, and G.~J. Kleywegt, ``Limitations and lessons in the use of x-ray structural information in drug design,'' {\em Drug discovery today}, vol.~13, no.~19-20, pp.~831--841, 2008.
+
+\bibitem{bib56}
+B.~Waszkowycz, D.~E. Clark, and E.~Gancia, ``Outstanding challenges in protein--ligand docking and structure-based virtual screening,'' {\em Wiley Interdisciplinary Reviews: Computational Molecular Science}, vol.~1, no.~2, pp.~229--259, 2011.
+
+\bibitem{bib41}
+wwPDB Consortium, ``Protein data bank: the single global archive for 3d macromolecular structure data,'' {\em Nucleic acids research}, vol.~47, no.~D1, pp.~D520--D528, 2019.
+
+\bibitem{bib48}
+J.~Biswal, P.~Jayaprakash, S.~K. Rayala, G.~Venkatraman, R.~Rangaswamy, and J.~Jeyaraman, ``Watermap and molecular dynamic simulation-guided discovery of potential pak1 inhibitors using repurposing approaches,'' {\em ACS omega}, vol.~6, no.~41, pp.~26829--26845, 2021.
+
+\bibitem{bib49}
+D.~Cappel, W.~Sherman, and T.~Beuming, ``Calculating water thermodynamics in the binding site of proteins--applications of watermap to drug discovery,'' {\em Current Topics in Medicinal Chemistry}, vol.~17, no.~23, pp.~2586--2598, 2017.
+
+\bibitem{bib47}
+G.~A. Ross, G.~M. Morris, and P.~C. Biggin, ``Rapid and accurate prediction and scoring of water molecules in protein binding sites,'' {\em PloS one}, vol.~7, no.~3, p.~e32036, 2012.
+
+\bibitem{bib50}
+K.~Haider, A.~Cruz, S.~Ramsey, M.~K. Gilson, and T.~Kurtzman, ``Solvation structure and thermodynamic mapping (sstmap): an open-source, flexible package for the analysis of water in molecular dynamics trajectories,'' {\em Journal of chemical theory and computation}, vol.~14, no.~1, pp.~418--425, 2018.
+
+\bibitem{bib7}
+T.~A. Halgren, ``Identifying and characterizing binding sites and assessing druggability,'' {\em Journal of chemical information and modeling}, vol.~49, no.~2, pp.~377--389, 2009.
+
+\bibitem{bib8}
+M.~Hendlich, F.~Rippmann, and G.~Barnickel, ``Ligsite: automatic and efficient detection of potential small molecule-binding sites in proteins,'' {\em Journal of Molecular Graphics and Modelling}, vol.~15, no.~6, pp.~359--363, 1997.
+
+\bibitem{bib9}
+V.~Le~Guilloux, P.~Schmidtke, and P.~Tuffery, ``Fpocket: an open source platform for ligand pocket detection,'' {\em BMC bioinformatics}, vol.~10, pp.~1--11, 2009.
+
+\bibitem{bib10}
+B.~J. Bender, S.~Gahbauer, A.~Luttens, J.~Lyu, C.~M. Webb, R.~M. Stein, E.~A. Fink, T.~E. Balius, J.~Carlsson, J.~J. Irwin, {\em et~al.}, ``A practical guide to large-scale docking,'' {\em Nature protocols}, vol.~16, no.~10, pp.~4799--4832, 2021.
+
+\bibitem{bib11}
+C.~A. Lipinski, F.~Lombardo, B.~W. Dominy, and P.~J. Feeney, ``Experimental and computational approaches to estimate solubility and permeability in drug discovery and development settings,'' {\em Advanced drug delivery reviews}, vol.~64, pp.~4--17, 2012.
+
+\bibitem{bib12}
+W.~P. Walters, ``Going further than lipinski's rule in drug design,'' {\em Expert opinion on drug discovery}, vol.~7, no.~2, pp.~99--107, 2012.
+
+\bibitem{bib63}
+J.~B. Baell and G.~A. Holloway, ``New substructure filters for removal of pan assay interference compounds (pains) from screening libraries and for their exclusion in bioassays,'' {\em Journal of medicinal chemistry}, vol.~53, no.~7, pp.~2719--2740, 2010.
+
+\bibitem{bib64}
+J.~B. Baell and J.~W.~M. Nissink, ``Seven year itch: Pan-assay interference compounds (pains) in 2017{--}utility and limitations,'' {\em ACS chemical biology}, vol.~13, no.~1, pp.~36--44, 2018.
+
+\bibitem{bib42}
+D.~Kathuria, A.~A. Bankar, and P.~V. Bharatam, ``“what's in a structure?” the story of biguanides,'' {\em Journal of Molecular Structure}, vol.~1152, pp.~61--78, 2018.
+
+\bibitem{bib45}
+J.~C. Shelley, A.~Cholleti, L.~L. Frye, J.~R. Greenwood, M.~R. Timlin, and M.~Uchimaya, ``Epik: a software program for pka prediction and protonation state generation for drug-like molecules,'' {\em Journal of computer-aided molecular design}, vol.~21, pp.~681--691, 2007.
+
+\bibitem{bib46}
+R.~C. Johnston, K.~Yao, Z.~Kaplan, M.~Chelliah, K.~Leswing, S.~Seekins, S.~Watts, D.~Calkins, J.~Chief~Elk, S.~V. Jerome, {\em et~al.}, ``Epik: pka and protonation state prediction through machine learning,'' {\em Journal of chemical theory and computation}, vol.~19, no.~8, pp.~2380--2388, 2023.
+
+\bibitem{bib43}
+N.~Schapin, M.~Majewski, M.~Torrens-Fontanals, and G.~De~Fabritiis, ``Playmolecule pkace: Small molecule protonation through equivariant neural networks,'' {\em arXiv preprint arXiv:2407.11103}, 2024.
+
+\bibitem{bib44}
+P.~J. Ropp, J.~C. Kaminsky, S.~Yablonski, and J.~D. Durrant, ``Dimorphite-dl: an open-source program for enumerating the ionization states of drug-like small molecules,'' {\em Journal of Cheminformatics}, vol.~11, pp.~1--8, 2019.
+
+\bibitem{bib54}
+L.~David, P.~A. Nielsen, M.~Hedstrom, and B.~Norden, ``Scope and limitation of ligand docking: methods, scoring functions and protein targets,'' {\em Current Computer-Aided Drug Design}, vol.~1, no.~3, pp.~275--306, 2005.
+
+\bibitem{bib71}
+I.~D. Kuntz, J.~M. Blaney, S.~J. Oatley, R.~Langridge, and T.~E. Ferrin, ``A geometric approach to macromolecule-ligand interactions,'' {\em Journal of molecular biology}, vol.~161, no.~2, pp.~269--288, 1982.
+
+\bibitem{bib13}
+S.~Genheden and U.~Ryde, ``The mm/pbsa and mm/gbsa methods to estimate ligand-binding affinities,'' {\em Expert opinion on drug discovery}, vol.~10, no.~5, pp.~449--461, 2015.
+
+\bibitem{bib65}
+W.~L. DeLano {\em et~al.}, ``Pymol: An open-source molecular graphics tool,'' {\em CCP4 Newsl. Protein Crystallogr}, vol.~40, no.~1, pp.~82--92, 2002.
+
+\bibitem{bib66}
+E.~F. Pettersen, T.~D. Goddard, C.~C. Huang, G.~S. Couch, D.~M. Greenblatt, E.~C. Meng, and T.~E. Ferrin, ``Ucsf chimera—a visualization system for exploratory research and analysis,'' {\em Journal of computational chemistry}, vol.~25, no.~13, pp.~1605--1612, 2004.
+
+\bibitem{bib67}
+A.~S. Rose and P.~W. Hildebrand, ``Ngl viewer: a web application for molecular visualization,'' {\em Nucleic acids research}, vol.~43, no.~W1, pp.~W576--W579, 2015.
+
+\bibitem{bib68}
+R.~A. Laskowski and M.~B. Swindells, ``Ligplot+: multiple ligand--protein interaction diagrams for drug discovery,'' {\em Journal of chemical information and modeling}, vol.~51, no.~10, pp.~2778–--2786, 2011.
+
+\bibitem{bib69}
+K.~Stierand and M.~Rarey, ``Poseview--molecular interaction patterns at a glance,'' {\em Journal of cheminformatics}, vol.~2, no.~Suppl 1, p.~P50, 2010.
+
+\bibitem{bib70}
+S.~Salentin, S.~Schreiber, V.~J. Haupt, M.~F. Adasme, and M.~Schroeder, ``Plip: fully automated protein--ligand interaction profiler,'' {\em Nucleic acids research}, vol.~43, no.~W1, pp.~W443--W447, 2015.
+
+\bibitem{bib58}
+F.-X. Coudert, ``Reproducible research in computational chemistry of materials,'' {\em Chemistry of Materials}, vol.~29, no.~7, pp.~2615--2617, 2017.
+
+\bibitem{bib59}
+P.~V. Coveney, D.~Groen, and A.~G. Hoekstra, ``Reliability and reproducibility in computational science: Implementing validation, verification and uncertainty quantification in silico,'' {\em Philosophical Transactions of the Royal Society A}, vol.~379, no.~2197, p.~20200409, 2021.
+
+\bibitem{bib57}
+``Why did nature publish alphafold3 without its code?,'' {\em Nature}, vol.~629, p.~728, 2024.
+
+\bibitem{bib60}
+M.~D. Wilkinson, M.~Dumontier, I.~J. Aalbersberg, G.~Appleton, M.~Axton, A.~Baak, N.~Blomberg, J.-W. Boiten, L.~B. da~Silva~Santos, P.~E. Bourne, {\em et~al.}, ``The fair guiding principles for scientific data management and stewardship,'' {\em Scientific data}, vol.~3, no.~1, pp.~1--9, 2016.
+
+\end{thebibliography}

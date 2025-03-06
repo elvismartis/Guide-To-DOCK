@@ -1,0 +1,23 @@
+\babel@toc {british}{}\relax 
+\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
+\contentsline {chapter}{\numberline {2}Conformational Search Methods}{5}{chapter.2}%
+\contentsline {chapter}{\numberline {3}Scoring Functions in Molecular Docking}{11}{chapter.3}%
+\contentsline {chapter}{\numberline {4}Macromolecular Structures as Receptors}{17}{chapter.4}%
+\contentsline {chapter}{\numberline {5}Evaluating Quality of Receptors for Molecular Docking}{21}{chapter.5}%
+\contentsline {chapter}{\numberline {6}Finding Binding Sites for Molecular Docking}{25}{chapter.6}%
+\contentsline {chapter}{\numberline {7}Handling Small Molecules for Molecular Docking}{29}{chapter.7}%
+\contentsline {chapter}{\numberline {8}Preparing Small Molecule Library for Validation and Virtual Screening}{33}{chapter.8}%
+\contentsline {chapter}{\numberline {9}Molecular Docking Methods and Programs}{37}{chapter.9}%
+\contentsline {chapter}{\numberline {10}Rescoring in Molecular Docking}{43}{chapter.10}%
+\contentsline {chapter}{\numberline {11}Analysing Results from Molecular Docking}{47}{chapter.11}%
+\contentsline {chapter}{\numberline {12}Communicating Results from Molecular Docking}{51}{chapter.12}%
+\contentsline {chapter}{\numberline {13}Integration of Artificial Intelligence in Molecular Docking}{55}{chapter.13}%
+\contentsline {chapter}{\numberline {14}Reproducibility and Data Integrity}{59}{chapter.14}%
+\contentsline {chapter}{\numberline {15}Conclusions}{63}{chapter.15}%
+\contentsline {chapter}{\numberline {A}About the Author}{67}{appendix.A}%
+\contentsline {section}{\numberline {A.1}Elvis A. F. Martis}{67}{section.A.1}%
+\contentsline {chapter}{\numberline {B}Abbreviations}{69}{appendix.B}%
+\contentsline {chapter}{\numberline {C}Notation}{71}{appendix.C}%
+\contentsline {chapter}{\numberline {D}Supplementary Scripts}{73}{appendix.D}%
+\contentsline {chapter}{\numberline {E}Glossary}{75}{appendix.E}%
+\contentsline {chapter}{\numberline {F}Index}{77}{appendix.F}%
