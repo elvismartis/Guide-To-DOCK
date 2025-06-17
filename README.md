@@ -69,7 +69,7 @@ This book is ideal for:
 
 We encourage feedback, suggestions, and contributions! If you're reading the book and would like to share your thoughts, have questions, or need further clarification, feel free to reach out.
 
-- **Email**: [elvis.martis@univ-nantes.fr](mailto:eafmartis@gmail.com)
+- **Email**: [Gmail](mailto:eafmartis@gmail.com)
 - **LinkedIn**: [Elvis Martis](https://www.linkedin.com/in/elvisadrianmartis)
 
 
