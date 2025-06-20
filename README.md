@@ -20,39 +20,39 @@ In this book, we explore the underlying principles of molecular docking, discuss
 
 ## Table of Contents
 
-- **Chapter 1: Introduction to Structure-based Drug Design**
+- **Chapter 1: Introduction to Structure-based Drug Design** -> (15 pages)
 
-- **Chapter 2: Conformational Search Methods**
+- **Chapter 2: Conformational Search Methods** -> (25 pages)
 
-- **Chapter 3: Scoring Functions in Molecular Docking**
+- **Chapter 3: Scoring Functions in Molecular Docking** -> (25 pages)
 
-- **Chapter 4: Macromolecular Structures as Receptors**
+- **Chapter 4: Macromolecular Structures as Receptors** -> (20 pages)
 
-- **Chapter 5: Evaluating Quality of Receptors for Molecular Docking**
+- **Chapter 5: Evaluating Quality of Receptors for Molecular Docking** -> (20 pages)
 
-- **Chapter 6: Finding Binding Sites for Molecular Docking**
+- **Chapter 6: Finding Binding Sites for Molecular Docking** -> (20 pages)
 
-- **Chapter 7: Handling Small Molecules for Molecular Docking**
+- **Chapter 7: Handling Small Molecules for Molecular Docking** -> 25 pages)
 
-- **Chapter 8: Preparing Small Molecule Library for Validation and Virtual Screening**
+- **Chapter 8: Preparing Small Molecule Library for Validation and Virtual Screening** -> (20 pages)
 
-- **Chapter 9: Molecular Docking Methods and Programs**
+- **Chapter 9: Molecular Docking Methods and Programs** -> (25 pages)
 
-- **Chapter 10: Analysing Results from Molecular Docking**
+- **Chapter 10: Analysing Results from Molecular Docking** -> (15 pages)
 
-- **Chapter 11: Rescoring in Molecular Docking**
+- **Chapter 11: Rescoring in Molecular Docking** -> (20 pages)
 
-- **Chapter 12: Molecular Dynamics Simulation as a post-processing method**
+- **Chapter 12: Molecular Dynamics Simulation as a post-processing method** -> (20 pages)
 
-- **Chapter 13: Free Energy Methods**
+- **Chapter 13: Free Energy Methods** -> (20 pages)
 
-- **Chapter 14: Communicating Results from Molecular Docking**
+- **Chapter 14: Communicating Results from Molecular Docking** -> (15 pages)
 
-- **Chapter 15: Integration of Artificial Intelligence in Molecular Docking**
+- **Chapter 15: Integration of Artificial Intelligence in Molecular Docking** -> (20 pages)
 
-- **Chapter 16: Reproducibility and Data Integrity** 
+- **Chapter 16: Reproducibility and Data Integrity** -> (15 pages)
 
-- **Chapter 17: Conclusions**
+- **Chapter 17: Conclusions** -> (5 pages)
 
 ## Who Should Read This Book?
 
