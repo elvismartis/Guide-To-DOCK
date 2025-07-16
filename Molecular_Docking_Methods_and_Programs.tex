@@ -1,4 +1,8 @@
-\chapter*{Molecular Docking Methods and Programs}
+\documentclass[11pt]{article}
+\usepackage{biblatex}
+\addbibresource{Molecular_Docking_Methods_and_Programs.bib}
+\begin{document}
+%\chapter*{Molecular Docking Methods and Programs}
 \section*{Introduction}
 There are a plethora of docking programs available (\textbf{Table \ref{tab:List}}), some with commercial licenses and others with open-source licenses. Knowing every program to make a choice that best suits you is almost always impossible. However, this is also not necessary as there exists ample literature reporting the use of many of the tools. Irrespective of the choice of the docking program, the general steps will be same; for example, preparation of the receptor (\textbf{see chapter \ref{receptors}}), defining the binding site as search space(\textbf{see chapter \ref{binding_sites}}), preparation of ligands (\textbf{see chapter \ref{ligprep}}), specifying the docking parameters, validating the docking procedure, performing the docking calculations, and analysis and dissemination of the results.  In a nutshell, the general principles remain unchanged; however, there are differences in ligand format, docking methods, and scoring algorithms that are well-documented in the user manual. We strongly recommend that before using any docking algorithm, the user manual must be consulted to understand each parameter's importance. The developers present their report on several validation studies as a part of the software development which is a great resource to understand the effect of each parameter on the outcome. A literature survey of the program's usage will also be covered in the user manual. 
 
@@ -8,14 +12,14 @@ There are a plethora of docking programs available (\textbf{Table \ref{tab:List}
     \label{tab:List}
     \begin{tabular}{|c|c|c|c|}
     \hline
-         \textbf{Software} & \textbf{License type} & \textbf{Scoring Function} & \textbf{Link to access} \\
+         \textbf{Software} & \textbf{License type} & \textbf{Scoring Function}  \\
     \hline
-        AutoDock & Open Source & Force field & \href{https://autodock.scripps.edu/download-autodock4/}{AutoDock}  \\
-        AutoDock-Vina & Open Source & Empirical & \href{https://github.com/ccsb-scripps/AutoDock-Vina/releases}{AutoDock-Vina}  \\
-        DOCK & Open Source (Academic) & Force field  & \href{https://dock.compbio.ucsf.edu}{DOCK}  \\
-        GOLD &  Commercial & Multiple options & \href{https://www.ccdc.cam.ac.uk/solutions/software/gold/}{GOLD} \\
-        FlexX &  Commercial & Empirical   & \href{https://www.biosolveit.de/products/#FlexX}{FlexX}  \\
-        Glide &  Commercial & Empirical  & \href{https://www.schrodinger.com/platform/products/glide/}{Glide} \\
+        AutoDock & Open Source & Force field  \\
+        AutoDock-Vina & Open Source & Empirical  \\
+        DOCK & Open Source (Academic) & Force field  \\
+        GOLD &  Commercial & Multiple options \\
+        FlexX &  Commercial & Empirical \\
+        Glide &  Commercial & Empirical \\
     \hline
     \end{tabular}
 \end{table}
@@ -24,24 +28,104 @@ There are a plethora of docking programs available (\textbf{Table \ref{tab:List}
 \section*{Molecular Docking Programs:}
 
 \subsection*{DOCK}
-The DOCK program is considered as the first tool developed for molecular docking in 1982\cite{bib71}. It was developed by the University of California, San Francisco (UCSF) in the group of Irwin Kuntz. It aims to predict the most favorable binding configurations of small molecules (ligands) within the active sites of macromolecular targets, such as proteins. This computational resource simulates molecular interactions to identify low-energy binding poses, making it an essential asset for drug discovery and structure-based design initiatives. Originally created to tackle rigid-body docking, DOCK utilizes a geometric matching algorithm that aligns the ligand with a negative representation of the receptor's binding pocket. Over the years, its functionality has evolved to incorporate features such as force-field-based scoring, real-time optimization, and algorithms for flexible ligand docking\cite{bib18}. The program employs scoring functions to assess and rank potential binding poses according to their predicted binding affinities. It accommodates various input file formats, including PDB, MOL2, and SDF, and is extensively utilized for virtual screening and lead optimization in drug development. DOCK continues to be a fundamental tool in computational chemistry, renowned for its efficiency in exploring molecular interactions and its ability to adapt to new advancements in docking techniques.
+The DOCK program is considered the first tool developed for molecular docking in 1982\cite{bib71}. It was developed by the University of California, San Francisco (UCSF) in the group of Irwin Kuntz. It aims to predict the most favourable binding configurations of small molecules (ligands) within the active sites of macromolecular targets, such as proteins. This computational resource simulates molecular interactions to identify low-energy binding poses, making it an essential asset for drug discovery and structure-based design initiatives. Created to tackle rigid-body docking, DOCK utilises a geometric matching algorithm that aligns the ligand with a negative representation of the receptor's binding pocket. Over the years, its functionality has evolved to incorporate features such as force-field-based scoring, real-time optimisation, and algorithms for flexible ligand docking\cite{bib18}. The program employs scoring functions to assess and rank potential binding poses according to their predicted binding affinities. It accommodates various input file formats, including PDB, MOL2, and SDF, and is extensively utilised for virtual screening and lead optimization in drug development. DOCK continues to be a fundamental tool in computational chemistry, renowned for its efficiency in exploring molecular interactions and its ability to adapt to new advancements in docking techniques.
 
-\subsubsection*{Methodology:} The method for docking described in the sources involves a geometric approach to explore feasible alignments of ligands and receptors of known structure. We describe the process as shown in the original publication\cite{bib71} as follows:
+\subsubsection*{Methodology:} The docking method described in the sources involves a geometric approach to explore feasible alignments of ligands and receptors of known structure. We describe the process as shown in the original publication\cite{bib71} as follows:
 
 \begin{enumerate}
     \item \textit{Representation}: The receptor and ligand structures are represented using spheres to fill pockets and grooves on the receptor's surface and the space occupied by the ligand. These spheres are generated based on the molecular surface, which is defined using a probe sphere to determine contact and re-entrant points. The spheres are constructed such that each sphere touches the molecular surface at two points and has its center on the surface normal. The number of spheres is reduced by keeping only the smallest radius spheres, filtering based on the angle formed by the two surface points and the sphere centre, and by only retaining one sphere per atom. Receptor spheres are grouped into potential binding sites based on whether they overlap.
    
-    \item \textit{Matching}: The ligand spheres are paired with the receptor spheres by comparing internal distances. A ligand sphere can be paired with a receptor sphere if the internal distances of all the spheres in the ligand set match all the internal distances within the receptor set, within an error limit. The pairing process starts by systematically pairing each ligand sphere with each receptor sphere and then finding subsequent pairs based on whether their internal distances match. If the number of assignable pairs is less than four, the match is rejected. To reduce computation time, only ligand and receptor spheres whose centers are approximately the same distance from the centroid of each respective representation are accepted.
+    \item \textit{Matching}: The ligand spheres are paired with the receptor spheres by comparing internal distances. A ligand sphere can be paired with a receptor sphere if the internal distances of all the spheres in the ligand set match all the internal distances within the receptor set, within an error limit. The pairing process starts by systematically pairing each ligand sphere with each receptor sphere and then finding subsequent pairs based on whether their internal distances match. If the number of assignable pairs is less than four, the match is rejected. To reduce computation time, only ligand and receptor spheres whose centres are approximately the same distance from the centroid of each respective representation are accepted.
 
-   \item \textit{Optimization}: The suggested pairings are explored by rotating the ligand spheres onto the corresponding receptor spheres using a least-squares algorithm. The rotation/translation matrix generated from the spheres is applied to all ligand atoms. The optimization procedure manipulates the ligand atom coordinates to reduce atom overlaps, ensure hydrogen-bonding partners and place ligand atoms within receptor spheres. An overlap error is calculated based on the van der Waals' radii of the ligand and receptor atoms. The ligand is moved further into the receptor site by using the receptor sphere center as a target for each ligand atom. Displacements are calculated for any ligand atom that violates the overlap constraint or is too far from a receptor polar atom, and the ligand is then moved to reduce these errors.
+   \item \textit{Optimisation}: The suggested pairings are explored by rotating the ligand spheres onto the corresponding receptor spheres using a least-squares algorithm. The rotation/translation matrix generated from the spheres is applied to all ligand atoms. The optimisation procedure manipulates the ligand atom coordinates to reduce atom overlaps, ensure hydrogen-bonding partners, and place ligand atoms within receptor spheres. An overlap error is calculated based on the van der Waals' radii of the ligand and receptor atoms. The ligand is moved further into the receptor site by using the receptor sphere centre as a target for each ligand atom. Displacements are calculated for any ligand atom that violates the overlap constraint or is too far from a receptor polar atom, and the ligand is then moved to reduce these errors.
    
 \end{enumerate}
 
 \subsubsection*{scoring:}
-The output is a set of ligand conformations/poses with scores based on the degree of overlap. Geometrically similar structures are grouped together. The method uses a simplified interaction function that considers hard sphere repulsions and hydrogen bonding. It is important to note that this method assumes rigid molecules and requires prior knowledge of the two structures to atomic detail. The calculated structures are intended as starting points for further refinement using molecular mechanics or interactive computer graphics. The approach also has independent applications such as the location of binding sites and the design of new ligands.
+The output is a set of ligand conformations/poses with scores based on the degree of overlap. Geometrically similar structures are grouped. The method employs a simplified interaction function that accounts for hard-sphere repulsions and hydrogen bonding. It is important to note that this method assumes rigid molecules and requires prior knowledge of the two structures to atomic detail. The calculated structures are intended as starting points for further refinement using molecular mechanics or interactive computer graphics. The approach also has independent applications, such as the location of binding sites and the design of new ligands.
 
 \subsection*{GLIDE}
-Onc of the most popular methods for docking is Glide, which stands for \textbf{G}rid-based \textbf{L}igand \textbf{D}ocking with \textbf{E}nergetics. This tool was developed by Schrödinger Inc led by Prof. Richard Frienser and David Shaw from Columbia University and D. E. Shaw Research and Development respectively.
+One of the most popular methods for docking is Glide, which stands for \textbf{G}rid-based \textbf{L}igand \textbf{D}ocking with \textbf{E}nergetics. This tool was developed by Schrödinger Inc. led by Prof. Richard Frienser and David Shaw from Columbia University and D. E. Shaw Research and Development, respectively \cite{glide001}.
+
+Glide employs a systematic, hierarchical approach to ligand conformational filtering and pose selection, designed to efficiently explore the ligand's conformational space and its potential interactions within the receptor's active site while maintaining computational speed. This methodology involves a series of filters that progressively narrow the search space.
+\subsubsection*{How does GLIDE search for ligand conformations?}
+
+The detailed description of each step in the GLIDE docking method is given below:
+\begin{enumerate}
+    \item Receptor Precomputation and Grid Generation: The protein receptor's shape and properties are precomputed and represented on grids, using different sets of fields for progressively more accurate scoring. A multigrid strategy is used, with finer resolution (down to 0.4 Å) closer to the protein's van der Waals surface, to ensure accuracy where ligand and protein contact. This pre-processing step creates an efficient and accurate representation of the rigid receptor environment, allowing rapid energy and gradient evaluations during subsequent ligand interaction calculations. The varying grid resolution optimises computational cost while maintaining precision in critical binding regions.
+
+    \item Ligand Conformation Generation: Glide first performs an exhaustive conformational search in the ligand's torsion-angle space to generate initial conformations. A heuristic screen rapidly eliminates high-energy conformers by evaluating torsional energy using a truncated OPLS-AA potential and applying an energy cutoff. Ligands are conceptually divided into a rigid "core" region and flexible "rotamer groups" attached by rotatable bonds. Each core conformation is enumerated, and then combined with all possible rotamer states, allowing thousands of effective conformations to be considered. This step aims for a comprehensive sampling of ligand flexibility, ensuring that relevant bioactive conformations are likely to be generated. The core/rotamer model and heuristic screening make the exhaustive search computationally feasible for even large and flexible ligands. 
+
+     \item Initial Screening of Ligand Poses: For each generated ligand conformation, an exhaustive search of possible positions and orientations is performed within the active site. This multi-stage process includes: 
+     \begin{enumerate}
+     \item Site Point Selection: Placing the ligand centre at "site points" on a 2{\AA} grid if there's a good match between ligand and receptor surface distances.
+     \item Orientation Screening: Testing prespecified orientations of the "ligand diameter" and rejecting those with excessive steric clashes.
+     \item Subset Scoring: Scoring only atoms capable of forming hydrogen bonds or metal interactions (a "subset test").
+     \item Full Interaction Scoring: Scoring all ligand-receptor interactions for promising orientations.
+     \item These tests use a discretised ChemScore version, rapidly identifying favourable hydrophobic, hydrogen-bonding, and metal-ligation interactions while penalising clashes. Approximately 5000 top greedy-scoring poses are then subjected to a rigid refinement allowing 1{\AA} Cartesian movement.
+    \end{enumerate}
+    This is a rapid prescreening stage that drastically reduces the conformational and positional search space. By using a fast, approximate scoring function ("greedy scoring"), it efficiently filters out unlikely poses, making more computationally intensive subsequent steps feasible. The exhaustive nature aims to avoid missing key regions of phase space.
+    
+    \item Energy Minimization (SP Minimization): A select number of the best poses (typically 400) from the initial screening are subjected to energy minimization using precomputed OPLS-AA van der Waals and electrostatic grids. The minimization often begins on "smoothed" grids to avoid deep local minima, gradually transitioning to the full OPLS-AA nonbonded energy surface ("annealing"). This step accounts for rigid-body translations and rotations, and for flexible docking, also includes torsional motion around rotatable bonds. This step refines the rough poses into more energetically stable configurations within the receptor's force field. The annealing approach helps to overcome local energy barriers, leading to more accurate pose prediction.
+    
+    \item Post-Docking Minimisation and Monte Carlo Refinement: The very best poses (typically 3 to 6) from the energy minimisation are subjected to an additional Monte Carlo procedure. This procedure explores nearby torsional minima, refining the orientation of peripheral groups and occasionally adjusting internal torsion angles. This final refinement step ensures that the most promising poses are thoroughly optimized, capturing subtle conformational adjustments that may be crucial for accurate binding mode prediction.
+
+    \item Pose Selection (Emodel): The ultimate selection of the best-docked pose is made using Emodel, a composite energy score. Emodel combines the GlideScore (an expanded ChemScore-like empirical function), the ligand-receptor molecular mechanics interaction energy, and the ligand's internal strain energy (for flexible docking). Emodel provides a robust and accurate criterion for selecting the most representative binding pose. By integrating multiple energy components, it offers a more balanced assessment of pose quality compared to using individual scoring functions alone.
+
+\end{enumerate}
+
+\subsubsection*{How does GLIDE Score the docked conformations?}
+Glide employs several scoring functions, primarily GlideScore (with Standard Precision (SP) and Extra Precision (XP) versions) and Emodel, a composite score used for final pose selection. These functions integrate various physical and empirical terms to evaluate ligand binding affinity and rank poses.
+The general form of the GlideScore 2.5 SP function is given as:
+\begin{equation}
+    \label{eq:GLIDEscore}
+    \center
+{\Delta}G_{bind} = C_{lipo-lipo}{\sum}f(r_{lr}) + \\
+                    C_{hbond-neut-neut}{\sum}g({\Delta}r) h({\Delta}R) + \\
+                    C_{hbond-neut-charged}{\sum}g({\Delta}r) h({\Delta}R) + \\  
+                    C_{hbond-charged-charged}{\sum}g({\Delta}r) h({\Delta}R) + \\
+                    C_{max-metal-ion}{\sum}f(r_{lm}) + \\
+                    C_{rotb}H_{rotb} + C_{polar-phob}V_{polar-phob} + \\ 
+                    C_{coul}E_{coul} + C_{vdW}E_{vdW} + solvation terms  \\
+\end{equation}
+Here are the key components of Glide's scoring functions:
+\begin{enumerate}
+    \item GlideScore (General Components - Shared between SP and XP)
+    \begin{enumerate}
+     \item Lipophilic-Lipophilic Term: This term, similar to that in ChemScore, accounts for interactions between lipophilic atoms of the ligand and the receptor. It heuristically represents the displacement of water molecules from hydrophobic regions by lipophilic ligand atoms, which lowers the free energy via the hydrophobic effect.
+     \item Hydrogen-Bonding Term: Based on ChemScore, this term is separated into components with different weights depending on the charge state of the donor and acceptor atoms: neutral-neutral, neutral-charged, and charged-charged. In the optimized scoring function, neutral-neutral contributions are found to be the most stabilizing, while charged-charged are the least important. The quality of hydrogen bonds is evaluated based on geometric criteria (angles and distances).
+     \item Metal-Ligand Interaction Term: This term considers interactions with anionic acceptor atoms, recognising a strong preference for coordination of anionic ligand functionality to metal centres in metalloproteases. Glide 2.5 counts only the single best interaction if multiple metal ligations are found. The preference for anionic ligands is suppressed if the metal ion in the apo protein is neutral.
+     \item Coulomb and van der Waals (vdW) Interaction Energies: These molecular mechanics components contribute to GlideScore 2.5. To make the gas-phase Coulomb interaction energy a better predictor, Glide reduces the net ionic charge on formally charged groups (e.g., carboxylates, guanidiniums) by approximately 50\%. And reduces the vdW interaction energies for the directly involved atoms. The full interaction energy is used only for anionic ligand-metal interactions.
+      \item Solvation Terms / Desolvation Penalties: Glide 2.5 incorporates a solvation model to address the requirement that charged and polar groups of both the ligand and protein must be adequately solvated. Explicit water molecules are docked into high-scoring poses, and empirical scoring terms measure the exposure of various groups to these waters. Penalties are assessed if a polar or charged ligand or protein group is inadequately solvated or if water molecules are trapped in hydrophobic pockets. This "water-scoring" technology is made efficient by grid-based algorithms.
+    \end{enumerate}
+    \item  Extra Precision (XP) GlideScore Specific Novel Terms: The XP scoring function and docking protocol were developed to reproduce experimental binding affinities and yield quality enrichments, highlighting the importance of novel molecular recognition and water scoring in separating active and inactive ligands and avoiding false positives. These terms aim to identify specific structural motifs that provide large contributions to enhanced binding affinity.
+     \begin{enumerate}
+    \item Hydrophobic Enclosure (Ehyd•enclosure): This term rewards situations where groups of lipophilic ligand atoms are enclosed on opposite faces by lipophilic protein atoms. It goes beyond a simple atom-atom pair term, recognizing that enclosed hydrophobic microenvironments are particularly unfavorable for water molecules, leading to significant binding free energy gains upon water displacement. A minimum group size of three connected lipophilic ligand atoms is considered for this effect. The score is capped at 4.5 kcal/mol.
+    \item Special Neutral-Neutral Hydrogen-Bond Motifs (Ehb•nn•motif): These motifs receive additional binding affinity increments. They are identified in situations where a water molecule forming a hydrogen bond to the protein would have particular difficulty in making its complement of additional hydrogen bonds, especially when there are hydrophobic protein atoms on two faces. This is often crucial for high potency in pharmaceutical targets like kinases. The reward is 1.5 kcal/mol for a single bond to a ring in hydrophobic environments and 3.0 kcal/mol for a neutral pair in hydrophobic environments. The protein's hydrogen-bond partner must have a limited number of waters in its first or second shell. Correlated hydrogen bonds between protein and ligand can also receive rewards if they are in a challenging hydrophobic environment.
+    \item Special Charged-Charged Hydrogen-Bond Motifs (Ehb•cc•motif): These terms signal enhanced binding affinity from charged-charged hydrogen bonds based on:
+           \begin{enumerate}
+        \item Number of waters surrounding the protein component of the salt bridge, as fully solvent-exposed charged groups are unlikely to participate in enhanced interactions.
+        \item Number of charged-charged hydrogen bonds (monodentate, bidentate, or one ligand group to two different protein groups).
+        \item Zwitterion ligands: For zwitterions, the long-range effects of solvation free energy are significantly reduced, making the formation of two salt bridges more favourable.
+        \item Distinguishing between positive ligand/negative protein and vice versa.
+        \item Strength of the electrostatic field at the ligand.
+        \item Rewards for various motifs range from 0.5 to 4.7 kcal/mol.
+        \end{enumerate}
+    \item Pi-Stacking and Pi-Cation Interactions (EPI): These specialised terms, still under development, reward such interactions.
+    \item Empirical Correction for Smaller Ligands: An empirical correction enhances the binding affinity of smaller ligands relative to larger ones.
+         \end{enumerate}
+\item Penalty Terms in XP GlideScore:
+    \begin{enumerate}
+    \item Desolvation Penalties (E$_{desolv}$): As described under solvation terms above, these specifically penalize inadequately solvated polar or charged groups and waters in hydrophobic pockets.
+    \item Ligand Strain Energy (Eligand•strain): This penalises poses with close internal contacts within the ligand. It is a challenging aspect due to the rigid-receptor approximation. Still, Glide includes functions to count intramolecular heavy atom contacts and evaluate penalties based on the size and location (e.g., peripheral vs. central) of contacting groups.
+    \end{enumerate}
+    \item Emodel
+    \begin{enumerate}
+    \item Emodel is a composite energy score used for the ultimate selection of the best-docked pose.
+    \item It combines the GlideScore, the ligand-receptor molecular mechanics interaction energy, and the ligand's internal strain energy (for flexible docking). This composite function is found to be superior in selecting the correct pose compared to using molecular mechanics energy or GlideScore alone.
+    \end{enumerate}
+\end{enumerate}
+
 
 \subsection*{AUTODOCK}
 
@@ -54,3 +138,6 @@ Onc of the most popular methods for docking is Glide, which stands for \textbf{G
 
 \subsection*{GOLD}
 
+\printbibliography
+%\bibliography{Molecular_Docking_Methods_and_Programs}
+\end{document}
