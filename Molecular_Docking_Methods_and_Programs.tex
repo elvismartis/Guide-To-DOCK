@@ -1,10 +1,16 @@
 \documentclass[11pt]{article}
 \usepackage{biblatex}
+\usepackage{amsmath}
 \addbibresource{Molecular_Docking_Methods_and_Programs.bib}
 \begin{document}
 %\chapter*{Molecular Docking Methods and Programs}
 \section*{Introduction}
-There are a plethora of docking programs available (\textbf{Table \ref{tab:List}}), some with commercial licenses and others with open-source licenses. Knowing every program to make a choice that best suits you is almost always impossible. However, this is also not necessary as there exists ample literature reporting the use of many of the tools. Irrespective of the choice of the docking program, the general steps will be same; for example, preparation of the receptor (\textbf{see chapter \ref{receptors}}), defining the binding site as search space(\textbf{see chapter \ref{binding_sites}}), preparation of ligands (\textbf{see chapter \ref{ligprep}}), specifying the docking parameters, validating the docking procedure, performing the docking calculations, and analysis and dissemination of the results.  In a nutshell, the general principles remain unchanged; however, there are differences in ligand format, docking methods, and scoring algorithms that are well-documented in the user manual. We strongly recommend that before using any docking algorithm, the user manual must be consulted to understand each parameter's importance. The developers present their report on several validation studies as a part of the software development which is a great resource to understand the effect of each parameter on the outcome. A literature survey of the program's usage will also be covered in the user manual. 
+As structure-based drug design developed into a mature science, molecular docking got better with every step. The method depends on how well the conformational search algorithm can find the bioactive conformation(s). However, the search algorithm by itself does not know what a bioactive conformation(s) looks like. By definition, bioactive conformation is the atomic arrangement of a molecule that is suitable for binding to its respective target, and either inhibits/antagonises or activates it. There is always a possibility that one ligand may modulate more than one target. In this case, the bioactive conformation may be different. However, the bioactive conformation is always one of the plausible low-energy states, not necessarily the global minimum. Now that we have established that there are several possible bioactive conformations for a ligand depending upon its binding target, the conformational search algorithm alone is unable to identify it, but it will find it. The scoring function is responsible for scoring and ranking the conformations from the search algorithm. The chapter on scoring functions ((\textbf{see chapter \ref{Scoring_Functions_in_Molecular_Docking}})) will treat this part in depth. Remember that the conformational search tool searches for the bioactive conformation within the receptor binding site; therefore, many low-energy conformations that are observed in pure gas phase or solvent may not be sampled due to clashes with the receptor atoms. This is one of the ways by which docking programs implement a preliminary "bump-check" that can filter out conformations that show clashes with the receptor atoms. This way, more intense calculations are performed on fewer conformations. This improves the speed of docking. 
+
+This chapter will discuss some commonly used docking programs. Few of them need a commercial license for a fee, while are rest are open-source for academic use. 
+
+There are a plethora of docking programs available (\textbf{Table \ref{tab:List}}), some with commercial licenses and others with open-source licenses. Knowing every program to make a choice that best suits you is almost always impossible. However, this is also not necessary as there exists ample literature reporting the use of many of the tools. Irrespective of the choice of the docking program, the general steps will be same; for example, preparation of the receptor (\textbf{see chapter \ref{receptors}}), defining the binding site as search space(\textbf{see chapter \ref{binding_sites}}), preparation of ligands (\textbf{see chapter \ref{ligprep}}), specifying the docking parameters, validating the docking procedure, performing the docking calculations, and analysis and dissemination of the results.  In a nutshell, the general principles remain unchanged; however, there are differences in ligand format, docking methods, and scoring algorithms that are well-documented in the user manual. We strongly recommend that, before using any docking algorithm, the user manual must be consulted to understand each parameter's importance. The developers present their report on several validation studies as a part of the software development, which is a great resource to understand the effect of each parameter on the outcome. A literature survey of the program's usage will also be covered in the user manual. 
+
 
 \begin{table}[ht]
     \centering
@@ -20,6 +26,8 @@ There are a plethora of docking programs available (\textbf{Table \ref{tab:List}
         GOLD &  Commercial & Multiple options \\
         FlexX &  Commercial & Empirical \\
         Glide &  Commercial & Empirical \\
+        FLEXX & Commercial & ?? \\
+        SURFLEX & Commercial & ?? \\
     \hline
     \end{tabular}
 \end{table}
@@ -77,16 +85,16 @@ The detailed description of each step in the GLIDE docking method is given below
 \subsubsection*{How does GLIDE Score the docked conformations?}
 Glide employs several scoring functions, primarily GlideScore (with Standard Precision (SP) and Extra Precision (XP) versions) and Emodel, a composite score used for final pose selection. These functions integrate various physical and empirical terms to evaluate ligand binding affinity and rank poses.
 The general form of the GlideScore 2.5 SP function is given as:
-\begin{equation}
-    \label{eq:GLIDEscore}
-    \center
-{\Delta}G_{bind} = C_{lipo-lipo}{\sum}f(r_{lr}) + \\
+\begin{equation} \label{eq:GLIDEscore}
+\begin{split}
+\ \Delta G_{\text{bind}} = \\ C_{\text{lipo-lipo}}{\sum}f(r_{lr}) + \\ 
                     C_{hbond-neut-neut}{\sum}g({\Delta}r) h({\Delta}R) + \\
-                    C_{hbond-neut-charged}{\sum}g({\Delta}r) h({\Delta}R) + \\  
+                    C_{hbond-neut-charged}{\sum}g({\Delta}r) h({\Delta}R) + \\ 
                     C_{hbond-charged-charged}{\sum}g({\Delta}r) h({\Delta}R) + \\
-                    C_{max-metal-ion}{\sum}f(r_{lm}) + \\
-                    C_{rotb}H_{rotb} + C_{polar-phob}V_{polar-phob} + \\ 
-                    C_{coul}E_{coul} + C_{vdW}E_{vdW} + solvation terms  \\
+                    C_{max-metal-ion}{\sum}f(r_{lm}) +  \\
+                    C_{rotb}H_{rotb} + C_{polar-phob}V_{polar-phob} +  \\
+                    C_{coul}E_{coul} + C_{vdW}E_{vdW} + solvation terms 
+\end{split}
 \end{equation}
 Here are the key components of Glide's scoring functions:
 \begin{enumerate}
@@ -134,7 +142,6 @@ Here are the key components of Glide's scoring functions:
 \subsection*{FLEXX}
 
 \subsection*{SURFLEX}
-
 
 \subsection*{GOLD}
 
