@@ -228,15 +228,163 @@ Where:
     \item The third term is a screened Coulomb potential for electrostatics, where $q_i$ and $q_j$ are partial charges, and $\epsilon(r_{ij})$ is a distance-dependent dielectric function.
     \item The final term is a desolvation potential based on the volume of atoms ($V$) that surround a given atom, weighted by a solvation parameter ($S$) and an exponential term with a distance-weighting factor $\sigma = 3.5${\AA}. The summation for this term in certain models, like Model C, is performed only over carbon atoms in the ligand.
 \end{enumerate}
-Additionally, the torsional free energy ($\Delta \text{G}_{\text{tor}}$) is included as a separate term, typically proportional to the number of rotatable bonds ($\text{N}_{\text{tor}}$) in the ligand, with a coefficient determined during calibration (e.g., 0.3113 kcal/mol per torsion). The full set of empirically determined coefficients for these terms were derived using linear regression against known binding constants from a set of protein-ligand complexes.
+Additionally, the torsional free energy ($\Delta \text{G}_{\text{tor}}$) is included as a separate term, typically proportional to the number of rotatable bonds ($\text{N}_{\text{tor}}$) in the ligand, with a coefficient determined during calibration (e.g., 0.3113 kcal/mol per torsion). The full set of empirically determined coefficients for these terms was derived using linear regression against known binding constants from a set of protein-ligand complexes.
 After the conformational search, AutoDock performs a cluster analysis on the lowest energy docked structures found from multiple simulation runs. These clusters are then ranked by increasing energy. The software reports the fitness (docked energy), state variables, and coordinates of the docked conformation, along with the estimated free energy of binding ($\Delta\text{G}_{\text{pred}}$)
 
 
 \subsection*{AUTODOCK-VINA}
+AutoDock Vina (Vina) employs a sophisticated method to sample ligand conformations, primarily through an efficient optimization algorithm that explores the ligand's positional, orientational, and torsional flexibility.
+Here's a breakdown of how AutoDock Vina samples ligand conformations:
+• Optimization Algorithm: Iterated Local Search (ILS)
+    ◦ Vina utilizes an Iterated Local Search global optimizer, which is similar to an Iterated Monte-Carlo (MC) search algorithm. This was chosen after exploring various stochastic global optimization approaches like genetic algorithms, particle swarm optimization, and simulated annealing.
+    ◦ The algorithm performs a succession of steps, each consisting of a mutation and a local optimization, with each step accepted according to the Metropolis criterion. This iterative process allows it to escape local minima and explore the conformational space more effectively.
+    ◦ Multiple runs are performed, starting from random conformations. These runs can be executed concurrently using multithreading on multicore CPUs, leveraging shared-memory hardware parallelism to speed up the process. The algorithm maintains a set of diverse significant minima found during these separate runs, which are then combined during the structure refinement and clustering stage. The number of steps in a run is determined adaptively based on the apparent complexity of the problem.
+• Local Optimization: BFGS Method with Gradients
+    ◦ For the local optimization steps within the Iterated Local Search, Vina uses the Broyden-Fletcher-Goldfarb-Shanno (BFGS) method. This is an efficient quasi-Newton method.
+    ◦ Crucially, BFGS uses not only the value of the scoring function but also its gradient. The gradient provides the derivatives of the scoring function for its arguments.
+    ◦ These arguments include the position and orientation of the ligand, as well as the values of the torsions for the active rotatable bonds in the ligand (and flexible residues, if any).
+    ◦ While evaluating the gradient in addition to the scoring function's value might take longer, using the gradient can significantly speed up the optimization process by giving the algorithm a "sense of direction".
+• Ligand Flexibility
+    ◦ Docking generally assumes that the receptor is rigid, while a chosen set of covalent bonds in the ligand are considered freely rotatable (referred to as active rotatable bonds). Vina can handle ligands with a varying number of active rotatable bonds, from 0 to 32, as demonstrated in tests. The number of heavy atoms and active rotatable bonds can influence the time taken for a Vina run.
+• Scoring Function and Conformation Ranking
+    ◦ The optimization algorithm aims to find the global minimum of the scoring function's conformation-dependent part and other low-scoring conformations, which it then ranks. The scoring function itself, while not directly sampling conformations, guides the optimization process to identify favorable binding poses.
+• Handling Search Space and Initial Conformations
+    ◦ Vina requires a user-defined "search space" in the receptor's coordinate system. For testing purposes, this space is typically expanded around the experimental ligand structure.
+    ◦ To prevent artificial help from a biased program, the initial ligand conformation (position, orientation, and torsions) is randomized to be unrelated to the experimental structure, while also avoiding self-clashes.
+• New Features in Vina 1.2.0 Enhancing Sampling
+    ◦ Macrocycle Conformational Sampling: Vina 1.2.0 introduced a specialized protocol for docking macrocycles, which are challenging due to correlated torsional changes. This method involves breaking one bond in the ring structure, using dummy atoms, and applying a linear potential to restore the bond. This allows independent exploration of torsional degrees of freedom and sampling of macrocycle conformations while adapting to the binding pocket, although at the cost of increased search complexity.
+    ◦ Control over Evaluations: Users can now specify the number of energy evaluations to be performed using the " $--\text{max}\_\text{evals}$ " option, providing more control over the search algorithm, particularly for complex searches (e.g., more flexible ligands or larger binding sites).
+In summary, AutoDock Vina samples ligand conformations through an efficient Iterated Local Search, guided by a gradient-based BFGS local optimizer, which intelligently explores the ligand's translational, rotational, and torsional degrees of freedom. Recent updates further enhance its ability to handle complex flexibilities like those found in macrocycles.
 
+Molecular docking, including the method used by AutoDock Vina, generally operates under the assumption that much or all of the receptor is rigid. This approach represents a trade-off where representational detail is reduced in favor of computational speed.
+Here's how AutoDock Vina treats receptor flexibility:
+• Rigid Receptor Assumption: The foundational principle for Vina, as with many docking programs, is that the receptor structure remains constant during the docking process. For example, in tests evaluating Vina's performance, the receptors were consistently treated as rigid, while ligands were allowed to be flexible.
+• Gradient-Based Optimization: While the primary focus of Vina's Broyden-Fletcher-Goldfarb-Shanno (BFGS) optimization method is on the ligand's position, orientation, and torsions, its arguments can also include the values of torsions for "flexible residues, if any". This indicates that Vina has a built-in capacity to account for some limited receptor flexibility (specifically, flexible residues) within its optimization algorithm, although it's not the default or primary mode of operation. The gradient calculation, which provides derivatives for these arguments, helps speed up the optimization process.
+• Grid Maps and Post-processing: Vina automatically calculates its own grid maps based on the target (receptor) structure. These maps are used to define intermolecular interactions. Furthermore, after docking, Vina uses the receptor structure to perform a post-processing minimization of the docked poses. This refinement step relies on direct pairwise interactions with the receptor. The consistency of these operations implies a fixed receptor structure being used for these calculations.
+• User Control and Default Behavior: Vina was designed with a limited amount of user input for performing docking, making it highly specialized and optimized. This design generally steers towards a rigid receptor assumption for simplicity and speed, as modifying receptor flexibility broadly would typically require significant changes in the source code.
+• Comparison to AutoDock4: AutoDock4 (AD4) allowed users to modify a larger number of docking parameters, providing more direct access to engine internals, which made it suitable for developing new docking methods. However, even with AD4, the concept of full receptor flexibility was complex. AutoDock Vina 1.2.0, while maintaining Vina's core efficiency, introduced functionalities from the AutoDock Suite, some of which might implicitly or explicitly involve subtle receptor considerations (e.g., zinc coordination, which affects how the receptor interacts with specific ligand atoms), but the core assumption for bulk receptor movement generally remains rigid.
 
+The scoring function used in AutoDock Vina (referred to as Vina) is designed to approximate the standard chemical potentials of the system, aiming to reproduce chemical potentials rather than directly dealing with energies. This approach is more akin to "machine learning" than purely physics-based, being justified by its performance on test problems.
+The general functional form of the conformation-dependent part of the scoring function in AutoDock Vina is given by: 
+\begin{equation} \label{eq:vinascoring-1}
+\ \text{c} = \sum_{i<j} f_{t_i t_j} (r_{ij})
+\end{equation}
+• This summation is performed over all pairs of atoms that can move relative to each other, typically excluding 1–4 interactions (atoms separated by three consecutive covalent bonds).
+\begin{itemize}
+\item Each atom $i$ is assigned a type $t_i$.
+\item $f_{t_i t_j}$ represents a symmetric set of interaction functions based on the interatomic distance $r_{ij}$. Hydrogen atoms are not explicitly considered in this sum, other than for atom typing.
+This value, $c$, can be further broken down into intermolecular and intramolecular contributions: $\text{c} = \text{c}_{\text{inter}} + \text{c}_{\text{intra}}$
+The predicted free energy of binding ($s_1$) is calculated from the intermolecular part ($\text{c}_{\text{inter}1}$) of the lowest-scoring conformation: 
+\begin{equation} \label{eq:vinascoring-2}
+\begin{split}
+\ \text{s}_1 = \text{g}(\text{c}_1 - \text{c}_{\text{intra}1}) \\ 
+            = \text{g}(\text{c}_{\text{inter}1})
+\end{split}
+\end{equation}
+
+\item Here, $c_1$ refers to the total score of the lowest-scoring conformation, and $c_{\text{intra}1}$ is its intramolecular contribution.
+\item The function $g$ is an arbitrary, strictly increasing, smooth, and potentially nonlinear function.
+For other low-scoring conformations, $s_i$ values are formally given to preserve ranking, using the intramolecular contribution of the best binding mode ($\text{c}_{\text{intra}1}$): $\text{s}_i = \text{g}(\text{c}_i - c_{\text{intra}1})$
+\end{itemize}
+
+The specific conformation-independent function $g$ chosen for implementation is: 
+\begin{equation} \label{eq:vinascoring-3}
+\ \text{g}(\text{c}_{\text{inter}}) = \frac{\text{c}_{\text{inter}}}{1 + \text{wN}_{\text{rot}}}
+\end{equation}
+\begin{itemize}
+\item $N_{\text{rot}}$ represents the number of active rotatable bonds between heavy atoms in the ligand.
+\item $w$ is the associated weight for $N_{\text{rot}}$. As per Table 1, the weight for $N_{\text{rot}}$ is 0.0585.
+Components of the Interaction Functions ($f_{t_i t_j}$): The implementation of Vina's scoring function was largely inspired by X-score and tuned using the PDBbind dataset. The interaction functions $f_{t_i t_j}$ are defined relative to the surface distance $d_{ij} = r_{ij} - R_{t_i} - R_{t_j}$, where $R_t$ is the van der Waals radius of atom type $t$. In Vina's scoring function, $h_{t_i t_j}$ (which $f_{t_i t_j}$ is equivalent to) is a weighted sum of steric interactions, hydrophobic interactions, and hydrogen bonding.
+The specific terms and their weights used in Vina's scoring function are provided in Table 1:
+\item Steric Terms: These are identical for all atom pairs.
+\begin{itemize}
+    \item gauss1: weighted by -0.0356. $\text{gauss1}(\text{d}) = e^{-(\text{d}/0.5\text{ Å})^2}$
+    \item gauss2: weighted by -0.00516. $\text{gauss2}(\text{d}) = e^{-((\text{d}-3\text{ Å})/2\text{ Å})^2}$
+    \item Repulsion: weighted by 0.840. $ \text{repulsion}(\text{d}) = 
+                        \begin{cases} 
+                        \text{d}^2, & \text{if } \text{d} < 0 \cr 0, & \text{if } \text{d} \geq 0 
+                        \end{cases}$
+\end{itemize}
+\item Hydrophobic Term: weighted by -0.0351. It equals 1 when $\text{d} < 0.5${\AA}, 0 when $\text{d} > 1.5${\AA}, and is linearly interpolated between these values.
+\item Hydrogen Bonding Term: weighted by -0.587. It equals 1 when $\text{d} < -0.7${\AA}, 0 when $\text{d} > 0$, and is similarly linearly interpolated in between. Metals are formally treated as hydrogen bond donors.
+\item All interaction functions $\text{f}_{\text{t}_i \text{t}_j}$ are cut off at $\text{r}_{ij} = 8${\AA}
+\end{itemize}
+
+Comparison with AutoDock4 (AD4) Scoring Function The Vina scoring function is quite different from the AD4 scoring function.
+\begin{enumerate}
+\item AD4 scoring function uses a physics-based model that includes van der Waals, electrostatic, and directional hydrogen-bond potentials derived from an early AMBER force field, along with a pairwise-additive desolvation term based on partial charges, and a simple conformational entropy penalty.
+\item In contrast, Vina's scoring function notably lacks explicit electrostatics and solvation terms. It relies on a van der Waals-like potential (combining repulsion and two attractive Gaussians), a non-directional hydrogen-bond term, a hydrophobic term, and a conformational entropy penalty.
+\item The computational cost for energy evaluations is higher with the AD4 scoring function in Vina 1.2.0, taking nearly three times longer than with the Vina scoring function, due to the need to interpolate additional electrostatic and desolvation maps for each movable atom. Vina ranks conformations based on its scoring function, which includes both intermolecular and intramolecular contributions, differing from X-score, which only considers intermolecular contributions.
+\end{enumerate}
 
 \subsection*{FLEXX}
+FLEXX performs ligand conformational search for docking by modelling ligand flexibility using a discrete model. This approach focuses on sampling the conformational space of the ligand efficiently.
+Here's a breakdown of how it handles ligand flexibility:
+• Fixed Geometries: Bond lengths and angles are kept invariant as given in the input structure, except within ring systems. Therefore, the ligand structures provided to FLEXX should ideally be reasonably minimised geometries.
+• Acyclic Single Bond Flexibility (Torsion Angles):
+    ◦ For acyclic single bonds, a set of preferred torsion angles is assigned.
+    ◦ These preferred angles are determined by a statistical evaluation of the Cambridge Structural Database (CSD).
+    ◦ The method uses a database of approximately 900 molecular fragments with a central single bond. By matching these representative torsional fragments onto the ligand, a histogram of torsion angle occurrences from the CSD is used to select highly populated torsion angles for generating low-energy conformations.
+    ◦ Up to 12 discrete torsion angle values can be assigned to each acyclic single bond.
+    ◦ Bonds adjacent to a methyl group or a planar amino group are exceptions and remain unchanged from the initial conformation.
+• Ring Flexibility:
+    ◦ Multiple conformations for ring systems are computed using external programs.
+    ◦ Initially, the SCA program (developed by De Clercq) was used, which computes alternative conformations for polycyclic systems containing five- to seven-membered rings. This was considered sufficient for most practical purposes in drug design and typically took only a few seconds for a typical drug.
+    ◦ Later versions of FLEXX (e.g., version 1.6.5 evaluated in Kramer et al., 1999) used the CORINA program for computing multiple ring conformations, with a limit of seven ring atoms. Larger rings were treated as rigid based on the input structure.
+• Integration with Docking Algorithm: This discrete conformational model is fundamental to FLEXX's incremental construction algorithm. The ligand is fragmented, and then fragments are added step by step in all possible conformations, allowing the system to explore the ligand's flexible states as it builds the complex within the active site.
+• Accuracy and Complexity: The described model of ligand flexibility is reported to cause RMS deviations only in terms of conformational differences of less than 1{\AA} (e.g., 0.4 {\AA} for methotrexate). While this model generates a combinatorial number of conformations, internal clashes discard a portion of these, providing an upper bound for the number of possible low-energy conformations. The ability to handle ligands with up to 17 rotatable bonds is sufficient for most practical drug design purposes. However, for ligands with more than 20 fragments, other search strategies might be required due to the heuristic greedy strategy employed during complex construction.
+• Pre-processing: Before docking, ligand structures are energy-minimised and assigned correct atom types, bond types, and formal charges to ensure suitable bond distances and angles and to remove any "docking information" from the PDB structure.
+This systematic, discrete approach to ligand flexibility allows FlexX to efficiently sample a large variety of ligand conformations, aiming to reproduce the experimentally observed binding mode.
+
+\subsubsection*{Scoring function}
+FLEXX scores the docked ligands using an empirical scoring function similar to that developed by Böhm (1994), with some minor changes. This function is designed to estimate the free binding energy (DG) of the protein-ligand complex.
+The general equation for the scoring function is:
+The equation for the scoring function is:
+\begin{equation} \label{eq:flexscoring}
+\begin{split}
+\ \Delta \text{G} = \\ 
+                    \Delta \text{G}_0 + \Delta\text{G}_{\text{rot}} \times \text{N}_{\text{rot}} + \\
+                    \Delta\text{G}_{\text{hb}}\sum_{\text{neutral H-bonds}} f(D_R, D_\alpha) + \\
+                    \Delta\text{G}_{\text{io}}\sum_{\text{ionic int.}} f(D_R, D_\alpha) + \\ 
+                    \Delta \text{G}_{\text{aro}}\sum_{\text{aro int.}} f(D_R, D_\alpha) + \\
+                    \Delta \text{G}_{\text{lipo}}\sum_{\text{lipo. cont.}} f^*(D_R) 
+\end{split}
+\end{equation}
+Here's a breakdown of each term:
+\begin{itemize}
+\item \textbf{$\Delta\text{G}_0$}: This is a fixed ground term, set at 5.4 kJ/mol.
+
+\item \textbf{$\Delta G_{\text{rot}} \times N_{\text{rot}}$}: $\text{N}_{\text{rot}}$ represents the number of free rotatable bonds in the ligand that become immobilized (hindered) upon binding to the complex. $\Delta \text{G}_{\text{rot}}$ accounts for the loss of entropy during ligand binding due to this immobilisation and is valued at 1.4 kJ/mol.
+
+\item \textbf{$\Delta \text{G}_{\text{hb}} \sum_{\text{neutral H-bonds}} f(D_R, D_\alpha)$}: This term is a sum over all pairwise neutral hydrogen bonds. $f(D_R, D_\alpha)$ is a scaling function that penalizes deviations from ideal geometry for these interactions. The ideal interaction distance for hydrogen bonds is 1.9{\AA}.
+
+\item \textbf{$\Delta \text{G}_{\text{io}} \sum_{\text{ionic int.}} f(D_R, D_\alpha)$}: This sums over all pairwise ionic interactions. $f(D_R, D_\alpha)$ is the same scaling function for geometric deviations. The ideal interaction distance for metal interactions is 2.0{\AA}.
+
+\item \textbf{$\Delta \text{G}_{\text{aro}} \sum_{\text{aro int.}} f(D_R, D_\alpha)$}: This term sums over aromatic interactions, specifically involving interactions between aromatic-ring-atoms, methyl, or amide groups with an aromatic-ring-centre. These interactions are used to generate the preferred t-shaped arrangement of neighbouring aromatic ring systems. In some versions, an additional parameter $\Delta \text{G}_{\text{aro}}$ of -0.7 kJ/mol is included. The ideal interaction distance for aromatic interactions is 4.5 {\AA}.
+
+\item \textbf{$\Delta \text{G}_{\text{lipo}} \sum_{\text{lipo. cont.}} f^*(D_R)$}: This is a modification of Böhm’s original lipophilic contact energy, which was estimated using a grid method. In FLEXX, it's calculated as a sum over all pairwise atom-atom contacts.  \text{$f^*(D_R)$} is a function that accounts for contacts with ideal distances and penalises forbiddingly close contacts. \text{$D_R = R - R_0$}, where R is the actual distance between atom centers and \text{$R_0$} is its ideal value (sum of van-der-Waals radii, each increased by 0.3 {\AA}). The function $f^*(D_R)$ has specific ranges for its values.
+
+\end{itemize}
+
+The model of protein-ligand interactions and the scoring function in FLEXX are derived from the work of Böhm (1992a, 1994) and Klebe (1994). The scoring function is computationally fast and easy to compute, contributing to FLEXX's short runtimes. Its primary purpose is for ranking the generated docking solutions.
+While useful for distinguishing between good and bad inhibitors, the absolute binding energy values often show large differences (about 20 kJ/mol) from experimental values. This indicates that some important energetic contributions may not be fully modeled, and improvements to the scoring function are an ongoing area of development. For instance, it may not penalize large hydrophobic groups exposed to the solvent, potentially leading to misranking. Filter functions, which discard placements with undesirable properties like insufficient steric complementarity or exposed lipophilic regions, are being developed to address these issues.
+
+Key Aspects of Scoring in FLEXX:
+\begin{itemize}
+\item Ranking Solutions: The scoring function is primarily used for ranking the generated docking solutions.
+\item Origin of Chemical Model: The underlying chemical model in FLEXX is based on the work of Böhm (1992a, 1994) and Klebe & Mietzner (1994).
+\item Interaction Types: Interactions are classified by their geometric constraints and are used for placing the ligand. These include hydrogen bonds and some hydrophobic interactions (e.g., phenyl rings and methyl groups). These interactions are arranged on three levels, from highly directional (Level 3, e.g., H-bonds, metal acceptors) down to directionally unspecific (Level 1, e.g., aliphatic and aromatic carbon atoms, sulfur).
+\item Heuristic Nature: The functions f and f* are described as heuristic distance and angle-dependent penalties.
+\item Scoring Speed: The scoring function is chosen to be fast and easy to compute, contributing to FLEXX's extremely short runtimes. Docking a typical drug molecule, considering ligand flexibility, can be performed in two to three minutes on a standard workstation, making it approximately ten times faster than alternative approaches for flexible ligand docking at the time of its development.
+\item Limitations and Improvements:
+\begin{itemize}
+    \item While useful for roughly distinguishing good and bad inhibitors, the absolute binding energy values often show large differences (about 20 kJ/mol) from experimental values.
+    \item The scoring function may not penalise large hydrophobic groups reaching out into the solvent, potentially leading to misranking of solutions.
+    \item Filter functions that extract placements with "undesirable properties" (e.g., insufficient steric complementarity or large lipophilic regions exposed to solvent) have been developed to improve ranking and quality.
+    \item There is ongoing work to improve the scoring function to better model important energetic contributions that are currently not accounted for. Using a simple function based on a single configuration of a receptor-ligand complex for scoring is acknowledged as a rough approximation of the free energy of binding.
+    \item Including water molecules explicitly is crucial for reproducing correct binding modes in some cases, which influences the interaction pattern and thus the score.
+\end{itemize}
+\end{itemize}
 
 \subsection*{SURFLEX}
 
