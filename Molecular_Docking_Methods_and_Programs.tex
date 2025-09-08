@@ -136,13 +136,25 @@ Here are the key components of Glide's scoring functions:
 
 
 \subsection*{AUTODOCK}
-AutoDock is an automated computational procedure primarily designed to predict the bound conformations of small, flexible ligands to macromolecular targets of known structure. The method balances the need for a robust and physically relevant procedure with the requirement to keep computational demands at a feasible level. Its core operation combines efficient conformation searching with rapid energy evaluation.
+Autodock or commonly known as AD4, offers an easy-to-set-up and run kind of environment for molecular docking experiments. Therefore, this becomes an easy tool for beginners wanting to learn molecular docking. The developers also separately provide all the tools/scripts, known as "MGLTools", necessary to set up chemical systems for molecular docking. It is, therefore, an automated computational procedure primarily designed to predict the bound conformations of small, flexible ligands to macromolecular targets of known structure. Being an open-source tool with source code available, various groups have expanded the functionality of AD4 to improve docking accuracy for specific and challenging problems. 
+% Here talk about 
+    % hydrated docking
+    % macrocycle flexibility
+    % covalent docking
+    % docking to Zinc-metal coordination (Check if the literature has any examples for other metals site docking )
+The method balances the need for a robust and physically relevant procedure with the requirement to keep computational demands at a feasible level. Its core operation combines efficient conformation searching with rapid energy evaluation.
 Here's a detailed explanation of how AutoDock searches for ligand conformations within the receptor pocket:
 \begin{enumerate}
 \item Conformational Searching Methods
-AutoDock has evolved its search methods to handle the complex problem of exploring the vast number of possible positions, orientations, and conformations of a ligand.
+AutoDock provides the user with the choice of many well-tested conformational search algorithms. Based on the problem at hand, and with little exploratory work, the user will be able to find out for themselves which of the search algorithms is more appropriate for them. This, however, could change from problem to problem because a different biomolecular system could be best suited for another search algorithm. 
+
+Here we explain each of the search algorithms available with AD4. 
 \begin{enumerate}
-\item Simulated Annealing (SA)
+\item Simulated Annealing (SA): 
+
+Simulated annealing is a concept more prevalent in engineering science, where malleability in metals/alloys is employed to manufacture cables for a vast variety of applications. For example, a long steel cable can be manufactured from a block of steel by heating then beating and then cooling. This cycle is repeated until the desired shape, size and length is achieved, which dictates the tensile strength of the steel cable. This heating-beating-cooling-heating cycle is simulated annealing. The heating increases the softness of the steel by making the atoms move apart by gaining kinetic energy at high temperatures. Thus, making the beating process easier and preventing any fracture or permanent deformation. The cooling stage traps the atoms in the beaten state. At the end of each cycle, the shape of the steel block progressively approaches the desired shape and size without losing the inherent properties of steel. 
+
+Similarly, in sampling the conformations of chemical/biological systems, the heating stage allows the sampling of high-energy, low-probability regions. While the cooling stage drops the system to the nearest low-energy stable conformation. This way, the search algorithm can explore the accessible potential energy space of the system. 
     \begin{enumerate}
     \item Initial Approach: Earlier versions of AutoDock (such as version 1.0) primarily used the Metropolis technique, also known as simulated annealing, for conformational and positional searching.
     \item Mechanism: In this method, the trial molecule performs a random walk in the space around the static target protein. At each time step, small random displacements are applied to the ligand's rigid body translation, rotation, and each torsion angle. The interaction energy for this new state is evaluated, and the new state is immediately accepted if the energy is lower. If the new energy is higher, the step is accepted probabilistically, depending on a user-defined "temperature". High temperatures allow nearly all steps to be accepted, while lower temperatures enforce stricter conformational selection.
