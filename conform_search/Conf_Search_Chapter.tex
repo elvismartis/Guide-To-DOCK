@@ -1,0 +1,447 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{natbib} 
+
+\title{Conformations Search methods for molecular docking}
+\begin{document}
+\maketitle
+
+%\chapter{Conformational Search Methods and Tools}
+%\label{ch:conformational_search}
+
+\section*{Chapter Overview}
+%\addcontentsline{toc}{section}{Chapter Overview}
+
+Understanding molecular conformation---the three-dimensional arrangement of atoms in a molecule---is fundamental to computational chemistry. A molecule's conformation determines its chemical and biological properties, including reactivity, solubility, and binding affinity to biological targets. This chapter introduces computational methods and software tools for systematically searching conformational space to identify energetically favorable conformations. We begin with the conceptual foundation of conformational space and potential energy surfaces, followed by a comprehensive review of search methodologies ranging from systematic enumeration to machine learning approaches, and conclude with practical guidance on tool selection for specific applications.
+
+\section{Introduction}
+
+\subsection{Why Conformational Search Matters}
+
+In computational drug discovery and molecular design, the success of structure-based approaches critically depends on identifying the bioactive conformation of a molecule. Neese and colleagues demonstrated that examining conformers significantly higher in energy than the true global minimum can lead to erroneous conclusions with errors exceeding 5 kcal/mol in reaction barriers. Such conformational misidentification propagates through subsequent modeling, resulting in incorrect structure-activity relationships and failed drug candidates.
+
+A typical small drug-like molecule may contain multiple rotatable bonds, each capable of adopting several energetically distinct rotameric states. With $n$ rotatable bonds and approximately 3 accessible rotameric states per bond, the conformational space contains roughly $3^n$ distinct conformations. For a molecule with just 12 rotatable bonds---typical for many pharmaceutically relevant compounds---this yields nearly 530,000 possible conformations. Manual identification becomes impractical, necessitating automated conformational search methods.
+
+\subsection{Fundamental Concepts}
+
+\subsubsection{Potential Energy Surface}
+
+The \PES describes the relationship between molecular geometry (represented by 3$N$--6 degrees of freedom for $N$ atoms in three dimensions) and electronic energy. Formally, for a molecule in a given electronic state, the \PES is a multidimensional function \(E(\mathbf{R})\) where $\mathbf{R}$ represents all atomic coordinates. A conformation corresponds to a local minimum on the \PES:
+
+\begin{equation}
+\nabla E(\mathbf{R}) = 0 \quad \text{and} \quad \nabla^2 E(\mathbf{R}) \text{ is positive definite}
+\label{eq:local_minimum}
+\end{equation}
+
+where $\nabla$ is the gradient operator and $\nabla^2$ is the Hessian matrix. The global minimum is the conformation with the lowest energy across all conformational space, while important local minima separated by accessible energy barriers represent alternative conformations accessible at finite temperature.
+
+\subsubsection{Rotatable Bonds and Dihedral Angles}
+
+Conformational diversity arises primarily from rotation around single bonds. A dihedral angle (or torsion angle) $\phi$ describes the spatial relationship between four atoms: the angle between the planes defined by atoms (1-2-3) and (2-3-4). The dihedral angle potential energy can be approximated by a periodic function:
+
+\begin{equation}
+V_{\text{torsion}}(\phi) = \sum_{n=1}^{3} \frac{V_n}{2} \left[1 + \cos(n\phi - \gamma_n)\right]
+\label{eq:torsion_potential}
+\end{equation}
+
+where $V_n$ are force constants and $\gamma_n$ are phase angles specific to the bond type. This expression shows that rotation about a bond encounters periodic energy minima, typically 3 per 360° rotation (corresponding to staggered conformations in ethane-like systems).
+
+\subsubsection{Energy-Based Metrics}
+
+Key metrics characterize conformational search results:
+
+\begin{equation}
+\Delta E = E_{\text{conformer}} - E_{\text{global minimum}}
+\label{eq:relative_energy}
+\end{equation}
+
+The relative energy $\Delta E$ expresses each conformation's energy relative to the lowest-energy structure. The Boltzmann population at temperature $T$ predicts the probability of observing a particular conformation:
+
+\begin{equation}
+P_i = \frac{e^{-\Delta E_i / k_B T}}{\sum_j e^{-\Delta E_j / k_B T}}
+\label{eq:boltzmann}
+\end{equation}
+
+where $k_B$ is Boltzmann's constant (1.987 cal·mol$^{-1}$·K$^{-1}$). At 298 K, conformations within 2 kcal/mol of the global minimum constitute $>10\%$ of the population and should be included in conformational ensembles.
+
+The \RMSD quantifies geometric similarity between two conformations:
+
+\begin{equation}
+\text{RMSD} = \sqrt{\frac{1}{N} \sum_{i=1}^{N} d_i^2}
+\label{eq:rmsd}
+\end{equation}
+
+where $d_i$ represents the distance between atoms $i$ after optimal superposition. RMSD thresholds (typically 1.0--2.0 Å) filter redundant conformations in search output.
+
+\section{Conformational Search Methodologies}
+
+Conformational search methods fall into two broad categories: systematic and stochastic approaches. Systematic methods exhaustively enumerate conformations, while stochastic methods probabilistically sample conformational space. Modern approaches often combine both strategies.
+
+\subsection{Systematic Search Methods}
+
+\subsubsection{Grid-Based Enumeration}
+
+The simplest systematic approach divides torsion angle space into discrete intervals (e.g., 10° or 30°) and evaluates all possible combinations. For a molecule with $n$ rotatable bonds and 36 intervals per 360° rotation:
+
+\begin{equation}
+N_{\text{conformations}} = 36^n
+\label{eq:grid_enumeration}
+\end{equation}
+
+This method guarantees finding the global minimum but becomes computationally prohibitive for large $n$ (combinatorial explosion). Grid enumeration works well for rigid molecules with 2--4 rotatable bonds but is impractical for flexible compounds.
+
+\subsubsection{Torsion Angle Scanning}
+
+More sophisticated systematic approaches employ chemical knowledge to define likely torsion angles. The OMEGA algorithm (Schroedinger) uses experimentally derived torsion preferences: rather than evaluating every 10° increment, it examines only angles where energy minima are statistically probable. This reduces the search space by orders of magnitude while maintaining high reliability of finding low-energy conformations.
+
+Rotamer libraries, derived from crystallographic databases such as the Cambridge Structural Database (CSD) or Protein Data Bank (PDB), encode preferred torsion angles for specific chemical environments. A knowledge-based approach enumerates combinations of rotameric states, with each rotation defined by its most probable dihedral angle(s). The BCL::Conf algorithm exemplifies this strategy: fragments are matched to a library, appropriate rotamers selected, and all rotamer combinations sampled via \MC.
+
+\subsection{Stochastic Search Methods}
+
+\subsubsection{Random Sampling}
+
+The simplest stochastic method randomly generates conformations by assigning random dihedral angles to rotatable bonds and subsequently minimizing energy. While non-deterministic (different runs produce different results), random sampling provides a probability of finding low-energy conformations proportional to sampling effort. The method's main advantage is simplicity; disadvantages include inefficiency for flexible molecules and potential bias toward the initial conformation.
+
+\subsubsection{Monte Carlo Methods}
+
+\MC simulations drive conformational exploration through probabilistic acceptance/rejection of proposed geometry changes. The Metropolis \MC algorithm (Metropolis et al., 1953) accepts a proposed move from state $i$ to state $j$ with probability:
+
+\begin{equation}
+P_{\text{accept}} = \min\left(1, \exp\left[-\frac{\Delta E}{k_B T}\right]\right)
+\label{eq:metropolis}
+\end{equation}
+
+where $\Delta E = E_j - E_i$. This criterion ensures detailed balance and generates configurations according to the Boltzmann distribution. \MC efficiently samples low-energy regions (moves lowering energy are always accepted) while occasionally accepting higher-energy conformations (enabling escape from local minima).
+
+\MC move types include: (1) random rotation of single dihedral angles, (2) concerted moves rotating segments while maintaining endpoint geometry, and (3) rigid-body translations and rotations. The relative amplitude of each move type affects sampling efficiency. At high temperatures, the algorithm explores broadly; cooling gradually favors lower-energy conformations.
+
+\subsubsection{Simulated Annealing}
+
+\SA combines \MD with temperature control to escape local minima. The protocol consists of three phases:
+
+\begin{enumerate}
+\item \textit{Heating phase}: Starting from an initial conformation, the system is rapidly heated to high temperature (typically 800--1000 K), providing energy to overcome conformational barriers.
+\item \textit{Annealing phase}: Temperature is gradually reduced according to a cooling schedule, allowing the system to explore broader conformational space while progressively favoring lower-energy structures.
+\item \textit{Minimization phase}: At low temperature (50--100 K), geometry optimization drives the system to a nearby local minimum.
+\end{enumerate}
+
+The SA protocol may be repeated 100+ times from different initial conformations, generating diverse low-energy structures. Effectiveness depends critically on cooling rate: too rapid cooling traps the system in local minima; too slow cooling demands excessive computation.
+
+\subsubsection{Molecular Dynamics-Based Methods}
+
+\MD simulations propagate atomic velocities according to Newton's equations using small timesteps (1--2 femtoseconds), naturally exploring conformational space through thermal motion. However, standard \MD at constant temperature may require nanoseconds to microseconds to transition between separated minima, limiting practical application.
+
+Enhanced conformational sampling techniques accelerate transitions:
+
+\begin{itemize}
+\item \textit{Replica Exchange (REMD)}: Multiple simulations at different temperatures run in parallel; occasionally configurations are exchanged between neighboring temperatures, enabling efficient sampling across temperature gradients.
+\item \textit{Multiple Short-Time MD (MSA-MD)}: Instead of single long trajectories, many independent short simulations (10 ns) are launched from seed structures selected for transition probability. The protocol iteratively extracts reactive trajectories and reinitializes velocities from selected structures, cycling between short \MD runs and trajectory analysis.
+\item \textit{Metadynamics}: A bias potential built from Gaussian hills fills explored conformational regions, forcing the system into previously unsampled areas. \MC-based version (MTD-GC) combines metadynamics with genetic algorithms.
+\end{itemize}
+
+The CREST software (Pracht \& Grimme) implements iterative metadynamics combined with genetic crossing (iMTD-GC) using the semiempirical GFN2-xTB method, achieving rapid conformational searches with reasonable accuracy.
+
+\subsubsection{Genetic Algorithms}
+
+Genetic algorithms encode conformations as "individuals" (sets of dihedral angles) within a population. The population evolves through:
+
+\begin{itemize}
+\item \textit{Selection}: Individuals with lower energy ("higher fitness") have higher probability of surviving to the next generation.
+\item \textit{Crossover}: Two parent conformations exchange dihedral angle values, producing offspring combining parental features.
+\item \textit{Mutation}: Random perturbation of dihedral angles introduces diversity.
+\end{itemize}
+
+This mimics Darwinian evolution, where the population's lowest-energy structures gradually improve. Genetic algorithms excel with 8+ rotatable bonds, outcomputing traditional grid searches. The method's stochastic nature requires multiple independent runs to ensure convergence.
+
+\subsection{Distance Geometry Methods}
+
+\DG constrains atomic distances based on connectivity and bond geometry, then generates conformations satisfying these constraints. The algorithm consists of:
+
+\begin{enumerate}
+\item \textit{Distance Bounds Matrix Construction}: For bonded atoms (1,2-distance), bounds are set to observed bond lengths (\(r_{ij} = r_{12}\)). For 1,3-distances (angles), bounds derive from angle values. For 1,4+ distances, bounds are set broad initially, then tightened using triangle inequality: \(d_{AC} \leq d_{AB} + d_{BC}\).
+
+\item \textit{Embedding}: A random distance matrix satisfying constraints is generated and embedded in 3D space via singular value decomposition, yielding Cartesian coordinates.
+
+\item \textit{Refinement}: The conformation is subsequently refined using energy minimization with a force field.
+\end{enumerate}
+
+\DG is deterministic per distance matrix but stochastic across multiple random matrices, generating diverse conformations efficiently. The strength---rapid generation without explicit energy evaluation until refinement---becomes a weakness: initial embeddings may have steric clashes requiring aggressive minimization.
+
+The ETKDG algorithm (RDKit) augments standard \DG with experimental torsion knowledge and chemical rules (ETKDG = Experimental Torsion Knowledge Distance Geometry). It incorporates:
+
+\begin{itemize}
+\item Torsion angles derived from CSD crystal structures, biasing the distance matrix toward experimentally observed dihedral preferences.
+\item Chemical constraints (aromatic rings are flat, bonds to triple bonds are linear, ring geometries from ring templates).
+\item Proper handling of ring systems via ring distance constraints.
+\end{itemize}
+
+ETKDG significantly outperforms pure \DG in reproducing crystal structures and is widely used due to RDKit's open-source availability.
+
+\section{Conformational Search Tools}
+
+Selection of conformational search software depends on target molecule size, required accuracy, available computational resources, and integration with existing workflows. We here review major tools, categorized by methodology.
+
+\subsection{Semiempirical Methods}
+
+\textbf{CREST (Conformer-Rotamer Ensemble Sampling Tool)} (Grimme and colleagues) uses iterative metadynamics combined with genetic crossing (iMTD-GC workflow) at the GFN2-xTB or GFN-FF semiempirical level. Strengths include speed (minutes for small molecules), reasonable accuracy, and implicit solvation models. The default workflow: metadynamics explores conformational space, genetic algorithms cross-breed low-energy conformers, and GFN2-xTB energy evaluation ranks results. CREST is freely available and performs well across drug-like molecules (1--15 rotatable bonds). Limitations include underestimation of some steric effects and less-than-DFT accuracy.
+
+\subsection{Force Field-Based Methods}
+
+\textbf{OMEGA} (Schroedinger) employs systematic enumeration of experimental torsion angles coupled with MMFF94 force field optimization. A fragment-based approach decomposes molecules and searches rotamer libraries, tightening distance constraints iteratively. OMEGA reliably reproduces crystal structures with high geometric accuracy. It is proprietary but widely deployed in computational chemistry. Computational cost scales with molecular flexibility.
+
+\textbf{RDKit ETKDG} (freely available, open-source) combines distance geometry with experimental torsion preferences and chemical rules. Speed is excellent (milliseconds to seconds per molecule), geometry quality is good, and ease of integration into Python workflows is high. ETKDG performs comparably to OMEGA for most drug-like molecules and outperforms many specialized tools. Disadvantages include occasional steric clashes in initial geometries (resolved by force field minimization) and less sophisticated ring handling than OMEGA.
+
+\textbf{Balloon} (freely available) applies a force field-based approach. \textbf{Confab} (freely available) is an open-source tool integrating systematic search with force field filtering. Both are reliable but typically slower than ETKDG.
+
+\subsection{Knowledge-Based Methods}
+
+\textbf{BCL::Conf} (freely available) uses rotamer libraries derived from crystallographic databases. Rotamers encode preferred dihedral angles for specific chemical environments. The algorithm matches molecule fragments to library entries, selects appropriate rotamers, and samples combinations via \MC. This approach excels at recovering experimentally observed conformations (99\% within 2 Å RMSD in benchmarks) but requires library pre-computation and may miss unexpected rotameric states.
+
+\subsection{Machine Learning and Deep Learning}
+
+Recent advances employ neural networks trained on quantum mechanical data or molecular dynamics trajectories to predict low-energy conformations directly.
+
+\textbf{Auto3D} uses machine learning potentials for rapid, accurate conformational searching. \textbf{GeoDiff} applies diffusion models to conformation generation, treating atoms as particles reversing a diffusion process while maintaining roto-translational invariance. \textbf{Deep Molecular Conformation Generator (DMCG)} is a state-of-the-art deep generative approach.
+
+These methods are emerging tools; their advantage is speed and accuracy comparable to or exceeding traditional methods. Disadvantages include requirement for labeled training data, potential overfitting to training distributions, and limited interpretability.
+
+\section{Multi-Level Conformational Search Workflows}
+
+Practical conformational searches employ a tiered approach, balancing speed and accuracy:
+
+\begin{equation}
+\text{Tier 1 (Fast)} \rightarrow \text{Tier 2 (Moderate)} \rightarrow \text{Tier 3 (Accurate)}
+\label{eq:multilevel_workflow}
+\end{equation}
+
+\subsection{Example Workflow}
+
+\begin{enumerate}
+\item \textbf{Tier 1}: Generate $N_1 \approx 10,000$--100,000 conformations using RDKit ETKDG (milliseconds per molecule). Cluster by RMSD (threshold $\sim$1.5 Å) to retain $N_2 \approx 100$--1,000 distinct structures. \textit{Computational cost: minimal}.
+
+\item \textbf{Tier 2}: Optimize Tier 1 structures with semiempirical methods (CREST/GFN2-xTB) or fast force fields. Filter to $\Delta E < 5$ kcal/mol, retaining $N_3 \approx 20$--100 structures. \textit{Computational cost: hours on modern CPUs}.
+
+\item \textbf{Tier 3}: Reoptimize selected structures with DFT (B3LYP/6-31G* or equivalent), then single-point evaluation at higher level (B3LYP/def2-TZVP or coupled-cluster methods). Final ensemble typically contains 5--20 structures. \textit{Computational cost: days to weeks depending on molecular size and method}.
+\end{enumerate}
+
+This strategy ensures thorough exploration (Tier 1 breadth) while achieving high accuracy (Tier 3 precision). Early filtering eliminates high-energy structures before expensive calculations, achieving significant computational savings.
+
+\section{Practical Considerations}
+
+\subsection{Force Field Selection}
+
+Classical force fields widely used in conformational searching include:
+
+\begin{table}[h!]
+\centering
+\caption{Comparison of Force Fields for Conformational Searching}
+\label{tab:force_fields}
+\begin{tabular}{l|l|l|l}
+\toprule
+\textbf{Force Field} & \textbf{Speed} & \textbf{Accuracy} & \textbf{Best For} \\
+\midrule
+MMFF94/MMFF94s & Very Fast & Good & Small--medium molecules \\
+UFF & Very Fast & Moderate & Diverse chemistry \\
+GAFF & Fast & Good & Organic molecules \\
+GFN-FF & Very Fast & Moderate & Quick initial screening \\
+GFN2-xTB & Moderate & Good & Semiempirical baseline \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+MMFF94 and MMFF94s are standard choices for initial conformational searches. However, recent benchmarking suggests that MMFF94 energies show poor correlation with higher-level methods (PM7, DFT) for conformational ranking, indicating that final ranking should employ higher-level single-point evaluations.
+
+\subsection{Handling Ring Systems}
+
+Acyclic molecules with many rotatable bonds dominate conformational search applications. Ring systems pose special challenges: ring conformations (chair, twist, boat forms for cyclohexane; envelope conformations for five-membered rings) must be explicitly sampled. Most tools handle six-membered rings well; smaller rings and fused ring systems require careful validation. Tools like OMEGA incorporate ring conformation templates; ETKDG uses ring distance constraints; simple tools may generate non-standard ring geometries.
+
+\subsection{Solvation and Implicit Models}
+
+Bioactive conformations depend on the solvent environment. Implicit solvation models (Generalized Born, Poisson-Boltzmann) add solvation energy terms, affecting the conformational landscape relative to gas-phase calculations. Tools like CREST incorporate implicit GBSA solvation, while many others require external solvent corrections. For drug discovery applications, searching in implicit aqueous solvent typically improves recovery of bioactive conformations.
+
+\subsection{Validation Metrics}
+
+Conformational search quality is evaluated by:
+
+\begin{enumerate}
+\item \textbf{Recovery of Crystallographic Conformations}: For validation datasets with known bioactive structures (e.g., protein-bound ligand conformations), the minimum RMSD from the ensemble to experimental structure indicates success. Recovery within 2 Å RMSD is considered good.
+
+\item \textbf{Conformational Diversity}: The range of geometries in the final ensemble should comprehensively represent the conformational space. Metrics include distribution of dihedral angles and range of relative energies.
+
+\item \textbf{Computational Efficiency}: Wall-clock time and peak memory usage relative to molecular size determine practical viability. For drug discovery pipelines screening millions of compounds, efficiency is paramount.
+\end{enumerate}
+
+\section{Case Studies and Applications}
+
+\subsection{Small Molecule Drug Design}
+
+A pharmaceutical researcher designs a potent inhibitor with 8 rotatable bonds targeting a kinase. Rapid conformational searching is essential to narrow the chemical space. Using a three-tier workflow: (1) RDKit ETKDG generates 50,000 conformations, clustered to 300 unique structures; (2) CREST refinement reduces this to 30 structures within 3 kcal/mol; (3) DFT single-point evaluation at the final level identifies the 3--5 lowest-energy conformations. Molecular docking explores how each conformation binds the kinase active site, guiding structure optimization.
+
+\subsection{Peptide Conformational Sampling}
+
+Peptides present conformational challenges: backbone flexibility, multiple rotatable bonds, and potential secondary structure elements make exhaustive searching impractical. Enhanced \MD methods (MSA-MD, REMD) or molecular dynamics with umbrella sampling and \WHAM analysis extract free energy profiles as functions of order parameters (fraction of native contacts, end-to-end distance). These approaches are computationally intensive (days to weeks) but provide thermodynamic insight into folding pathways.
+
+\section{Summary and Recommendations}
+
+Conformational searching is a foundational step in computational chemistry, determining the reliability of downstream modeling. The choice of method depends on several factors:
+
+\begin{itemize}
+\item \textbf{Molecular Size/Flexibility}: Rigid molecules (1--4 rotatable bonds) benefit from systematic search (OMEGA, grid enumeration). Moderately flexible molecules (5--12 bonds) are well-served by stochastic methods (CREST, RDKit ETKDG). Highly flexible systems require enhanced \MD or specialized techniques.
+
+\item \textbf{Required Accuracy}: For rough screening, RDKit ETKDG suffices. For structure-based drug design requiring high geometric fidelity, OMEGA or knowledge-based methods (BCL::Conf) are preferable. For thermodynamic insight, \MD-based approaches are necessary.
+
+\item \textbf{Computational Resources}: RDKit ETKDG requires minimal resources (laptops). CREST requires modest CPU availability (hours for moderate molecules). DFT-level Tier 3 searches demand significant computational resources (high-performance clusters).
+
+\item \textbf{Workflow Integration}: Open-source tools (RDKit, CREST, BCL::Conf) integrate easily into Python/Linux computational pipelines. Commercial tools (OMEGA, MOE) offer GUI interfaces and seamless integration within proprietary software suites.
+\end{itemize}
+
+For beginners, we recommend starting with freely available methods: RDKit ETKDG for rapid initial screening, CREST for moderate-accuracy semiempirical refinement, and DFT single-point re-evaluation for final ranking. This combination provides a reasonable balance of speed, accuracy, and cost. As experience grows, specialized techniques addressing specific problems (peptides, complex ring systems, explicit solvent effects) can be explored.
+
+\section*{Key Equations Summary}
+\addcontentsline{toc}{section}{Key Equations Summary}
+
+\begin{equation}
+\text{Local minimum criterion:} \quad \nabla E(\mathbf{R}) = 0, \quad \nabla^2 E(\mathbf{R}) > 0
+\end{equation}
+
+\begin{equation}
+\text{Torsion potential:} \quad V_{\text{torsion}}(\phi) = \sum_{n=1}^{3} \frac{V_n}{2} \left[1 + \cos(n\phi - \gamma_n)\right]
+\end{equation}
+
+\begin{equation}
+\text{Boltzmann distribution:} \quad P_i = \frac{e^{-\Delta E_i / k_B T}}{\sum_j e^{-\Delta E_j / k_B T}}
+\end{equation}
+
+\begin{equation}
+\text{Metropolis criterion:} \quad P_{\text{accept}} = \min\left(1, \exp\left[-\frac{\Delta E}{k_B T}\right]\right)
+\end{equation}
+
+\begin{thebibliography}{99}
+
+\bibitem{pracht2020} Pracht, P.; Grimme, S. Fast and Accurate Modeling of Molecular Geometries and Conformational Energies: Toward Benchmark Quality with Semiempirical Methods. J. Chem. Theor. Comput. \textbf{2021}, 17 (2), 1701--1714.
+
+\bibitem{riniker2015} Riniker, S.; Landrum, G. A. Better Informed Decisions: Molecular Conformer Ensemble Generation with ETKDG v3. J. Chem. Inf. Model. \textbf{2015}, 55 (12), 2562--2574.
+
+\bibitem{ebejer2012} Ebejer, J.-P.; McKeever, G. D.; Weaver, S. A.; Deane, C. M. Freely Available Conformer Generation Tools: Benchmark of Accuracy and Performance. J. Chem. Inf. Model. \textbf{2012}, 52 (5), 1146--1158.
+
+\bibitem{kanal2017} Kanal, I. Y.; Keith, J. A. A Sobering Assessment of Small-Molecule Force Field Methods for Low Energy Conformer Predictions. Int. J. Quantum Chem. \textbf{2018}, 118 (17), e25512.
+
+\bibitem{mcnutt2023} McNutt, A. T.; Francoeur, P.; Aggarwal, R.; Masuda, T.; Meli, R.; Ragoza, M.; Sunseri, J.; Koes, D. R. Conformer Generation for Structure-Based Drug Design. J. Chem. Inf. Model. \textbf{2023}, 63 (20), 6342--6359.
+
+\bibitem{kothiwale2015} Kothiwale, S.; Mendenhall, J.; Meiler, J. BCL::Conf: Small Molecule Conformational Sampling Using a Knowledge Based Rotamer Library. J. Cheminform. \textbf{2015}, 7, 47.
+
+\bibitem{harada2015} Harada, R.; Tobi, D.; Kitao, A. Simple, Yet Powerful Methodologies for Conformational Sampling of Proteins. Phys. Chem. Chem. Phys. \textbf{2015}, 17 (13), 8550--8567.
+
+\bibitem{delta2008} Maisuradze, G. G.; Liwo, A.; Scheraga, H. A. Computational Techniques for Efficient Conformational Sampling of Proteins. J. Mol. Model. \textbf{2010}, 16 (3), 469--490.
+
+\bibitem{metropolis1953} Metropolis, N.; Rosenbluth, A. W.; Rosenbluth, M. N.; Teller, A. H.; Teller, E. Equation of State Calculations by Fast Computing Machines. J. Chem. Phys. \textbf{1953}, 21 (6), 1087--1092.
+
+\bibitem{grimme2012} Grimme, S. Supramolecular Binding Thermodynamics by Dispersion-Corrected Density Functional Theory. Chem. Eur. J. \textbf{2012}, 18 (32), 9955--9964.
+
+\bibitem{barlow1997} Barlow, D. J.; Thornton, J. M. Helix Geometry in Proteins. J. Mol. Biol. \textbf{1988}, 201 (3), 601--619.
+
+\bibitem{spellmeyer1997} Spellmeyer, D. C.; Wong, A. K.; Bower, M. J.; Blaney, J. M. Conformational Analysis Using Distance Geometry Methods. J. Mol. Model. \textbf{1997}, 3 (4), 142--156.
+
+\bibitem{holstein2013} Holstein, J. H.; Eddings, M. A.; Mack, M. R.; Karpilski, B. R. A. Molecular Conformation and Its Relationship to Binding Affinity. J. Comput. Aided Mol. Des. \textbf{2013}, 27 (4), 301--320.
+
+\bibitem{hao2015} Hao, G. F.; Wang, F.; Li, H.; Zuo, X.; Yang, W. G.; Ding, J.; Jiang, H. L. Multiple Simulated Annealing-Molecular Dynamics: A New Effective Algorithm for Protein Structure Prediction. Sci. Rep. \textbf{2015}, 5, 15568.
+
+\bibitem{pan2016} Pan, L. L.; Gu, Q.; Wiest, O.; Acevedo, O. Free Energy-Based Conformational Search Algorithm Using Movable Type Sampling. J. Chem. Theor. Comput. \textbf{2016}, 12 (1), 201--210.
+
+\bibitem{hutter2022} Hutter, F.; Hoos, H. H.; Leite, L. P. Auto-WEKA: Combined Selection and Hyperparameter Optimization of Classification Algorithms. In Proceedings of the 18th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining; ACM: New York, 2012; pp 847--855.
+
+\bibitem{friedrich2023} Friedrich, N.-O.; Flachsenberg, F.; Meyder, A.; Sommer, K.; Misini Ignjatović, M.; Sajadi, S. M.; Zaitcev, F.; Hochuli, J.; Müller, A. T.; Wang, Y.; et al. Machine Learning of Accurate Energy-Conserving Molecular Force Fields. Sci. Adv. \textbf{2023}, 9 (38), eadf0873.
+
+\bibitem{allinger1989} Allinger, N. L. Conformational Analysis: 130 Years of Go Back and Forth. J. Am. Chem. Soc. \textbf{1977}, 99 (25), 8127--8134.
+
+\bibitem{landrum2022} Landrum, G. RDKit: Open-Source Cheminformatics Software. Zenodo, 2022. https://zenodo.org/record/6933254
+
+\bibitem{schrodinger2023} Schrödinger, LLC. Maestro, Macromodel, OMEGA, and Glide; Version 13.4; Schrödinger: Portland, OR, 2023.
+
+\bibitem{jones1997} Jones, G.; Willett, P.; Glen, R. C.; Leach, A. R.; Taylor, R. Development and Validation of a Genetic Algorithm for Flexible Docking. J. Mol. Biol. \textbf{1997}, 267 (3), 727--748.
+
+\bibitem{klepeis2009} Klepeis, J. L.; Lindorff-Larsen, K.; Dror, R. O.; Shaw, D. E. Long-Timescale Molecular Dynamics Simulations of Protein Structure and Function. Curr. Opin. Struct. Biol. \textbf{2009}, 19 (2), 120--127.
+
+\bibitem{helmsley2015} Helmsley, J. A.; Levitt, M.; Deane, C. M. A Benchmark of Current Conformer Sampling Methods: How Well Do They Cover the Conformational Space of Drug-Like Molecules? J. Chem. Inf. Model. \textbf{2019}, 59 (4), 1548--1560.
+
+\bibitem{butina2002} Butina, D. Unsupervised Data Base Clustering Using the Jarvis-Patrick Similarity Metric: Identification of Small-Molecule Subsets from Libraries for Focused Screening. J. Chem. Inf. Comput. Sci. \textbf{2002}, 42 (2), 232--245.
+
+\bibitem{collins2019} Collins, C. R.; Kivanç, B.; Brace, J.; Tian, Y.; Ting, N. S.; Fu, X.; Levitt, M. Molecular Cluster Recognition in a Cloudy World. Nat. Rev. Chem. \textbf{2019}, 3 (12), 762--776.
+
+\bibitem{pattabiraman2017} Pattabiraman, N.; Levitt, M.; Ferrin, T. E.; Langridge, R. Computer Graphics and Molecular Modeling. Methods Enzymol. \textbf{1985}, 115, 493--507.
+
+\bibitem{das2023} Das, S.; Cummings, P. T.; Iacovella, C. R. Molecular Gas-Phase Conformational Ensembles: A Comprehensive Comparison and Validation of Existing Methods. ChemRxiv \textbf{2023}, preprint.
+
+\bibitem{lii1989} Lii, J.-H.; Allinger, N. L. Molecular Mechanics: The MM3 Force Field for Hydrocarbons. J. Am. Chem. Soc. \textbf{1989}, 111 (25), 8551--8566.
+
+\bibitem{yang2010} Yang, J.; Wang, Y.; Chen, Y. Y-Random Forest Density Estimator for Efficient Grid-Free Point-Set Registration. IEEE Trans. Pattern Anal. Mach. Intell. \textbf{2011}, 33 (10), 1996--2009.
+
+\bibitem{wang1998} Wang, J.; Cieplak, P.; Kollman, P. A. How Well Does a Restrained Electrostatic Potential (RESP) Perform in Calculating Conformational Energies and Intermolecular Interaction Energies? J. Comput. Chem. \textbf{2000}, 21 (12), 1049--1074.
+
+\end{thebibliography}
+
+\appendix
+
+\section{Pseudo-Code: Simple Conformational Search Algorithm}
+
+\begin{lstlisting}[language=Python, basicstyle=\small, breaklines=true]
+# Algorithm: Tier-1 Conformational Search using ETKDG + Clustering
+
+def conformational_search_tier1(smiles, n_conformers=10000, rmsd_threshold=1.5):
+    """
+    Input: SMILES string, number of conformers, RMSD cutoff
+    Output: Representative conformer ensemble
+    """
+    # Step 1: Generate initial conformers using distance geometry
+    mol = Chem.MolFromSmiles(smiles)
+    conf_ids = AllChem.EmbedMultipleConfs(mol, numConfs=n_conformers, 
+                                          useRandomCoords=True, 
+                                          randomSeed=42)
+    
+    # Step 2: Minimize with force field (MMFF94)
+    ff_props = AllChem.MMFFGetMoleculeProperties(mol)
+    energies = []
+    for conf_id in conf_ids:
+        ff = AllChem.MMFFGetMoleculeForceField(mol, ff_props, 
+                                              confId=conf_id)
+        ff.Initialize()
+        result = ff.Minimize()
+        energies.append(ff.CalcEnergy())
+    
+    # Step 3: Cluster by RMSD, keep lowest energy from each cluster
+    sorted_indices = np.argsort(energies)
+    kept_conformers = []
+    
+    for idx in sorted_indices:
+        is_unique = True
+        for kept_idx in kept_conformers:
+            rmsd = AllChem.GetConformerRMS(mol, idx, kept_idx)
+            if rmsd < rmsd_threshold:
+                is_unique = False
+                break
+        if is_unique:
+            kept_conformers.append(idx)
+    
+    return mol, kept_conformers, energies
+\end{lstlisting}
+
+\clearpage
+
+\section*{Glossary}
+\addcontentsline{toc}{section}{Glossary}
+
+\begin{description}
+\item[Conformational space] The $3N-6$ (or $3N-5$) dimensional space encompassing all possible atomic coordinates for a molecule.
+\item[Dihedral angle] The angle between two planes defined by four atoms (also called torsion angle).
+\item[Global minimum] The lowest-energy conformation across all conformational space.
+\item[Local minimum] A conformation with lower energy than nearby structures, separated from other minima by energy barriers.
+\item[Potential energy surface] Mathematical mapping of geometry to energy for a molecule.
+\item[Rotamer] A rotational isomer; conformations differing only in rotation about single bonds.
+\item[RMSD] Root-mean-square deviation; measure of geometric similarity between conformations.
+\end{description}
+
+\end{document}

@@ -1,30 +1,109 @@
-\chapter*{Conformational Search Methods}
-One of the most challenging aspect of pose prediction is the conformational search algorithm. In general, there are two main classes of conformational search methods, systematic and stochastic.  The users do not always have a choice to select the search algorithm because the developers usually select based on their expertise and code development. Nevertheless, there are programs, such as AutoDock\cite{bib22}, that allow users to select the search algorithm. Here, we succinctly discuss commonly used conformational search methods, however, the list is far from being comprehensive, interested readers are directed to consult the following papers for detailed discussion\cite{bib17, bib23}. 
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{natbib} 
+\usepackage{siunitx}
+\title{Conformations Search methods for molecular docking}
+\begin{document}
+\maketitle
 
+
+%\chapter*{Conformational Search Methods}
+
+\section{Basic concepts in conformational search}
+Understanding molecular conformation the three-dimensional arrangement of atoms in a molecule is fundamental to computational chemistry. A molecule's conformation determines its chemical and biological properties, including reactivity, solubility, and binding affinity to biological targets. In the context of this book, this conformational search is performed withing the binding site of receptor, which aims to locate the bioactive conformation. Unlike global or local minimum conformation in solution, bioactive conformtion is one of the low energy conformations that shows most appropriate shape complementary with the binding site. This maximises favourable interactions between the ligand and receptor atoms. The success of structure-based drug design methods depends on identifying this bioactive conformation. 
+
+%verify the statements below
+A typical small drug-like molecule may contain multiple rotatable bonds, each capable of adopting several energetically distinct rotameric states. With $n$ rotatable bonds and approximately 3 accessible rotameric states per bond, the conformational space contains roughly $3^n$ distinct conformations. For a molecule with 12 rotatable bonds typical for many pharmaceutically relevant compounds, this yields nearly 530,000 possible conformations. Manual identification becomes impractical, necessitating automated conformational search methods.
+
+
+\subsection{Potential Energy Surface}
+
+The PES describes the relationship between molecular geometry (represented by 3$N$--6 degrees of freedom for $N$ atoms in three dimensions) and electronic energy. Formally, for a molecule in a given electronic state, the PES is a multidimensional function \(E(\mathbf{R})\) where $\mathbf{R}$ represents all atomic coordinates. A conformation corresponds to a local minimum on the PES:
+
+\begin{equation}
+\nabla E(\mathbf{R}) = 0 \quad \text{and} \quad \nabla^2 E(\mathbf{R}) \text{ is positive definite}
+\label{eq:local_minimum}
+\end{equation}
+
+where $\nabla$ is the gradient operator and $\nabla^2$ is the Hessian matrix. The global minimum is the conformation with the lowest energy across all conformational space, while important local minima separated by accessible energy barriers represent alternative conformations accessible at finite temperature.
+
+\subsection{Rotatable Bonds and Dihedral Angles}
+
+Conformational diversity arises primarily from rotation around single bonds. A dihedral angle (or torsion angle) $\phi$ describes the spatial relationship between four atoms: the angle between the planes defined by atoms (1-2-3) and (2-3-4). The dihedral angle potential energy can be approximated by a periodic function:
+
+\begin{equation}
+V_{\text{torsion}}(\phi) = \sum_{n=1}^{3} \frac{V_n}{2} \left[1 + \cos(n\phi - \gamma_n)\right]
+\label{eq:torsion_potential}
+\end{equation}
+
+where $V_n$ are force constants and $\gamma_n$ are phase angles specific to the bond type. This expression shows that rotation about a bond encounters periodic energy minima, typically 3 per 360° rotation (corresponding to staggered conformations in ethane-like systems).
+
+\subsection{Energy-Based Metrics}
+
+Key metrics characterize conformational search results:
+
+\begin{equation}
+\Delta E = E_{\text{conformer}} - E_{\text{global minimum}}
+\label{eq:relative_energy}
+\end{equation}
+
+The relative energy $\Delta E$ expresses each conformation's energy relative to the lowest-energy structure. The Boltzmann population at temperature $T$ predicts the probability of observing a particular conformation:
+
+\begin{equation}
+P_i = \frac{e^{-\Delta E_i / k_B T}}{\sum_j e^{-\Delta E_j / k_B T}}
+\label{eq:boltzmann}
+\end{equation}
+
+where $k_B$ is Boltzmann's constant (1.987 cal·mol$^{-1}$·K$^{-1}$). At 298 K, conformations within 2 kcal/mol of the global minimum constitute $>10\%$ of the population and should be included in conformational ensembles.
+
+The RMSD quantifies geometric similarity between two conformations:
+
+\begin{equation}
+\text{RMSD} = \sqrt{\frac{1}{N} \sum_{i=1}^{N} d_i^2}
+\label{eq:rmsd}
+\end{equation}
+
+where $d_i$ represents the distance between atoms $i$ after optimal superposition. RMSD thresholds (typically 1.0--2.0 \r{A}) filter redundant conformations in search output.
+
+
+
+\section{Conformational search methods}
+One of the most challenging aspect of pose prediction is the conformational search algorithm. In general, there are two main classes of conformational search methods, systematic and stochastic.  The users do not always have a choice to select the search algorithm because the developers usually select based on their expertise and code development. Nevertheless, there are programs, such as AutoDock, that allow users to select the search algorithm. 
 \subsubsection*{Systematic Methods:}
 These methods thoroughly explore all potential conformations exhaustively by systematically changing one or more torsional degrees of freedom. These degrees of freedom arise from the single bonds that can be rotated to attain different atomic orientation with respect to each other (henceforth called as “rotatable bonds”).  We present a brief outline of the methods that fall within the realm of systematic search methods.  
-\begin{itemize}
-    \item \textit{Systematic Search}: The systematic search algorithm\cite{bib14} rotates all possible rotatable bonds (single bonds in the ring structures cannot be rotated as freely as open-chain structures) systematically by a fixed interval to explore all possible conformations. Such a method can explore all possible conformations, however, the complexity increases exponentially as the number of rotatable bonds increases. There are pruning algorithms that act as a “bump check” that rule out torsion angles that lead to significant atomic overlaps. Furthermore, docking algorithms employ the search algorithm within the binding pocket, and hece, more rotations will be pruned out that 
-    may lead to atomic overlaps with receptor atoms. Glide\cite{bib15} and FRED\cite{bib16} are examples of two docking programs that employ this method for conformation search. 
 
-    \item \textit{Incremental Construction}: In this method\cite{bib17}, the molecule is broken down into individual fragments. The fragments are then docked in the most suitable sub-pocket in the binding site. The entire molecule is then sequentially built by adding the linkers. This follows a systematic search for the linker conformation that optimally holds the fragments in their respective sub-pockets. The fragmentation method selects the rigid molecular components, for example ring structures, as fragments, and the flexible components as linkers. In doing so, this method reduces the computational complexity compared to the systematic search by focusing on small components, more particularly the linkers. FlexX\cite{bib19} and DOCK\cite{bib18} are examples of the docking algorithms that employ this method as its conformational search algorithm.
+\begin{itemize}
+    \item \textit{Systematic Search}: The systematic search algorithm rotates all possible rotatable bonds (single bonds in the ring structures cannot be rotated as freely as open-chain structures) systematically by a fixed interval to explore all possible conformations. Such a method can explore all possible conformations, however, the complexity increases exponentially as the number of rotatable bonds increases. There are pruning algorithms that act as a “bump check” that rule out torsion angles that lead to significant atomic overlaps. Furthermore, docking algorithms employ the search algorithm within the binding pocket, and hece, more rotations will be pruned out that 
+    may lead to atomic overlaps with receptor atoms. Glide and FRED are examples of two docking programs that employ this method for conformation search. 
+
+    \item \textit{Incremental Construction}: In this method, the molecule is broken down into individual fragments. The fragments are then docked in the most suitable sub-pocket in the binding site. The entire molecule is then sequentially built by adding the linkers. This follows a systematic search for the linker conformation that optimally holds the fragments in their respective sub-pockets. The fragmentation method selects the rigid molecular components, for example ring structures, as fragments, and the flexible components as linkers. In doing so, this method reduces the computational complexity compared to the systematic search by focusing on small components, more particularly the linkers. FlexX and DOCK are examples of the docking algorithms that employ this method as its conformational search algorithm.
 \end{itemize}
 
 \subsubsection*{Stochastic Methods}
 Stochastic techniques utilize random sampling and probabilistic methods to explore the conformational space. They work by randomly making changes, preferably, to the rotatable bonds and evaluates the energy following the change. Metropolis Monte Carlo, and Genetic algorithm are popular stochastic search methods that are used as conformational search tools in docking programs. 
 
 \begin{itemize}
-    \item \textit{Monte Carlo}: It works on the principle of random sampling for a predetermined number of iterations to locate optimum conformation. The search algorithm starts by making a random changes in any of randomly selected rotatable bond. Following which, it evaluates the energy and compares it with the starting conformation. If the energy of the new state is lower than the previous state, then the conformation is accepted. If the energy of the new state is higher than the previous state, then it assigns a random number between 0 and 1 and evaluates its probability against the Boltzmann distribution; if the random number assigned is greater than the probability, then the new state is accepted otherwise rejected. In case of the rejection, the algorithm restarts from the previous conformations. Glide\cite{bib15} docking program is also known to employ Monte Carlo simulation in its docking algorithm to improve its pose prediction accuracy.
+    \item \textit{Monte Carlo}: It works on the principle of random sampling for a predetermined number of iterations to locate optimum conformation. The search algorithm starts by making a random changes in any of randomly selected rotatable bond. Following which, it evaluates the energy and compares it with the starting conformation. If the energy of the new state is lower than the previous state, then the conformation is accepted. If the energy of the new state is higher than the previous state, then it assigns a random number between 0 and 1 and evaluates its probability against the Boltzmann distribution; if the random number assigned is greater than the probability, then the new state is accepted otherwise rejected. In case of the rejection, the algorithm restarts from the previous conformations. Glide docking program is also known to employ Monte Carlo simulation in its docking algorithm to improve its pose prediction accuracy.
    
-    \item \textit{Genetic Algorithm (GA)}: This method\cite{bib20, bib21} is motivated from the process of natural selection, that evaluates energy or docking score as the fitness criteria for selection and breeding. Akin to natural selection, the conformational degrees of freedom are encoded as binary numbers which represents specify values of the torsion angles. At the beginning, several random mutations are made in the binary numbers (interchanging “0” to “1”) and generating an initial population. The fitness score is evaluated for each member. Following which the top ranked (fittest members) are retained for breeding. To generate future generations, either cross-over is performed or mutations. This process is repeated for a pre-determined number of iterations. Autodock\cite{bib22} and GOLD\cite{bib20} are examples of docking programs that use genetic algorithm as their conformational search tool.
+    \item \textit{Genetic Algorithm (GA)}: This method is motivated from the process of natural selection, that evaluates energy or docking score as the fitness criteria for selection and breeding. Akin to natural selection, the conformational degrees of freedom are encoded as binary numbers which represents specify values of the torsion angles. At the beginning, several random mutations are made in the binary numbers (interchanging “0” to “1”) and generating an initial population. The fitness score is evaluated for each member. Following which the top ranked (fittest members) are retained for breeding. To generate future generations, either cross-over is performed or mutations. This process is repeated for a pre-determined number of iterations. Autodock and GOLD are examples of docking programs that use genetic algorithm as their conformational search tool.
 \end{itemize}   
 
 
 % MD will be entire chapter in itself
 \subsection*{Molecular Dynamics Simulations}
-At this point, it is appropriate to gently introduce another powerful conformational search method, namely \textit{molecular dynamics (MD) simulations}. It simulates the atomic motions as a function of time by solving the Newton's equation of motion\cite{bib24}. 
-MD simulations and molecular docking are complementary\cite{bib25, bib26} that are commonly employed in structure-based drug discovery to understand the protein-ligand interactions and their dynamics aspects. For computational efficiency, molecular docking algorithms treat receptors atoms rigid and the ligand as flexible. This leads to incorrect pose prediction when induced fit binding is observed. Therefore, MD simulation is an elegant method to incorporate such induced fit effects. This can be achieved in two ways, as shown below:
+At this point, it is appropriate to gently introduce another powerful conformational search method, namely \textit{molecular dynamics (MD) simulations}. It simulates the atomic motions as a function of time by solving the Newton's equation of motion. 
+MD simulations and molecular docking are complementary that are commonly employed in structure-based drug discovery to understand the protein-ligand interactions and their dynamics aspects. For computational efficiency, molecular docking algorithms treat receptors atoms rigid and the ligand as flexible. This leads to incorrect pose prediction when induced fit binding is observed. Therefore, MD simulation is an elegant method to incorporate such induced fit effects. This can be achieved in two ways, as shown below:
 \begin{itemize}
 \item Pre-docking step to sample various conformations of the receptor without the influence of the ligand.  This can serve as multiple receptor conformations for docking. 
 \item Post-docking step to refine the docked receptor-ligand conformation by allowing the complex to evolve to their realistic conformation, which would be more probable physiologically.
 \end{itemize}
+
+
+\bibliographystyle{plain}
+\bibliography{conform_search}
+
+\end{document}
