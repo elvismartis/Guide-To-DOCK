@@ -1,0 +1,30 @@
+\contentsline {section}{\numberline {0.1}Molecular Recognition and Binding}{2}{}%
+\contentsline {section}{\numberline {0.2}Historical Background}{3}{}%
+\contentsline {subsection}{\numberline {0.2.1}Early Foundations}{3}{}%
+\contentsline {subsection}{\numberline {0.2.2}The Birth of the Protein Data Bank}{3}{}%
+\contentsline {subsection}{\numberline {0.2.3}Structural biology Revolution}{3}{}%
+\contentsline {subsection}{\numberline {0.2.4}Evolution of molecular docking methods}{4}{}%
+\contentsline {section}{\numberline {0.3}Structure-based drug design}{5}{}%
+\contentsline {subsection}{\numberline {0.3.1}Principles of Structure-Based Drug Design}{5}{}%
+\contentsline {subsection}{\numberline {0.3.2}The SBDD Workflow}{6}{}%
+\contentsline {subsubsection}{\numberline {0.3.2.1}Druggability and Target Selection}{7}{}%
+\contentsline {subsection}{\numberline {0.3.3}Binding Site Identification}{7}{}%
+\contentsline {subsubsection}{\numberline {0.3.3.1}Determination and Preparation of receptor}{7}{}%
+\contentsline {subsubsection}{\numberline {0.3.3.2}Ligand Library Preparation}{7}{}%
+\contentsline {subsubsection}{\numberline {0.3.3.3}Virtual Screening}{8}{}%
+\contentsline {section}{\numberline {0.4}Molecular Docking: Concepts and Methods}{8}{}%
+\contentsline {subsection}{\numberline {0.4.1}Fundamentals of Molecular Docking}{8}{}%
+\contentsline {subsection}{\numberline {0.4.2}Rigid vs. Flexible Docking}{8}{}%
+\contentsline {subsection}{\numberline {0.4.3}Docking Algorithms}{9}{}%
+\contentsline {subsection}{\numberline {0.4.4}Scoring Functions}{9}{}%
+\contentsline {subsubsection}{\numberline {0.4.4.1}Role and Importance}{9}{}%
+\contentsline {section}{\numberline {0.5}Current challenges and limitations of molecular docking}{10}{}%
+\contentsline {subsection}{\numberline {0.5.1}Limited accuracy}{10}{}%
+\contentsline {subsection}{\numberline {0.5.2}Computational Demands}{10}{}%
+\contentsline {subsection}{\numberline {0.5.3}Validation Requirements}{10}{}%
+\contentsline {subsection}{\numberline {0.5.4}Solvation Effects}{11}{}%
+\contentsline {section}{\numberline {0.6}Upcoming improvments}{11}{}%
+\contentsline {subsection}{\numberline {0.6.1}Artificial Intelligence and Machine Learning}{11}{}%
+\contentsline {subsection}{\numberline {0.6.2}Quantum Computing}{11}{}%
+\contentsline {section}{\numberline {0.7}Summary}{12}{}%
+\contentsline {chapter}{Glossary}{13}{}%

@@ -1,12 +1,14 @@
-\documentclass[12pt]{article}
+\documentclass[12pt, a4paper]{article}
 \usepackage{graphicx}
-\usepackage[a4paper,margin=1in]{geometry}
+%\usepackage[a4paper,margin=1in]{geometry}
 \usepackage{hyperref}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{natbib} 
 \usepackage{siunitx}
+
 \title{Conformations Search methods for molecular docking}
+\author{Elvis Martis}
 \begin{document}
 \maketitle
 
@@ -92,7 +94,7 @@ N_{\text{conformations}} = 36^n
   
 
 \subsubsection{The Z method}
-    The Z method\cite{CH2_3} is a variant of grid-based conformational search protocols that employs statistical information on the rotamers. It partitions the conformational space into subspaces and then applies repeated, uniform changes to a common starting structure, generating large ensembles of trial conformations in parallel. This approach allows rigid systematic searches in high dimensional spaces by combining grid‑based sampling with statistical information from rotamer libraries. The Z Method can also be used hierarchically: low resolution searches identify approximate regions of interest, which are then refined with finer grids or energy minimization protocols. The key advantage is the ability to couple systematic search with probabilistic rotamer preferences, improving the sampling efficiency while preserving the exhaustiveness of the underlying grid. However, to the best of our knowlegde, this method has only been applied protein stucture refinement as we did not find any literature references indicating its use as conformational search tool for small molecules or in molecular docking.
+    The Z method\cite{CH2_3} is a variant of grid-based conformational search protocols that employs statistical information on the rotamers. It partitions the conformational space into subspaces and then applies repeated, uniform changes to a common starting structure, generating large ensembles of trial conformations in parallel. This approach allows rigid systematic searches in high dimensional spaces by combining grid‑based sampling with statistical information from rotamer libraries. The Z Method can also be used hierarchically: low resolution searches identify approximate regions of interest, which are then refined with finer grids or energy minimization protocols. The key advantage is the ability to couple systematic search with probabilistic rotamer preferences, improving the sampling efficiency while preserving the exhaustiveness of the underlying grid. However, to the best of our knowlegde, this method has only been applied protein stucture refinement. We did not find any literature references indicating its use as conformational search tool for small molecules or in molecular docking. 
 
 \subsection{Fragmentation method}
 
@@ -114,6 +116,7 @@ This method is motivated from the process of natural selection, that evaluates e
 
 % MD will be entire chapter in itself
 \subsection{Molecular Dynamics Simulations}
+
 At this point, it is appropriate to gently introduce another powerful conformational search method, namely \textit{molecular dynamics (MD) simulations}. It simulates the atomic motions as a function of time by solving the Newton's equation of motion. 
 MD simulations and molecular docking are complementary that are commonly employed in structure-based drug discovery to understand the protein-ligand interactions and their dynamics aspects. For computational efficiency, molecular docking algorithms treat receptors atoms rigid and the ligand as flexible. This leads to incorrect pose prediction when induced fit binding is observed. Therefore, MD simulation is an elegant method to incorporate such induced fit effects. This can be achieved in two ways, as shown below:
 \begin{itemize}
@@ -125,19 +128,43 @@ MD simulations and molecular docking are complementary that are commonly employe
 
 Simulated annealing (SA) is a powerful stochastic optimization technique widely used in conformational search for molecular docking, where the goal is to locate low‑energy ligand and protein conformations compatible with experimental binding modes. In SA, the system is first “heated” to a high virtual temperature, allowing large, energetically unfavorable moves that overcome local minima, and then gradually cooled so that the trajectory converges toward deep basins of the potential energy landscape. This mapping of thermodynamic annealing onto conformational space makes SA particularly suited to global‑optimization problems such as flexible‑ligand docking, where the search space is rugged and high‑dimensional.
 
+\begin{enumerate}
+\item \textit{Heating phase}: Starting from an initial conformation, the system is rapidly heated to high temperature (typically 800--1000 K), providing energy to overcome conformational barriers.
+\item \textit{Annealing phase}: Temperature is gradually reduced according to a cooling schedule, allowing the system to explore broader conformational space while progressively favoring lower-energy structures.
+\item \textit{Minimization phase}: At low temperature (50--100 K), geometry optimization drives the system to a nearby local minimum.
+\end{enumerate}
+
+The SA protocol may be repeated 100+ times from different initial conformations, generating diverse low-energy structures. Effectiveness depends critically on cooling rate: too rapid cooling traps the system in local minima; too slow cooling demands excessive computation.
+
+\subsection{Distance Geometry Methods}
+
 
 \subsection{Hybrid systematic–stochastic schemes}
 
 
-\section{Practical Consideration}
+\section{Practical Considerations}
 
 \subsection{Handling Ring Systems}
 
-Acyclic molecules with many rotatable bonds dominate conformational search applications. Ring systems pose special challenges: ring conformations (chair, twist, boat forms for cyclohexane; envelope conformations for five-membered rings) must be explicitly sampled. Most tools handle six-membered rings well; smaller rings and fused ring systems require careful validation. Tools like OMEGA incorporate ring conformation templates; ETKDG uses ring distance constraints; simple tools may generate non-standard ring geometries.
+Acyclic molecules with many rotatable bonds dominate conformational search applications. Ring systems pose special challenges: ring conformations (chair, twist, boat forms for cyclohexane; envelope conformations for five-membered rings) must be explicitly sampled. Most tools handle six-membered rings well; smaller rings and fused ring systems require careful validation. 
 
-\subsection{Solvation and Implicit Models}
+\subsection{Accounting for solvation effects}
 
-Bioactive conformations depend on the solvent environment. Implicit solvation models (Generalized Born, Poisson-Boltzmann) add solvation energy terms, affecting the conformational landscape relative to gas-phase calculations. Tools like CREST incorporate implicit GBSA solvation, while many others require external solvent corrections. For drug discovery applications, searching in implicit aqueous solvent typically improves recovery of bioactive conformations.
+Bioactive conformations depend on the solvent environment. Implicit solvation models (Generalized Born, Poisson-Boltzmann) add solvation energy terms, affecting the conformational landscape relative to gas-phase calculations. 
+
+\subsection{Clustering of Results}
+
+Why we need clustering? and how does this ensure use diverse conformations for next step.
+
+RMSD:
+
+\[
+\text{RMSD} = \sqrt{\frac{1}{N} \sum_i |\mathbf{r}_i - \mathbf{r}_i'|^2}
+\]
+
+Clusters identify recurring poses.
+
+
 
 \subsection{Validation Metrics}
 
@@ -150,6 +177,13 @@ Conformational search quality is evaluated by:
 
 \item \textbf{Computational Efficiency}: Wall-clock time and peak memory usage relative to molecular size determine practical viability. For drug discovery pipelines screening millions of compounds, efficiency is paramount.
 \end{enumerate}
+
+
+
+
+\section{Summary}
+Conformational search is the computational engine that enables docking. Understanding both the physics of the scoring function and the algorithms used to explore conformational space is essential for reliable predictions. Hybrid strategies that combine stochastic global exploration with local refinement currently offer the best trade-off between efficiency and accuracy.
+
 
 
 
