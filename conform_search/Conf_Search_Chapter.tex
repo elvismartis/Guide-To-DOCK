@@ -98,7 +98,7 @@ This method guarantees finding the global minimum but becomes computationally pr
 
 More sophisticated systematic approaches employ chemical knowledge to define likely torsion angles. The OMEGA algorithm (Schroedinger) uses experimentally derived torsion preferences: rather than evaluating every 10° increment, it examines only angles where energy minima are statistically probable. This reduces the search space by orders of magnitude while maintaining high reliability of finding low-energy conformations.
 
-Rotamer libraries, derived from crystallographic databases such as the Cambridge Structural Database (CSD) or Protein Data Bank (PDB), encode preferred torsion angles for specific chemical environments. A knowledge-based approach enumerates combinations of rotameric states, with each rotation defined by its most probable dihedral angle(s). The BCL::Conf algorithm exemplifies this strategy: fragments are matched to a library, appropriate rotamers selected, and all rotamer combinations sampled via \MC.
+Rotamer libraries, derived from crystallographic databases such as the Cambridge Structural Database (CSD) or Protein Data Bank (PDB), encode preferred torsion angles for specific chemical environments. A knowledge-based approach enumerates combinations of rotameric states, with each rotation defined by its most probable dihedral angle(s). The BCL::Conf algorithm exemplifies this strategy: fragments are matched to a library, appropriate rotamers selected, and all rotamer combinations sampled via
 
 \subsection{Stochastic Search Methods}
 
