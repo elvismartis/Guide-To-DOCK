@@ -1,17 +1,25 @@
-\documentclass[11pt]{article}
-\usepackage{biblatex}
+\documentclass[12pt, a4paper]{article}
+\usepackage{graphicx}
+%\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{hyperref}
 \usepackage{amsmath}
-\addbibresource{Molecular_Docking_Methods_and_Programs.bib}
+\usepackage{amssymb}
+\usepackage{natbib} 
+\usepackage{siunitx}
+
+\title{Molecular Docking Programs}
+\author{Elvis Martis}
 \begin{document}
+\maketitle
 %\chapter*{Molecular Docking Methods and Programs}
-\section*{Introduction}
+\section{Introduction}
 As structure-based drug design developed into a mature science, molecular docking got better with every step. The method depends on how well the conformational search algorithm can find the bioactive conformation(s). However, the search algorithm by itself does not know what a bioactive conformation(s) looks like. By definition, bioactive conformation is the atomic arrangement of a molecule that is suitable for binding to its respective target. It either inhibits/antagonises or activates it. There is always a possibility that one ligand may modulate more than one target, in this case, the bioactive conformation may be different. However, the bioactive conformation is always one of the plausible low-energy states, not necessarily the global minimum. 
 
-Now that we have established that there are several possible bioactive conformations for a ligand depending upon its binding target, the conformational search algorithm alone is unable to identify it, but it can find it. The scoring function is responsible for scoring and ranking the conformations from the search algorithm. The chapter on scoring functions ((\textbf{see chapter \ref{Scoring_Functions_in_Molecular_Docking}})) will treat this part in depth. Remember that the conformational search tool searches for the bioactive conformation within the receptor binding site; therefore, many low-energy conformations that are observed in the gas phase or solvent may not be sampled due to clashes with the receptor atoms. This is one of the ways by which docking programs implement a preliminary "bump-check" that can filter out conformations that show clashes with the receptor atoms. This way, more intense calculations are performed on fewer conformations. This improves the speed of docking. 
+Now that we have established that there are several possible bioactive conformations for a ligand depending upon its binding target, the conformational search algorithm alone is unable to identify it, but it can find it. The scoring function is responsible for scoring and ranking the conformations from the search algorithm. The chapter on scoring functions will treat this part in depth. Remember that the conformational search tool searches for the bioactive conformation within the receptor binding site; therefore, many low-energy conformations that are observed in the gas phase or solvent may not be sampled due to clashes with the receptor atoms. This is one of the ways by which docking programs implement a preliminary "bump-check" that can filter out conformations that show clashes with the receptor atoms. This way, more intense calculations are performed on fewer conformations. This improves the speed of docking. 
 
 With significant improvements in computing power, and easy of computing led to development of several molecular docking programs. Understandably, it is impossible to track and understand every bit of the development. Therefore, to assist, particularly, the beginners, this chapter will describe few popular molecular docking programs. Care has been taken to include bother commercially licensed programs and open-source programs. 
 
-There are a plethora of docking programs available (\textbf{Table \ref{tab:List}}), some with commercial licenses and others with open-source licenses. Knowing every program to make a choice that best suits you is almost always impossible. However, this is also not necessary as there exists ample literature reporting the use of many of the tools. Irrespective of the choice of the docking program, the general steps will be same; for example, preparation of the receptor (\textbf{see chapter \ref{receptors}}), defining the binding site as search space(\textbf{see chapter \ref{binding_sites}}), preparation of ligands (\textbf{see chapter \ref{ligprep}}), specifying the docking parameters, validating the docking procedure, performing the docking calculations, and analysis and dissemination of the results.  In a nutshell, the general principles remain unchanged; however, there are differences in ligand format, docking methods, and scoring algorithms that are well-documented in the user manual. We strongly recommend that, before using any docking algorithm, the user manual must be consulted to understand each parameter's importance. The developers present their report on several validation studies as part of the software development, which is a great resource to understand the effect of each parameter on the outcome. A literature survey of the program's usage will also be covered in the user manual. 
+There are a plethora of docking programs available (\textbf{Table \ref{tab:List}}), some with commercial licenses and others with open-source licenses. Knowing every program to make a choice that best suits you is almost always impossible. However, this is also not necessary as there exists ample literature reporting the use of many of the tools. Irrespective of the choice of the docking program, the general steps will be same; for example, preparation of the receptor, defining the binding site as search space, preparation of ligands, specifying the docking parameters, validating the docking procedure, performing the docking calculations, and analysis and dissemination of the results.  In a nutshell, the general principles remain unchanged; however, there are differences in ligand format, docking methods, and scoring algorithms that are well-documented in the user manual. We strongly recommend that, before using any docking algorithm, the user manual must be consulted to understand each parameter's importance. The developers present their report on several validation studies as part of the software development, which is a great resource to understand the effect of each parameter on the outcome. A literature survey of the program's usage will also be covered in the user manual. 
 
 
 \begin{table}[ht]
@@ -35,13 +43,14 @@ There are a plethora of docking programs available (\textbf{Table \ref{tab:List}
 \end{table}
 
 
-\section*{Molecular Docking Programs:}
+\section{Molecular Docking Programs:}
 The following sections will describe the working of the commonly available docking program (See Table \ref{tab:List})
 
-\subsection*{DOCK}
-The DOCK program is considered the first tool developed for molecular docking in 1982\cite{bib71}. It was developed by the University of California, San Francisco (UCSF) in the group of Irwin Kuntz. It aims to predict the most favourable binding configurations of small molecules (ligands) within the active sites of macromolecular targets, such as proteins. This computational resource simulates molecular interactions to identify low-energy binding poses, making it an essential asset for drug discovery and structure-based design initiatives. Created to tackle rigid-body docking, DOCK utilises a geometric matching algorithm that aligns the ligand with a negative representation of the receptor's binding pocket. Over the years, its functionality has evolved to incorporate features such as force-field-based scoring, real-time optimisation, and algorithms for flexible ligand docking\cite{bib18}. The program employs scoring functions to assess and rank potential binding poses according to their predicted binding affinities. It accommodates various input file formats, including PDB, MOL2, and SDF, and is extensively utilised for virtual screening and lead optimisation in drug development. DOCK continues to be a fundamental tool in computational chemistry, renowned for its efficiency in exploring molecular interactions and its ability to adapt to new advancements in docking techniques.
+\subsection{DOCK}
+The DOCK program is considered the first tool developed for molecular docking in 1982. It was developed by the University of California, San Francisco (UCSF) in the group of Irwin Kuntz. It aims to predict the most favourable binding configurations of small molecules (ligands) within the active sites of macromolecular targets, such as proteins. This computational resource simulates molecular interactions to identify low-energy binding poses, making it an essential asset for drug discovery and structure-based design initiatives. Created to tackle rigid-body docking, DOCK utilises a geometric matching algorithm that aligns the ligand with a negative representation of the receptor's binding pocket. Over the years, its functionality has evolved to incorporate features such as force-field-based scoring, real-time optimisation, and algorithms for flexible ligand docking. The program employs scoring functions to assess and rank potential binding poses according to their predicted binding affinities. It accommodates various input file formats, including PDB, MOL2, and SDF, and is extensively utilised for virtual screening and lead optimisation in drug development. DOCK continues to be a fundamental tool in computational chemistry, renowned for its efficiency in exploring molecular interactions and its ability to adapt to new advancements in docking techniques.
 
-\subsubsection*{Methodology:} The docking method described in the sources involves a geometric approach to explore feasible alignments of ligands and receptors of known structure. We describe the process as shown in the original publication\cite{bib71} as follows:
+\subsubsection{Methodology} 
+The docking method described in the sources involves a geometric approach to explore feasible alignments of ligands and receptors of known structure. We describe the process as shown in the original publication as follows:
 
 \begin{enumerate}
     \item \textit{Representation}: The receptor and ligand structures are represented using spheres to fill pockets and grooves on the receptor's surface and the space occupied by the ligand. These spheres are generated based on the molecular surface, which is defined using a probe sphere to determine contact and re-entrant points. The spheres are constructed such that each sphere touches the molecular surface at two points and has its center on the surface normal. The number of spheres is reduced by keeping only the smallest radius spheres, filtering based on the angle formed by the two surface points and the sphere centre, and by only retaining one sphere per atom. Receptor spheres are grouped into potential binding sites based on whether they overlap.
@@ -52,28 +61,29 @@ The DOCK program is considered the first tool developed for molecular docking in
    
 \end{enumerate}
 
-\subsubsection*{scoring:}
+\subsubsection{scoring:}
 The output is a set of ligand conformations/poses with scores based on the degree of overlap. Geometrically similar structures are grouped. The method employs a simplified interaction function that accounts for hard-sphere repulsions and hydrogen bonding. It is important to note that this method assumes rigid molecules and requires prior knowledge of the two structures to atomic detail. The calculated structures are intended as starting points for further refinement using molecular mechanics or interactive computer graphics. The approach also has independent applications, such as the location of binding sites and the design of new ligands.
 
-\subsection*{GLIDE}
-One of the most popular methods for docking is Glide, which stands for \textbf{G}rid-based \textbf{L}igand \textbf{D}ocking with \textbf{E}nergetics. This tool was developed by Schrödinger Inc. led by Prof. Richard Frienser and David Shaw from Columbia University and D. E. Shaw Research and Development, respectively \cite{glide001}.
+\subsection{GLIDE}
+One of the most popular methods for docking is Glide, which stands for \textbf{G}rid-based \textbf{L}igand \textbf{D}ocking with \textbf{E}nergetics. This tool was developed by Schrödinger Inc. led by Prof. Richard Frienser and David Shaw from Columbia University and D. E. Shaw Research and Development, respectively\cite{CH9_1}.
 
 Glide employs a systematic, hierarchical approach to ligand conformational filtering and pose selection, designed to efficiently explore the ligand's conformational space and its potential interactions within the receptor's active site while maintaining computational speed. This methodology involves a series of filters that progressively narrow the search space.
-\subsubsection*{How does GLIDE search for ligand conformations?}
+
+\subsubsection{How does GLIDE search for ligand conformations?}
 
 The detailed description of each step in the GLIDE docking method is given below:
 \begin{enumerate}
-    \item Receptor Pre-computation and Grid Generation: The protein receptor's shape and properties are precomputed and represented on grids, using different sets of fields for progressively more accurate scoring. A multigrid strategy is used, with finer resolution (down to 0.4 Å) closer to the protein's van der Waals surface, to ensure accuracy where ligand and protein contact. This pre-processing step creates an efficient and accurate representation of the rigid receptor environment, allowing rapid energy and gradient evaluations during subsequent ligand interaction calculations. The varying grid resolution optimises computational cost while maintaining precision in critical binding regions.
+    \item Receptor Pre-computation and Grid Generation: The protein receptor's shape and properties are precomputed and represented on grids, using different sets of fields for progressively more accurate scoring. A multigrid strategy is used, with finer resolution (down to 0.4 \r{A}) closer to the protein's van der Waals surface, to ensure accuracy where ligand and protein contact. This pre-processing step creates an efficient and accurate representation of the rigid receptor environment, allowing rapid energy and gradient evaluations during subsequent ligand interaction calculations. The varying grid resolution optimises computational cost while maintaining precision in critical binding regions.
 
     \item Ligand Conformation Generation: Glide first performs an exhaustive conformational search in the ligand's torsion-angle space to generate initial conformations. A heuristic screen rapidly eliminates high-energy conformers by evaluating torsional energy using a truncated OPLS-AA potential and applying an energy cut-off. Ligands are conceptually divided into a rigid "core" region and flexible "rotamer groups" attached by rotatable bonds. Each core conformation is enumerated, and then combined with all possible rotamer states, allowing thousands of effective conformations to be considered. This step aims for a comprehensive sampling of ligand flexibility, ensuring that relevant bioactive conformations are likely to be generated. The core/rotamer model and heuristic screening make the exhaustive search computationally feasible for even large and flexible ligands. 
 
      \item Initial Screening of Ligand Poses: For each generated ligand conformation, an exhaustive search of possible positions and orientations is performed within the active site. This multi-stage process includes: 
      \begin{enumerate}
-     \item Site Point Selection: Placing the ligand centre at "site points" on a 2{\AA} grid if there's a good match between ligand and receptor surface distances.
+     \item Site Point Selection: Placing the ligand centre at "site points" on a 2 \r{A} grid if there's a good match between ligand and receptor surface distances.
      \item Orientation Screening: Testing pre-specified orientations of the "ligand diameter" and rejecting those with excessive steric clashes.
      \item Subset Scoring: Scoring only atoms capable of forming hydrogen bonds or metal interactions (a "subset test").
      \item Full Interaction Scoring: Scoring all ligand-receptor interactions for promising orientations.
-     \item These tests use a discretised ChemScore version, rapidly identifying favourable hydrophobic, hydrogen-bonding, and metal-ligation interactions while penalising clashes. Approximately 5000 top greedy-scoring poses are then subjected to a rigid refinement allowing 1{\AA} Cartesian movement.
+     \item These tests use a discretised ChemScore version, rapidly identifying favourable hydrophobic, hydrogen-bonding, and metal-ligation interactions while penalising clashes. Approximately 5000 top greedy-scoring poses are then subjected to a rigid refinement allowing 1 \r{A} Cartesian movement.
     \end{enumerate}
     This is a rapid pre-screening stage that drastically reduces the conformational and positional search space. By using a fast, approximate scoring function ("greedy scoring"), it efficiently filters out unlikely poses, making more computationally intensive subsequent steps feasible. The exhaustive nature aims to avoid missing key regions of phase space.
     
@@ -85,7 +95,7 @@ The detailed description of each step in the GLIDE docking method is given below
 
 \end{enumerate}
 
-\subsubsection*{How does GLIDE Score the docked conformations?}
+\subsubsection{How does GLIDE Score the docked conformations?}
 Glide employs several scoring functions, primarily GlideScore (with Standard Precision (SP) and Extra Precision (XP) versions) and Emodel, a composite score used for final pose selection. These functions integrate various physical and empirical terms to evaluate ligand binding affinity and rank poses.
 The general form of the GlideScore 2.5 SP function is given as:
 \begin{equation} \label{eq:GLIDEscore}
@@ -138,7 +148,7 @@ Here are the key components of Glide's scoring functions:
 \end{enumerate}
 
 
-\subsection*{AUTODOCK}
+\subsection{AUTODOCK}
 Autodock or commonly known as AD4, offers an easy-to-set-up and run kind of environment for molecular docking experiments. Therefore, this becomes an easy tool for beginners wanting to learn molecular docking. The developers also separately provide all the tools/scripts, known as "MGLTools", necessary to set up chemical systems for molecular docking. It is, therefore, an automated computational procedure primarily designed to predict the bound conformations of small, flexible ligands to macromolecular targets of known structure. Being an open-source tool with source code available, various groups have expanded the functionality of AD4 to improve docking accuracy for specific and challenging problems. 
 % Here talk about 
     % hydrated docking
@@ -188,14 +198,14 @@ In essence, AutoDock searches for ligand conformations by performing numerous it
 \end{enumerate}
 The detailed scoring function that Autodock uses to score and rank the docking poses.
 AutoDock is designed to predict the bound conformations of small, flexible ligands to macromolecular targets of known structure. Its core operation balances computational feasibility with a robust and physically relevant procedure. This involves efficient conformation searching coupled with rapid energy evaluation.
-AutoDock scores ligands after conformational search primarily using a semi-empirical free energy force field. This force field is designed to estimate the free energy of binding ($\Delta G$) of small molecules to macromolecular targets.
+AutoDock scores ligands after conformational search primarily using a semi-empirical free energy force field. This force field is designed to estimate the free energy of binding ($\Delta$G) of small molecules to macromolecular targets.
 \begin{enumerate}
 \item Grid-Based Energy Evaluation (AutoGrid): Before the actual docking simulation, a separate program called AutoGrid pre-calculates three-dimensional "affinity grids". The target protein is embedded in this grid. A probe atom is sequentially placed at each grid point, and its interaction energy with the protein is calculated and stored at that point. Separate grids are generated for each type of atom present in the ligand (e.g., carbon, oxygen, nitrogen, hydrogen). Additionally, separate grids for electrostatic potential and desolvation potential are calculated. During the docking simulation, these grids act as rapid look-up tables. For each ligand atom, its interaction energy with the protein is determined by trilinear interpolation of the affinity values from the eight surrounding grid points. This makes the energy calculation very fast, as it's proportional only to the number of atoms in the ligand, not the protein. The calculation of these grids can incorporate various levels of sophistication, from constant dielectrics to finite difference methods.
 \item Force Field Components:
     ◦ The force field used by AutoDock is adapted from AMBER parameters. It accounts for various types of interactions:
     \begin{enumerate}
         \item Dispersion/Repulsion: Modeled with a Lennard-Jones 12-6 potential.
-        \item Hydrogen Bonding: Treated with a directional 12-10 potential. The parameters are assigned to yield a maximum well depth of -5 kcal/mol at 1.9{\AA} for hydrogen bonds with oxygen and nitrogen, and -1 kcal/mol at 2.5{\AA} for those with sulfur. A function E(t) provides directionality based on the angle (t) from ideal hydrogen-bonding geometry.
+        \item Hydrogen Bonding: Treated with a directional 12-10 potential. The parameters are assigned to yield a maximum well depth of -5 kcal/mol at 1.9 \r{A} for hydrogen bonds with oxygen and nitrogen, and -1 kcal/mol at 2.5 \r{A} for those with sulfur. A function E(t) provides directionality based on the angle (t) from ideal hydrogen-bonding geometry.
         \item Electrostatics: Evaluated using a screened Coulomb potential. Earlier versions also used a constant dielectric of 40.
         \item Desolvation: Based on the volume of atoms that surround a given atom and shield it from solvent, weighted by a solvation parameter and an exponential term with a distance-weighting factor. The desolvation model in AutoDock 4.2 is parameterized for all supported atom types, not just carbon.
     \end{enumerate}
@@ -204,7 +214,7 @@ AutoDock scores ligands after conformational search primarily using a semi-empir
 \end{enumerate}
 The Scoring Function Equation
 AutoDock 4.2 uses a force field that evaluates binding in two steps: first, estimating the intramolecular energetics for the transition from the unbound states of the ligand and protein to their bound conformations, and second, evaluating the intermolecular energetics of combining them in their bound conformations.
-The general equation for the binding free energy ($\Delta G$) is given as:
+The general equation for the binding free energy ($\Delta$G) is given as:
 \begin{equation} \label{eq:AUTODOCKscore-1}
 \begin{split}
    \ \Delta \text{G} = \\ 
@@ -238,46 +248,61 @@ The specific formulation of these pairwise terms is given as:
 Where:
 \begin{enumerate}
     \item $W_{vdw}$, $W_{hbond}$, $W_{elec}$, $W_{sol}$ are the weighting constants determined through linear regression analysis. For example, in one model, dispersion/repulsion energies were weighted by 0.1485, electrostatics by 0.1146, and the desolvation term by 0.1711.
+
     \item The first term is a Lennard-Jones 12-6 potential for dispersion/repulsion, where $A_{ij}$ and $B_{ij}$ are parameters, and $r_{ij}$ is the distance between atoms $i$ and $j$.
     \item The second term is a directional 12-10 hydrogen bond potential, where $C_{ij}$ and $D_{ij}$ are parameters, and $E(t)$ provides directionality based on the angle $t$ from ideal H-bonding geometry.
     \item The third term is a screened Coulomb potential for electrostatics, where $q_i$ and $q_j$ are partial charges, and $\epsilon(r_{ij})$ is a distance-dependent dielectric function.
-    \item The final term is a desolvation potential based on the volume of atoms ($V$) that surround a given atom, weighted by a solvation parameter ($S$) and an exponential term with a distance-weighting factor $\sigma = 3.5${\AA}. The summation for this term in certain models, like Model C, is performed only over carbon atoms in the ligand.
+    \item The final term is a desolvation potential based on the volume of atoms ($V$) that surround a given atom, weighted by a solvation parameter ($S$) and an exponential term with a distance-weighting factor $\sigma = 3.5$ \r{A}. The summation for this term in certain models, like Model C, is performed only over carbon atoms in the ligand.
 \end{enumerate}
 Additionally, the torsional free energy ($\Delta \text{G}_{\text{tor}}$) is included as a separate term, typically proportional to the number of rotatable bonds ($\text{N}_{\text{tor}}$) in the ligand, with a coefficient determined during calibration (e.g., 0.3113 kcal/mol per torsion). The full set of empirically determined coefficients for these terms was derived using linear regression against known binding constants from a set of protein-ligand complexes.
 After the conformational search, AutoDock performs a cluster analysis on the lowest energy docked structures found from multiple simulation runs. These clusters are then ranked by increasing energy. The software reports the fitness (docked energy), state variables, and coordinates of the docked conformation, along with the estimated free energy of binding ($\Delta\text{G}_{\text{pred}}$)
 
 
-\subsection*{AUTODOCK-VINA}
+\subsection{AUTODOCK-VINA}
 AutoDock Vina (Vina) employs a sophisticated method to sample ligand conformations, primarily through an efficient optimization algorithm that explores the ligand's positional, orientational, and torsional flexibility.
 Here's a breakdown of how AutoDock Vina samples ligand conformations:
-• Optimization Algorithm: Iterated Local Search (ILS)
-    ◦ Vina utilizes an Iterated Local Search global optimizer, which is similar to an Iterated Monte-Carlo (MC) search algorithm. This was chosen after exploring various stochastic global optimization approaches like genetic algorithms, particle swarm optimization, and simulated annealing.
-    ◦ The algorithm performs a succession of steps, each consisting of a mutation and a local optimization, with each step accepted according to the Metropolis criterion. This iterative process allows it to escape local minima and explore the conformational space more effectively.
-    ◦ Multiple runs are performed, starting from random conformations. These runs can be executed concurrently using multithreading on multicore CPUs, leveraging shared-memory hardware parallelism to speed up the process. The algorithm maintains a set of diverse significant minima found during these separate runs, which are then combined during the structure refinement and clustering stage. The number of steps in a run is determined adaptively based on the apparent complexity of the problem.
-• Local Optimization: BFGS Method with Gradients
-    ◦ For the local optimization steps within the Iterated Local Search, Vina uses the Broyden-Fletcher-Goldfarb-Shanno (BFGS) method. This is an efficient quasi-Newton method.
-    ◦ Crucially, BFGS uses not only the value of the scoring function but also its gradient. The gradient provides the derivatives of the scoring function for its arguments.
-    ◦ These arguments include the position and orientation of the ligand, as well as the values of the torsions for the active rotatable bonds in the ligand (and flexible residues, if any).
-    ◦ While evaluating the gradient in addition to the scoring function's value might take longer, using the gradient can significantly speed up the optimization process by giving the algorithm a "sense of direction".
-• Ligand Flexibility
-    ◦ Docking generally assumes that the receptor is rigid, while a chosen set of covalent bonds in the ligand are considered freely rotatable (referred to as active rotatable bonds). Vina can handle ligands with a varying number of active rotatable bonds, from 0 to 32, as demonstrated in tests. The number of heavy atoms and active rotatable bonds can influence the time taken for a Vina run.
-• Scoring Function and Conformation Ranking
-    ◦ The optimization algorithm aims to find the global minimum of the scoring function's conformation-dependent part and other low-scoring conformations, which it then ranks. The scoring function itself, while not directly sampling conformations, guides the optimization process to identify favorable binding poses.
-• Handling Search Space and Initial Conformations
-    ◦ Vina requires a user-defined "search space" in the receptor's coordinate system. For testing purposes, this space is typically expanded around the experimental ligand structure.
-    ◦ To prevent artificial help from a biased program, the initial ligand conformation (position, orientation, and torsions) is randomized to be unrelated to the experimental structure, while also avoiding self-clashes.
-• New Features in Vina 1.2.0 Enhancing Sampling
-    ◦ Macrocycle Conformational Sampling: Vina 1.2.0 introduced a specialized protocol for docking macrocycles, which are challenging due to correlated torsional changes. This method involves breaking one bond in the ring structure, using dummy atoms, and applying a linear potential to restore the bond. This allows independent exploration of torsional degrees of freedom and sampling of macrocycle conformations while adapting to the binding pocket, although at the cost of increased search complexity.
-    ◦ Control over Evaluations: Users can now specify the number of energy evaluations to be performed using the " $--\text{max}\_\text{evals}$ " option, providing more control over the search algorithm, particularly for complex searches (e.g., more flexible ligands or larger binding sites).
+\begin{enumerate}
+\item Optimization Algorithm: Iterated Local Search (ILS)
+    \begin{enumerate}
+    \item Vina utilizes an Iterated Local Search global optimizer, which is similar to an Iterated Monte-Carlo (MC) search algorithm. This was chosen after exploring various stochastic global optimization approaches like genetic algorithms, particle swarm optimization, and simulated annealing.
+    \item The algorithm performs a succession of steps, each consisting of a mutation and a local optimization, with each step accepted according to the Metropolis criterion. This iterative process allows it to escape local minima and explore the conformational space more effectively.
+    \item Multiple runs are performed, starting from random conformations. These runs can be executed concurrently using multithreading on multicore CPUs, leveraging shared-memory hardware parallelism to speed up the process. The algorithm maintains a set of diverse significant minima found during these separate runs, which are then combined during the structure refinement and clustering stage. The number of steps in a run is determined adaptively based on the apparent complexity of the problem.
+    \end{enumerate}
+\item Local Optimization: BFGS Method with Gradients
+    \begin{enumerate}
+    \item For the local optimization steps within the Iterated Local Search, Vina uses the Broyden-Fletcher-Goldfarb-Shanno (BFGS) method. This is an efficient quasi-Newton method.
+    \item Crucially, BFGS uses not only the value of the scoring function but also its gradient. The gradient provides the derivatives of the scoring function for its arguments.
+    \item These arguments include the position and orientation of the ligand, as well as the values of the torsions for the active rotatable bonds in the ligand (and flexible residues, if any).
+    \item While evaluating the gradient in addition to the scoring function's value might take longer, using the gradient can significantly speed up the optimization process by giving the algorithm a "sense of direction".
+    \end{enumerate}
+\item Ligand Flexibility
+    Docking generally assumes that the receptor is rigid, while a chosen set of covalent bonds in the ligand are considered freely rotatable (referred to as active rotatable bonds). Vina can handle ligands with a varying number of active rotatable bonds, from 0 to 32, as demonstrated in tests. The number of heavy atoms and active rotatable bonds can influence the time taken for a Vina run.
+\item Scoring Function and Conformation Ranking
+    The optimization algorithm aims to find the global minimum of the scoring function's conformation-dependent part and other low-scoring conformations, which it then ranks. The scoring function itself, while not directly sampling conformations, guides the optimization process to identify favorable binding poses.
+\item Handling Search Space and Initial Conformations
+    \begin{enumerate}
+    \item Vina requires a user-defined "search space" in the receptor's coordinate system. For testing purposes, this space is typically expanded around the experimental ligand structure.
+    \item To prevent artificial help from a biased program, the initial ligand conformation (position, orientation, and torsions) is randomized to be unrelated to the experimental structure, while also avoiding self-clashes.
+    \end{enumerate}
+\item New Features in Vina 1.2.0 Enhancing Sampling
+    \begin{enumerate}
+    \item Macrocycle Conformational Sampling: Vina 1.2.0 introduced a specialized protocol for docking macrocycles, which are challenging due to correlated torsional changes. This method involves breaking one bond in the ring structure, using dummy atoms, and applying a linear potential to restore the bond. This allows independent exploration of torsional degrees of freedom and sampling of macrocycle conformations while adapting to the binding pocket, although at the cost of increased search complexity.
+    \item Control over Evaluations: Users can now specify the number of energy evaluations to be performed using the " $--\text{max}\_\text{evals}$ " option, providing more control over the search algorithm, particularly for complex searches (e.g., more flexible ligands or larger binding sites).
+    \end{enumerate}
+\end{enumerate}
+
 In summary, AutoDock Vina samples ligand conformations through an efficient Iterated Local Search, guided by a gradient-based BFGS local optimizer, which intelligently explores the ligand's translational, rotational, and torsional degrees of freedom. Recent updates further enhance its ability to handle complex flexibilities like those found in macrocycles.
 
 Molecular docking, including the method used by AutoDock Vina, generally operates under the assumption that much or all of the receptor is rigid. This approach represents a trade-off where representational detail is reduced in favor of computational speed.
 Here's how AutoDock Vina treats receptor flexibility:
-• Rigid Receptor Assumption: The foundational principle for Vina, as with many docking programs, is that the receptor structure remains constant during the docking process. For example, in tests evaluating Vina's performance, the receptors were consistently treated as rigid, while ligands were allowed to be flexible.
-• Gradient-Based Optimization: While the primary focus of Vina's Broyden-Fletcher-Goldfarb-Shanno (BFGS) optimization method is on the ligand's position, orientation, and torsions, its arguments can also include the values of torsions for "flexible residues, if any". This indicates that Vina has a built-in capacity to account for some limited receptor flexibility (specifically, flexible residues) within its optimization algorithm, although it's not the default or primary mode of operation. The gradient calculation, which provides derivatives for these arguments, helps speed up the optimization process.
-• Grid Maps and Post-processing: Vina automatically calculates its own grid maps based on the target (receptor) structure. These maps are used to define intermolecular interactions. Furthermore, after docking, Vina uses the receptor structure to perform a post-processing minimization of the docked poses. This refinement step relies on direct pairwise interactions with the receptor. The consistency of these operations implies a fixed receptor structure being used for these calculations.
-• User Control and Default Behavior: Vina was designed with a limited amount of user input for performing docking, making it highly specialized and optimized. This design generally steers towards a rigid receptor assumption for simplicity and speed, as modifying receptor flexibility broadly would typically require significant changes in the source code.
-• Comparison to AutoDock4: AutoDock4 (AD4) allowed users to modify a larger number of docking parameters, providing more direct access to engine internals, which made it suitable for developing new docking methods. However, even with AD4, the concept of full receptor flexibility was complex. AutoDock Vina 1.2.0, while maintaining Vina's core efficiency, introduced functionalities from the AutoDock Suite, some of which might implicitly or explicitly involve subtle receptor considerations (e.g., zinc coordination, which affects how the receptor interacts with specific ligand atoms), but the core assumption for bulk receptor movement generally remains rigid.
+\begin{enumerate}
+    
+\item Rigid Receptor Assumption: The foundational principle for Vina, as with many docking programs, is that the receptor structure remains constant during the docking process. For example, in tests evaluating Vina's performance, the receptors were consistently treated as rigid, while ligands were allowed to be flexible.
+\item Gradient-Based Optimization: While the primary focus of Vina's Broyden-Fletcher-Goldfarb-Shanno (BFGS) optimization method is on the ligand's position, orientation, and torsions, its arguments can also include the values of torsions for "flexible residues, if any". This indicates that Vina has a built-in capacity to account for some limited receptor flexibility (specifically, flexible residues) within its optimization algorithm, although it's not the default or primary mode of operation. The gradient calculation, which provides derivatives for these arguments, helps speed up the optimization process.
+\item Grid Maps and Post-processing: Vina automatically calculates its own grid maps based on the target (receptor) structure. These maps are used to define intermolecular interactions. Furthermore, after docking, Vina uses the receptor structure to perform a post-processing minimization of the docked poses. This refinement step relies on direct pairwise interactions with the receptor. The consistency of these operations implies a fixed receptor structure being used for these calculations.
+\item User Control and Default Behavior: Vina was designed with a limited amount of user input for performing docking, making it highly specialized and optimized. This design generally steers towards a rigid receptor assumption for simplicity and speed, as modifying receptor flexibility broadly would typically require significant changes in the source code.
+\item Comparison to AutoDock4: AutoDock4 (AD4) allowed users to modify a larger number of docking parameters, providing more direct access to engine internals, which made it suitable for developing new docking methods. However, even with AD4, the concept of full receptor flexibility was complex. AutoDock Vina 1.2.0, while maintaining Vina's core efficiency, introduced functionalities from the AutoDock Suite, some of which might implicitly or explicitly involve subtle receptor considerations (e.g., zinc coordination, which affects how the receptor interacts with specific ligand atoms), but the core assumption for bulk receptor movement generally remains rigid.
+\end{enumerate}
 
 The scoring function used in AutoDock Vina (referred to as Vina) is designed to approximate the standard chemical potentials of the system, aiming to reproduce chemical potentials rather than directly dealing with energies. This approach is more akin to "machine learning" than purely physics-based, being justified by its performance on test problems.
 The general functional form of the conformation-dependent part of the scoring function in AutoDock Vina is given by: 
@@ -332,26 +357,32 @@ Comparison with AutoDock4 (AD4) Scoring Function The Vina scoring function is qu
 \item The computational cost for energy evaluations is higher with the AD4 scoring function in Vina 1.2.0, taking nearly three times longer than with the Vina scoring function, due to the need to interpolate additional electrostatic and desolvation maps for each movable atom. Vina ranks conformations based on its scoring function, which includes both intermolecular and intramolecular contributions, differing from X-score, which only considers intermolecular contributions.
 \end{enumerate}
 
-\subsection*{FLEXX}
+\subsection{FLEXX}
 FLEXX performs ligand conformational search for docking by modelling ligand flexibility using a discrete model. This approach focuses on sampling the conformational space of the ligand efficiently.
 Here's a breakdown of how it handles ligand flexibility:
-• Fixed Geometries: Bond lengths and angles are kept invariant as given in the input structure, except within ring systems. Therefore, the ligand structures provided to FLEXX should ideally be reasonably minimised geometries.
-• Acyclic Single Bond Flexibility (Torsion Angles):
-    ◦ For acyclic single bonds, a set of preferred torsion angles is assigned.
-    ◦ These preferred angles are determined by a statistical evaluation of the Cambridge Structural Database (CSD).
-    ◦ The method uses a database of approximately 900 molecular fragments with a central single bond. By matching these representative torsional fragments onto the ligand, a histogram of torsion angle occurrences from the CSD is used to select highly populated torsion angles for generating low-energy conformations.
-    ◦ Up to 12 discrete torsion angle values can be assigned to each acyclic single bond.
-    ◦ Bonds adjacent to a methyl group or a planar amino group are exceptions and remain unchanged from the initial conformation.
-• Ring Flexibility:
-    ◦ Multiple conformations for ring systems are computed using external programs.
-    ◦ Initially, the SCA program (developed by De Clercq) was used, which computes alternative conformations for polycyclic systems containing five- to seven-membered rings. This was considered sufficient for most practical purposes in drug design and typically took only a few seconds for a typical drug.
-    ◦ Later versions of FLEXX (e.g., version 1.6.5 evaluated in Kramer et al., 1999) used the CORINA program for computing multiple ring conformations, with a limit of seven ring atoms. Larger rings were treated as rigid based on the input structure.
-• Integration with Docking Algorithm: This discrete conformational model is fundamental to FLEXX's incremental construction algorithm. The ligand is fragmented, and then fragments are added step by step in all possible conformations, allowing the system to explore the ligand's flexible states as it builds the complex within the active site.
-• Accuracy and Complexity: The described model of ligand flexibility is reported to cause RMS deviations only in terms of conformational differences of less than 1{\AA} (e.g., 0.4 {\AA} for methotrexate). While this model generates a combinatorial number of conformations, internal clashes discard a portion of these, providing an upper bound for the number of possible low-energy conformations. The ability to handle ligands with up to 17 rotatable bonds is sufficient for most practical drug design purposes. However, for ligands with more than 20 fragments, other search strategies might be required due to the heuristic greedy strategy employed during complex construction.
-• Pre-processing: Before docking, ligand structures are energy-minimised and assigned correct atom types, bond types, and formal charges to ensure suitable bond distances and angles and to remove any "docking information" from the PDB structure.
+\begin{enumerate}
+\item Fixed Geometries: Bond lengths and angles are kept invariant as given in the input structure, except within ring systems. Therefore, the ligand structures provided to FLEXX should ideally be reasonably minimised geometries.
+\item Acyclic Single Bond Flexibility (Torsion Angles):
+    \begin{enumerate}
+    \item For acyclic single bonds, a set of preferred torsion angles is assigned.
+    \item These preferred angles are determined by a statistical evaluation of the Cambridge Structural Database (CSD).
+    \item The method uses a database of approximately 900 molecular fragments with a central single bond. By matching these representative torsional fragments onto the ligand, a histogram of torsion angle occurrences from the CSD is used to select highly populated torsion angles for generating low-energy conformations.
+    \item Up to 12 discrete torsion angle values can be assigned to each acyclic single bond.
+    \item Bonds adjacent to a methyl group or a planar amino group are exceptions and remain unchanged from the initial conformation.
+    \end{enumerate}
+\item Ring Flexibility:
+    \begin{enumerate}
+    \item Multiple conformations for ring systems are computed using external programs.
+    \item Initially, the SCA program (developed by De Clercq) was used, which computes alternative conformations for polycyclic systems containing five- to seven-membered rings. This was considered sufficient for most practical purposes in drug design and typically took only a few seconds for a typical drug.
+    \item Later versions of FLEXX (e.g., version 1.6.5 evaluated in Kramer et al., 1999) used the CORINA program for computing multiple ring conformations, with a limit of seven ring atoms. Larger rings were treated as rigid based on the input structure.
+    \end{enumerate}
+\item Integration with Docking Algorithm: This discrete conformational model is fundamental to FLEXX's incremental construction algorithm. The ligand is fragmented, and then fragments are added step by step in all possible conformations, allowing the system to explore the ligand's flexible states as it builds the complex within the active site.
+\item Accuracy and Complexity: The described model of ligand flexibility is reported to cause RMS deviations only in terms of conformational differences of less than 1 \r{A} (e.g., 0.4 \r{A} for methotrexate). While this model generates a combinatorial number of conformations, internal clashes discard a portion of these, providing an upper bound for the number of possible low-energy conformations. The ability to handle ligands with up to 17 rotatable bonds is sufficient for most practical drug design purposes. However, for ligands with more than 20 fragments, other search strategies might be required due to the heuristic greedy strategy employed during complex construction.
+\item Pre-processing: Before docking, ligand structures are energy-minimised and assigned correct atom types, bond types, and formal charges to ensure suitable bond distances and angles and to remove any "docking information" from the PDB structure.
+\end{enumerate}
 This systematic, discrete approach to ligand flexibility allows FlexX to efficiently sample a large variety of ligand conformations, aiming to reproduce the experimentally observed binding mode.
 
-\subsubsection*{Scoring function}
+\subsubsection{Scoring function}
 FLEXX scores the docked ligands using an empirical scoring function similar to that developed by Böhm (1994), with some minor changes. This function is designed to estimate the free binding energy (DG) of the protein-ligand complex.
 The general equation for the scoring function is:
 The equation for the scoring function is:
@@ -371,13 +402,13 @@ Here's a breakdown of each term:
 
 \item \textbf{$\Delta G_{\text{rot}} \times N_{\text{rot}}$}: $\text{N}_{\text{rot}}$ represents the number of free rotatable bonds in the ligand that become immobilized (hindered) upon binding to the complex. $\Delta \text{G}_{\text{rot}}$ accounts for the loss of entropy during ligand binding due to this immobilisation and is valued at 1.4 kJ/mol.
 
-\item \textbf{$\Delta \text{G}_{\text{hb}} \sum_{\text{neutral H-bonds}} f(D_R, D_\alpha)$}: This term is a sum over all pairwise neutral hydrogen bonds. $f(D_R, D_\alpha)$ is a scaling function that penalizes deviations from ideal geometry for these interactions. The ideal interaction distance for hydrogen bonds is 1.9{\AA}.
+\item \textbf{$\Delta \text{G}_{\text{hb}} \sum_{\text{neutral H-bonds}} f(D_R, D_\alpha)$}: This term is a sum over all pairwise neutral hydrogen bonds. $f(D_R, D_\alpha)$ is a scaling function that penalizes deviations from ideal geometry for these interactions. The ideal interaction distance for hydrogen bonds is 1.9 \r{A}.
 
-\item \textbf{$\Delta \text{G}_{\text{io}} \sum_{\text{ionic int.}} f(D_R, D_\alpha)$}: This sums over all pairwise ionic interactions. $f(D_R, D_\alpha)$ is the same scaling function for geometric deviations. The ideal interaction distance for metal interactions is 2.0{\AA}.
+\item \textbf{$\Delta \text{G}_{\text{io}} \sum_{\text{ionic int.}} f(D_R, D_\alpha)$}: This sums over all pairwise ionic interactions. $f(D_R, D_\alpha)$ is the same scaling function for geometric deviations. The ideal interaction distance for metal interactions is 2.0 \r{A}.
 
-\item \textbf{$\Delta \text{G}_{\text{aro}} \sum_{\text{aro int.}} f(D_R, D_\alpha)$}: This term sums over aromatic interactions, specifically involving interactions between aromatic-ring-atoms, methyl, or amide groups with an aromatic-ring-centre. These interactions are used to generate the preferred t-shaped arrangement of neighbouring aromatic ring systems. In some versions, an additional parameter $\Delta \text{G}_{\text{aro}}$ of -0.7 kJ/mol is included. The ideal interaction distance for aromatic interactions is 4.5 {\AA}.
+\item \textbf{$\Delta \text{G}_{\text{aro}} \sum_{\text{aro int.}} f(D_R, D_\alpha)$}: This term sums over aromatic interactions, specifically involving interactions between aromatic-ring-atoms, methyl, or amide groups with an aromatic-ring-centre. These interactions are used to generate the preferred t-shaped arrangement of neighbouring aromatic ring systems. In some versions, an additional parameter $\Delta \text{G}_{\text{aro}}$ of -0.7 kJ/mol is included. The ideal interaction distance for aromatic interactions is 4.5 \r{A}.
 
-\item \textbf{$\Delta \text{G}_{\text{lipo}} \sum_{\text{lipo. cont.}} f^*(D_R)$}: This is a modification of Böhm’s original lipophilic contact energy, which was estimated using a grid method. In FLEXX, it's calculated as a sum over all pairwise atom-atom contacts.  \text{$f^*(D_R)$} is a function that accounts for contacts with ideal distances and penalises forbiddingly close contacts. \text{$D_R = R - R_0$}, where R is the actual distance between atom centers and \text{$R_0$} is its ideal value (sum of van-der-Waals radii, each increased by 0.3 {\AA}). The function $f^*(D_R)$ has specific ranges for its values.
+\item \textbf{$\Delta \text{G}_{\text{lipo}} \sum_{\text{lipo. cont.}} f^*(D_R)$}: This is a modification of Böhm’s original lipophilic contact energy, which was estimated using a grid method. In FLEXX, it's calculated as a sum over all pairwise atom-atom contacts.  \text{$f^*(D_R)$} is a function that accounts for contacts with ideal distances and penalises forbiddingly close contacts. \text{$D_R = R - R_0$}, where R is the actual distance between atom centers and \text{$R_0$} is its ideal value (sum of van-der-Waals radii, each increased by 0.3 \r{A}). The function $f^*(D_R)$ has specific ranges for its values.
 
 \end{itemize}
 
@@ -387,7 +418,7 @@ While useful for distinguishing between good and bad inhibitors, the absolute bi
 Key Aspects of Scoring in FLEXX:
 \begin{itemize}
 \item Ranking Solutions: The scoring function is primarily used for ranking the generated docking solutions.
-\item Origin of Chemical Model: The underlying chemical model in FLEXX is based on the work of Böhm (1992a, 1994) and Klebe & Mietzner (1994).
+\item Origin of Chemical Model: The underlying chemical model in FLEXX is based on the work of Böhm (1992a, 1994) and Klebe \& Mietzner (1994).
 \item Interaction Types: Interactions are classified by their geometric constraints and are used for placing the ligand. These include hydrogen bonds and some hydrophobic interactions (e.g., phenyl rings and methyl groups). These interactions are arranged on three levels, from highly directional (Level 3, e.g., H-bonds, metal acceptors) down to directionally unspecific (Level 1, e.g., aliphatic and aromatic carbon atoms, sulfur).
 \item Heuristic Nature: The functions f and f* are described as heuristic distance and angle-dependent penalties.
 \item Scoring Speed: The scoring function is chosen to be fast and easy to compute, contributing to FLEXX's extremely short runtimes. Docking a typical drug molecule, considering ligand flexibility, can be performed in two to three minutes on a standard workstation, making it approximately ten times faster than alternative approaches for flexible ligand docking at the time of its development.
@@ -401,10 +432,15 @@ Key Aspects of Scoring in FLEXX:
 \end{itemize}
 \end{itemize}
 
-\subsection*{SURFLEX}
+\subsection{SURFLEX}
 
-\subsection*{GOLD}
+BLAAA BLAAA
 
-\printbibliography
-%\bibliography{Molecular_Docking_Methods_and_Programs}
+
+\subsection{GOLD}
+BLAAA BLAAAA
+
+\bibliographystyle{plain}
+\bibliography{Molecular_Docking_Methods_and_Programs}
+
 \end{document}
