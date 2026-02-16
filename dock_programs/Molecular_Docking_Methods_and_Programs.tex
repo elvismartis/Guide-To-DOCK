@@ -559,90 +559,114 @@ with:
 \end{itemize}
 
 
-% edit from here
 \section{AutoDock}
-Autodock or commonly known as AD4, offers an easy to setup and run kind of environment for molecular docking experiments. Therefore, this becomes an easy tool for beginners wanting to learn molecular docking. The developers also separately provide all the tools/scripts, known as "MGLTools", necessary to set up systems for molecular docking. It is, therefore, an automated computational procedure primarily designed to predict the bound conformations of small, flexible ligands to macromolecular targets of known structure. Being an open-source tool with source code available, various groups have expanded the functionality of AD4 to improve docking accuracy for specific and challenging problems.\cite{CH7_Morris1998,CH7_Morris2009}. 
- It combines
+Autodock or commonly known as AD4, is an user-friendly docking tool with several conformational search tools that the user can select from or test all to pick the optimum method suitable for the problem at hand. This becomes a tool for beginners wanting to learn molecular docking. The developers also separately provide all the tools/scripts bundled as "MGLTools", necessary to set up systems for molecular docking. It is, therefore, an automated computational procedure primarily designed to predict the bound conformations of small, flexible ligands to macromolecular targets of known structure with option to treat receptor as flexible. Being an open-source tool with source code available, various groups have expanded the functionality of AD4 to improve docking accuracy for specific and challenging problems.\cite{CH7_Morris1998,CH7_Morris2009}. 
+AutoDock4 uses a grid-based strategy, as we have seen in all the previously discussed methods. Grid-based methods facilitate a significant speed up for evaluating the receptor--ligand interaction energies. This is achieved by precomputing receptor contribution on 3D grid maps specific for each interaction type (AutoGrid). During docking the energies are obtained by trilinear interpolation of these grids rather than explicit pairwise evaluation for each pose.\cite{CH7_Huey2007,CH7_Morris2009} This allows docking of many ligands or extensive conformational sampling of a single ligand at relatively modest computational cost. 
+
+The key features of AD4 are as follows:
 
 \begin{itemize}
   \item a semi-empirical free-energy force field (the scoring function), and
   \item a global optimisation algorithm to search the space of ligand translations, orientations, and internal torsions. This enables the identification of low-energy binding poses. The original algorithm most commonly the Lamarckian genetic algorithm (LGA). However, later versions allower many conformational sampling methods.
 \end{itemize}
 
-AutoDock4 uses a grid-based strategy, as we have seen in the all the previously discussed method. The grid-based methods facilitates a significant speed up in for evaluating the receptor--ligand interaction energies by precomputing receptor contribution on three-dimensional grids (AutoGrid). During docking the energies are obtained by trilinear interpolation of these grids rather than explicit pairwise evaluation for each pose.\cite{CH7_Huey2007,CH7_Morris2009} This allows docking of many ligands or extensive conformational sampling of a single ligand at relatively modest computational cost. 
+
 
 \subsection{The theory underlying AutoDock}
 
 \subsubsection{The docking problem as a free-energy optimisation}
 
-Conceptually, docking in AutoDock solves an optimisation problem:
-\begin{quote}
-  given a rigid (or partially flexible) receptor and a flexible ligand, find the ligand pose that minimises an empirical estimate of the binding free energy $\Delta G_{\text{binding}}$.
-\end{quote}
+One may think of docking using Autodock4 as an optimisation problem. Given a rigid (or partially flexible) receptor and a flexible ligand, find the ligand pose that minimises an empirical estimate of the binding free energy $\Delta G_{\text{binding}}$.
 
-A ligand pose is defined by
+Technically, a ligand pose is defined as:
 \begin{itemize}
   \item three Cartesian translation variables x, y, z
   \item three orientation variables $ \phi, \theta, \alpha $ (typically Euler angles or an equivalent rotation representation), and
   \item a set of torsional angles $ \psi_1, \dots, \psi_{N_{\text{tor}}}$ corresponding to the ligand's rotatable bonds.
 \end{itemize}
-Collectively, AutoDock represents these as a genotype vector
+
+Collectively, AutoDock represents these as a genotype vectors
 \[
   \Omega = \left\{ x, y, z, \phi, \theta, \alpha, \psi_1, \dots, \psi_{N_{\text{tor}}} \right\}.
 \]
-For any given \( \Omega \), AutoDock evaluates the scoring function \( f(\Omega) \), which approximates \( \Delta G_{\text{binding}} \). The task of docking is to find
+For any given $\Omega$, AutoDock evaluates the scoring function $\text{f}(\Omega)$, which approximates $\Delta$ $\text{G}_\text{binding}$. The task of docking is to find
 \[
   \Omega^{\ast} = \arg\min_{\Omega} f(\Omega).
 \]
 
 \subsubsection{Representation of receptor and ligand}
-
-In standard AutoDock 4:
+Atomic partial charges are typically Gasteiger charges, and atom types are assigned according to AutoDock's built-in atom typing scheme, which is essential for both the interaction grids and the desolvation model.\cite{CH7_Huey2007} 
+Autodock treats the receptor and ligand as follows:
 \begin{itemize}
-  \item The receptor is treated as rigid, although limited side-chain flexibility can be enabled by defining selected receptor residues as flexible (these flexible parts are technically treated as part of the ligand subsystem).\cite{CH7_Morris2009}
+  \item The receptor is treated as rigid. Although limited side-chain flexibility can be enabled by defining selected receptor residues as flexible.Howeveer, note that these flexible parts of the receptor are treated as part of the ligand subsystem in the output file.
   \item The ligand is represented as a rigid root plus a tree of rotatable bonds; each rotatable bond defines a torsional degree of freedom $ \psi_k $.
   \item Coordinates, atom types and partial charges are stored in the PDBQT format, which extends PDB with AutoDock specific atom types and torsion tree information.
 \end{itemize}
 
-Atomic partial charges are typically Gasteiger charges, and atom types are assigned according to AutoDock's built-in atom typing scheme, which is essential for both the interaction grids and the desolvation model.\cite{CH7_Huey2007}
 
 \subsubsection{Search algorithms: genetic algorithms and the Lamarckian GA}
 
-AutoDock historically offered several global search methods (simulated annealing, genetic algorithms, and the Lamarckian genetic algorithm); for AutoDock 4, the default and recommended method is the Lamarckian genetic algorithm (LGA).\cite{CH7_Morris1998,CH7_Morris2009}
-
-Key ideas of the LGA in AutoDock:
+AutoDock4 utilizes several conformational search algorithms to explore the interaction between a ligand and a protein target\cite{CH7_Morris1998,CH7_Morris2009}. These algorithms range from those based on evolutionary principles for global search to refined local optimization techniques.
+The primary search algorithms used in AutoDock4 include:
+\begin{enumerate}
+\item Lamarckian Genetic Algorithm (LGA): 
+The LGA is considered the most efficient and reliable method for general docking applications in AutoDock4.
+The working of LGA is given below:
 \begin{itemize}
   \item A population of candidate solutions (genotypes $ \Omega $) is maintained.
   \item Each candidate is mapped to a phenotype (3D ligand coordinates), scored by $ f(\Omega) $, and assigned a fitness (lower energy implies higher fitness).
   \item Standard genetic operators---selection, crossover, and mutation---are used to generate new candidate genotypes from fitter parents.
   \item A local search (e.g. Solis--Wets or a gradient-based method) is periodically applied to individual candidates to descend into nearby local minima of the scoring function.\cite{CH7_Morris1998,CH7_SantosMartins2021}
-  \item Crucially, improvements found by the local search are written back into the genotype and thus inherited by descendants. This is the Lamarckian aspect: environmentally acquired traits (local minima) become heritable.
+  \item Improvements found by the local search are written back into the genotype, and thus, inherited by the offsprings. This is the Lamarckian aspect: environmentally acquired traits (local minima) become heritable.
 \end{itemize}
 
-A typical LGA run:
-\begin{enumerate}
-  \item Initialise a population of random genotypes $ \Omega $.
-  \item For each genotype in the population:
-  \begin{enumerate}
-    \item Decode to atomic coordinates (phenotype).
-    \item Evaluate the scoring function $ f(\Omega) $.
-  \end{enumerate}
-  \item Apply selection: choose parent genotypes with probability proportional to fitness.
-  \item Apply crossover and mutation to generate offspring genotypes.
-  \item Apply local search to a fraction of the population; if local search improves a genotype, replace it with the improved genotype.
-  \item Repeat evaluation, selection, crossover, mutation, and local search for a user\-defined number of generations or until convergence criteria are met.
-  \item Return the best scoring individual from the run.
+In practice, a docking job consists of many independent LGA runs (e.g. 50--100), each starting from different random initial populations. The resulting best poses are then clustered by RMSD, and clusters ranked primarily by cluster size and cluster representative energy.\cite{CH7_Morris2009}
+
+\item Traditional Genetic Algorithm (GA): 
+This algorithm is also available, however, is considered less efficient than the LGA. It is inspired by biological evolution, it manages a population of potential solutions that undergo selection, crossover, and mutation. Solutions with better "fitness" (lower interaction energy) are more likely to reproduce, allowing the algorithm to explore the global search space iteratively.
+
+\item Simulated Annealing (SA): 
+This is a probabilistic Monte Carlo technique that mimics the process of cooling a physical system to find its lowest energy state. At high "temperatures," the algorithm can accept higher-energy moves to escape local minima; as the temperature is lowered (the "annealing" phase), the search becomes more restricted to local optimization until a minimum is found (\textbf{Link to conf search chapter}).
+
+\item Local Search (LS): 
+Local search can be used independently or as part of the LGA to optimize a molecule's position in its immediate environment.
+\begin{itemize}
+\item Solis and Wets (SW) algorithm is the standard random optimizer used for local search in AutoDock4. It does not require gradient information; instead, it randomly samples the local space and adaptively adjusts its step sizes based on the success or failure of previous moves.
+\item ADADELTA was introduced in AutoDock-GPU. This is a gradient-based local search method, and uses the gradient of the scoring function to guide the search more efficiently, requiring significantly fewer energy evaluations to find correct solutions for ligands with many rotatable bonds compared to random search methods.
+\end{itemize}
 \end{enumerate}
 
-In practice, a docking job consists of many independent LGA runs (e.g. 50), each starting from different random initial populations. The resulting best poses are then clustered by RMSD, and clusters ranked primarily by cluster size and cluster representative energy.\cite{CH7_Morris2009}
+\subsection{Scoring Function}
 
-\subsection{The AutoDock4 Scoring Function}
+\subsubsection{Semiempirical free energy-based force field}
 
-\subsubsection{Semi-empirical free-energy force field}
+AutoDock4 employs a semiempirical free energy-based force field that estimates the binding affinity as a sum of physics-based terms: van der Waals dispersion/repulsion, hydrogen bonding, electrostatics with a distance-dependent dielectric, a charge-based desolvation term, and an entropic penalty for ligand torsions.\cite{CH7_Huey2007,CH7_SantosMartins2021}. Even though the docking score is represented in kcal/mol, it is not the true free-energy of binding, and thus should not be interpreted in same manner as the $\Delta\text{G}$. 
 
-AutoDock 4 uses a semi-empirical free-energy force field that estimates the binding free energy as a sum of physically motivated terms: van der Waals dispersion/repulsion, directional hydrogen bonding, electrostatics with a distance-dependent dielectric, a charge-based desolvation term, and an entropic penalty for ligand torsions.\cite{CH7_Huey2007,CH7_SantosMartins2021}
+The energy is computed as the sum of intermolecular (ligand--receptor) and intramolecular (ligand--ligand) contributions; the latter enter via a precomputed estimate of the ligand's unbound state energy, so that the final reported score approximates the free energy difference between bound and unbound states.
+\[
+\Delta G =
+\bigl( V_{L-L}^{\text{bound}} - V_{L-L}^{\text{unbound}} \bigr)
++
+\bigl( V_{P-P}^{\text{bound}} - V_{P-P}^{\text{unbound}} \bigr)
++
+\bigl( V_{P-L}^{\text{bound}} - V_{P-L}^{\text{unbound}} \bigr)
++
+\Delta S_{\text{conf}}
+\]
 
-A convenient form of the AutoDock 4 scoring function is (units: kcal/mol)
+
+Where,
+\begin{itemize}
+ \item $V_{L-L}^{\text{bound}}$: intramolecular potential energy of the ligand in the bound state
+ \item $V_{L-L}^{\text{unbound}}$: intramolecular potential energy of the ligand in solution (unbound)
+\item $V_{P-P}^{\text{bound}}$: intramolecular potential energy of the protein in the bound complex
+\item $V_{P-P}^{\text{unbound}}$: intramolecular potential energy of the apo protein
+\item $V_{P-L}^{\text{bound}}$: intermolecular protein–ligand interaction energy in the complex
+\item $V_{P-L}^{\text{unbound}}$: effective intermolecular interaction term in the unbound reference (often 0)
+\item $\Delta S_{\text{conf}}$: conformational entropy change on binding
+\end{itemize}
+
+The functional form of the AutoDock4 semiempirical scoring function is given by: 
 \begin{equation}
 \label{eq:ad4_scoring}
 \begin{aligned}
@@ -685,126 +709,49 @@ A convenient form of the AutoDock 4 scoring function is (units: kcal/mol)
 \end{aligned}
 \end{equation}
 
-Here:
+Where,
 \begin{itemize}
-  \item  i and j  run over ligand and receptor atoms respectively (for intermolecular interactions), and over ligand atoms only for intramolecular ligand--ligand interactions.
-  \item $ r_{ij} $ is the distance between atoms i  and  j .
-  \item $ s(r_{ij}) $ is a smoothing function applied to soften the short-range repulsive wall of the 12--6 and 12--10 potentials (often implemented as a shifted distance, e.g. $ s(r_{ij}) = r_{ij} + \delta $, with $ \delta \approx 0.5 $ \r{A}).
-  \item $ q_i$, $q_j$ are atomic partial charges (Gasteiger charges).
-  \item $ \varepsilon(r_{ij}) $ is a distance-dependent dielectric function (commonly $ \varepsilon(r_{ij}) = \varepsilon_0 r_{ij} $, giving an effective screening that increases with distance).
-  \item $S_i$ is the solvation parameter for atom  i, and $V_i$ is its atomic volume.
-  \item $ \sigma$ is the width parameter of the Gaussian desolvation term (typically $ \sigma = 3.5$ \r{A}).
+  \item  i and j are ligand and receptor atoms respectively, and $i \neq j$
+  \item $r_{ij}$ is the distance between atoms i  and  j.
+  \item $s(r_{ij})$ is a smoothing function applied to soften the short-range repulsive wall of the 12--6 and 12--10 vdW potentials. It is often implemented as a shifted distance, e.g. $ s(r_{ij}) = r_{ij} + \delta $, with $ \delta \approx 0.5 $ \r{A}.
+  \item $ q_i$, $q_j$ are atomic partial charges computed using the Gasteiger's method\cite{CH7_gasteiger}.
+  \item $ \varepsilon(r_{ij})$ is a distance-dependent dielectric function. It is commonly $ \varepsilon(r_{ij}) = \varepsilon_0 r_{ij} $, giving an effective screening that increases with distance.
+  \item $S_i$ is the solvation parameter for ligand atom i, and $V_i$ is its atomic volume.
+  \item $\sigma$ is the width parameter of the Gaussian desolvation term, which is typically $\sigma = 3.5$ \r{A}).
   \item $ N_{\text{tor}}$ is the number of rotatable bonds in the ligand.
-  \item $ W_{\text{vdW}}$, $W_{\text{hbond}}$, $W_{\text{elec}}$, $W_{\text{desolv}}$, $W_{\text{tor}}$ are empirical weighting coefficients determined by linear regression against a training set of protein--ligand complexes with known binding affinities.
+  \item $ W_{\text{vdW}}$, $W_{\text{hbond}}$, $W_{\text{elec}}$, $W_{\text{desolv}}$, $W_{\text{tor}}$ are empirical weighting coefficients determined by linear regression against a training set of protein--ligand complexes with known binding affinities. 
 \end{itemize}
 
-The energy is computed as the sum of intermolecular (ligand--receptor) and intramolecular (ligand--ligand) contributions; the latter enter via a precomputed estimate of the ligand's unbound state energy, so that the final reported score approximates the free energy difference between bound and unbound states.
-
-\subsubsection{Interpretation of individual terms}
-\begin{enumerate}
-\item Van der Waals dispersion/repulsion
-
-The first term,
-\[
-  \Delta G_{\text{vdW}} =
-  W_{\text{vdW}}
-  \sum_{i,j}
-  \left(
-    \frac{A_{ij}}{s(r_{ij})^{12}}
-    - \frac{B_{ij}}{s(r_{ij})^{6}}
-  \right),
-\]
-is a modified Lennard--Jones 12--6 potential. The coefficients $ A_{ij}$ and $B_{ij}$ depend on the atom types of i and j; they are chosen so that the minimum of the potential corresponds to the equilibrium contact distance and well depth appropriate to those atom types.\cite{CH7_Huey2007}
-
-The $r^{-12}$ term models Pauli repulsion from overlapping electron clouds at very short distances, and the $r^{-6}$ term approximates London dispersion attraction. The smoothing function $s(r_{ij})$ broadens the attractive well and reduces numerical instability when atoms come too close.
-
-\item Directional hydrogen bonding
-
-The second term models hydrogen bonding interactions:
-\[
-  \Delta G_{\text{hbond}} =
-  W_{\text{hbond}}
-  \sum_{i,j}
-  E(t_{ij})
-  \left(
-    \frac{C_{ij}}{s(r_{ij})^{12}}
-    - \frac{D_{ij}}{s(r_{ij})^{10}}
-  \right).
-\]
-Here $ C_{ij} $ and $ D_{ij}$ define a 12--10 potential specific to hydrogen bond donor--acceptor pairs, providing a narrower, more directional well than the generic van der Waals term.\cite{CH7_Huey2007} The angular term $E(t_{ij})$ depends on the hydrogen bond geometry (angle $ t_{ij} $); it down weights poorly aligned donor--acceptor pairs and favours near linear geometries.
-
-\item Electrostatic interactions
-
-The third term models Coulombic electrostatics:
-\[
-  \Delta G_{\text{elec}} =
-  W_{\text{elec}}
-  \sum_{i,j}
-  \left(
-    \frac{q_i \, q_j}{\varepsilon(r_{ij}) \, r_{ij}}
-  \right).
-\]
-Partial charges $q_i$ are derived from the input structures and depend on the chosen charge model (commonly Gasteiger). The distance-dependent dielectric $ \varepsilon(r_{ij})$ mimics solvent screening without explicit solvent.\cite{CH7_Huey2007} Because this is a relatively simple electrostatic model, the associated weight  $W_{\text{elec}}$ is important to balance this term against the others when fitting to binding data.
-
-\item Charge-based desolvation
-
-The desolvation term accounts for the energetic cost of removing solvation from atoms upon binding, combined with favourable hydrophobic contacts:
-\[
-  \Delta G_{\text{desolv}} =
-  W_{\text{desolv}}
-  \sum_{i,j}
-  \left(
-    \left( S_i V_j + S_j V_i \right)
-    \exp\left[
-      - \frac{r_{ij}^2}{2 \sigma^2}
-    \right]
-  \right).
-\]
-The parameters $ S_i $ are solvation descriptors that depend on atom type and, via a charge\-based parametrisation, on the atomic charge.\cite{CH7_Huey2007} Positive $S_i$ correspond roughly to hydrophobic atoms (favourable desolvation on burial), whereas negative values correspond to polar/charged atoms (unfavourable desolvation).
-
-The Gaussian factor localises the interaction to contact distances: for large $r_{ij}$, the exponential term is negligible (no desolvation interaction); for $ r_{ij} $ near contact distance, desolvation effects contribute significantly.
-
-\item Torsional entropy penalty
-
-Finally, the torsional entropy term
-\[
-  \Delta G_{\text{tor}} = W_{\text{tor}} \, N_{\text{tor}}
-\]
-penalises ligands with many rotatable bonds. When a ligand binds, many internal torsions become restricted, resulting in a loss of conformational entropy. AutoDock uses a simple linear model in the number of rotatable bonds $ N_{\text{tor}}$, with $W_{\text{tor}}$ obtained from regression against binding data.\cite{CH7_Huey2007}
-\end{enumerate}
-
-\subsubsection{Parameterisation and calibration}
-
-The functional form of Eq.~\eqref{eq:ad4_scoring} was chosen based on physical intuition and computational efficiency, and the associated parameters $A_{ij}$, $B_{ij}$, $C_{ij}$, $D_{ij}$, $S_i$, $V_i$, $\sigma$ and weights $W_{\cdot}$ were fitted using linear regression to a dataset of protein--ligand complexes with known experimental binding free energies.\cite{CH7_Huey2007,CH7_Morris2009} The AutoDock 4 force field is thus semi-empirical: grounded in physical models but tuned to reproduce experimental data as closely as possible.
 
 \subsection{A typical workflow for AutoDock4}
 
-It is useful to divide the AutoDock workflow into four conceptual stages:
+The workflow can be broken down in four stages, which provides an intuitive understanding of how it is done practically.
 
 \begin{enumerate}
   \item \textbf{Structure preparation}
   \begin{enumerate}
-    \item Receptor preparation
+
+    \item \textit{Receptor preparation}
     \begin{enumerate}
-  \item Obtain the receptor structure, typically from the Protein Data Bank (PDB).
+  \item Obtain the receptor structure, typically from the Protein Data Bank (PDB) or any computed structure model.
   \item Clean the structure:
   \begin{itemize}
     \item Remove crystallographic water molecules unless specifically needed.
     \item Remove other non-relevant hetero atoms (e.g. buffer components, crystallisation agents).
     \item Check for missing residues or atoms and repair if necessary.
   \end{itemize}
-  \item Add hydrogen atoms (particularly polar hydrogens) at a physically reasonable pH.
+  \item Add hydrogen atoms (particularly polar hydrogens) at a physiologically reasonable pH.
   \item Assign partial charges (e.g. Kollman or Gasteiger, depending on workflow/tool).
   \item Assign AutoDock atom types.
   \item Save the receptor in PDBQT format.
 \end{enumerate}
 
-This step is typically performed with AutoDockTools (ADT) or newer graphical front ends, but can also be scripted using e.g. MGLTools or external tools with PDBQT support.
+This step is typically performed with AutoDockTools (ADT) or newer graphical interfaces, however, can also be scripted using MGLTools or any external tools with PDBQT support.
 
-  \item Ligand preparation
+  \item \textit{Ligand preparation}
   \begin{enumerate}
-  \item Start from a 2D or 3D structure of the ligand.
-  \item Generate a reasonable 3D conformation (if starting from 2D), adding hydrogens and assigning bond orders.
+  \item Start from a smiles string, 2D or 3D structure of the ligand.
+  \item Generate a reasonable 3D conformation (if starting from smiles or 2D), add hydrogens and assign bond orders.
   \item Assign protonation state and tautomers consistent with the target pH and binding site environment.
   \item Identify rotatable bonds and define the torsion tree:
   \begin{itemize}
@@ -816,14 +763,15 @@ This step is typically performed with AutoDockTools (ADT) or newer graphical fro
   \item Save the ligand in PDBQT format.
 \end{enumerate}
 \end{enumerate}
+
   \item \textbf{Grid map generation (AutoGrid)}
 
-AutoDock accelerates docking by precomputing three\-dimensional interaction energy maps for each ligand atom type using AutoGrid.\cite{CH7_Morris2009}
+AutoDock accelerates docking by precomputing 3D interaction energy maps for each ligand atom type using AutoGrid.\cite{CH7_Morris2009}
 
 \begin{enumerate}
   \item Define the search space (grid box):
   \begin{itemize}
-    \item Choose the grid center (often around a known binding site or co\-crystallised ligand).
+    \item Choose the grid center using residues from known binding site or the center of mass coordinates of the co-crystallised ligand.
     \item Choose grid dimensions (number of points in x, y, z and grid spacing, default $ \approx 0.375$ \r{A}).
     \item Ensure that the box fully encloses the binding site and allows some margin for ligand movement.
   \end{itemize}
@@ -840,13 +788,11 @@ AutoDock accelerates docking by precomputing three\-dimensional interaction ener
   \end{itemize}
 \end{enumerate}
 
-During docking, when the ligand is moved, interaction energies for ligand--receptor pairs are obtained by interpolating these maps at ligand atom positions, greatly reducing computational cost compared to evaluating all pairwise interactions explicitly for each pose.
-
   \item \textbf{Docking runs (AutoDock)}
   \begin{enumerate}
-\item Docking parameter file (DPF)
+\item Generating the docking parameter file (DPF)
 
-Before running AutoDock, a docking parameter file (DPF) is prepared, specifying:
+Before running AutoDock, a DPF is prepared, specifying:
 \begin{itemize}
   \item The ligand and receptor PDBQT files.
   \item The scoring function settings (typically defaults for AutoDock 4 force field).
@@ -893,8 +839,7 @@ Before running AutoDock, a docking parameter file (DPF) is prepared, specifying:
 \end{enumerate}
 \end{enumerate}
 
-
-
+%edit from here
 \section{AutoDock-Vina}
 
 AutoDock Vina (usually referred to as Vina) is an open-source molecular docking program developed at The Scripps Research Institute to predict the binding mode and an approximate binding affinity of small molecules (ligands) to macromolecular receptors, typically proteins \cite{CH7_trott2010vina}.
