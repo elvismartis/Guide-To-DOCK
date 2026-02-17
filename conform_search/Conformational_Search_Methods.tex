@@ -1,10 +1,10 @@
-\documentclass[12pt, a4paper]{article}
+\documentclass[12pt]{article}
 \usepackage{graphicx}
 %\usepackage[a4paper,margin=1in]{geometry}
 \usepackage{hyperref}
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage{natbib} 
+\usepackage{cite} 
 \usepackage{siunitx}
 
 \title{Conformations Search methods for molecular docking}
@@ -15,7 +15,7 @@
 
 %\chapter*{Conformational Search Methods}
 
-\section{Basic concepts in conformational search}
+\section{Basic concepts}
 Understanding molecular conformation the three-dimensional arrangement of atoms in a molecule is fundamental to computational chemistry. A molecule's conformation determines its chemical and biological properties, including reactivity, solubility, and binding affinity to biological targets. In the context of this book, this conformational search is performed withing the binding site of receptor, which aims to locate the bioactive conformation. Unlike global or local minimum conformation in solution, bioactive conformtion is one of the low energy conformations that shows most appropriate shape complementary with the binding site. This maximises favourable interactions between the ligand and receptor atoms. The success of structure-based drug design methods depends on identifying this bioactive conformation. 
 
 %verify the statements below
@@ -24,25 +24,100 @@ A typical small drug-like molecule may contain multiple rotatable bonds, each ca
 
 \subsection{Potential Energy Surface}
 
-The PES describes the relationship between molecular geometry (represented by 3$N$--6 degrees of freedom for $N$ atoms in three dimensions) and electronic energy. Formally, for a molecule in a given electronic state, the PES is a multidimensional function \(E(\mathbf{R})\) where $\mathbf{R}$ represents all atomic coordinates. A conformation corresponds to a local minimum on the PES:
+The potential energy of a molecule is expressed as a function of the nuclear/atomic coordinates\cite{CH2_Jensen2017 CH2_Cramer2013} given by:
 
 \begin{equation}
-\nabla E(\mathbf{R}) = 0 \quad \text{and} \quad \nabla^2 E(\mathbf{R}) \text{ is positive definite}
-\label{eq:local_minimum}
+  V(\mathbf{R}) = V(R_1, R_2, \dots, R_{3N}),
 \end{equation}
 
-where $\nabla$ is the gradient operator and $\nabla^2$ is the Hessian matrix. The global minimum is the conformation with the lowest energy across all conformational space, while important local minima separated by accessible energy barriers represent alternative conformations accessible at finite temperature.
+where N is the number of atoms and $\mathbf{R}$ is the 3N-dimensional vector of Cartesian nuclear positions. For a non-linear molecule, the number of internal degrees of freedom is 3N - 6, after removal of overall translation and rotation. Formally, a potential energy surface (PES) can be defined as the hypersurface obtained by plotting $V(\mathbf{R})$ against a chosen set of internal coordinates (bond lengths, angles and torsions). Such high-dimensional PES cannot be visualised for human interpretation, therefore, we must restrict plotting only a few important internal coordinates. These important internal coordinates are also known as collective variables that might be enough explain the behaviour of the entire chemical or biochemical system.
 
-\subsection{Rotatable Bonds and Dihedral Angles}
-
-Conformational diversity arises primarily from rotation around single bonds. A dihedral angle (or torsion angle) $\phi$ describes the spatial relationship between four atoms: the angle between the planes defined by atoms (1-2-3) and (2-3-4). The dihedral angle potential energy can be approximated by a periodic function:
+\subsubsection{Stationary points and the Hessian matrix}
+ While exploring the PES, there key parts of the PES that we are most interested in--locating the energy minimum. Mathematically, minimum or maximum points on the PES are located by differentiating the force field function describing the chemical system. In an ideal system, the minimum or maximum is defined as stationary points on the PES such that the first-order derivative of the function is zero and are classified by the eigenvalues of the Hessian matrix. The following equations illustrate this fact:
+\begin{equation}
+  \frac{\partial V}{\partial q_i} = 0
+  \quad\text{for all internal coordinates } q_i,
+\end{equation}
 
 \begin{equation}
-V_{\text{torsion}}(\phi) = \sum_{n=1}^{3} \frac{V_n}{2} \left[1 + \cos(n\phi - \gamma_n)\right]
-\label{eq:torsion_potential}
+  H_{ij} = \frac{\partial^2 V}{\partial q_i\,\partial q_j}.
 \end{equation}
 
-where $V_n$ are force constants and $\gamma_n$ are phase angles specific to the bond type. This expression shows that rotation about a bond encounters periodic energy minima, typically 3 per 360° rotation (corresponding to staggered conformations in ethane-like systems).
+A local minimum has all positive eigenvalues (no imaginary frequencies), whereas a first-order saddle point (transition state) has exactly one negative eigenvalue (one imaginary frequency). The topology of the PES around these points controls conformational equilibria and reaction rates\cite{CH2_Jensen2017}.
+
+\subsubsection{Energy profiles and reaction coordinates}
+
+In one dimension, for example rotation of a torsion angle, the PES reduces to an energy profile V(s) along a reaction coordinate s. Energy minima correspond to stable conformers, while barriers may correspond to transition structures. Such barriers also suggest 
+
+\subsection{Internal coordinates}
+
+For molecular mechanics representations, it is convenient to use internal coordinates such as:
+\begin{itemize}
+  \item Bond stretches r,
+  \item Angle bends $\theta$,
+  \item Improper torsions $\chi$ (for planarity/chirality),
+  \item Proper torsions (dihedrals) $\phi$,
+  \item Out-of-plane or improper torsion angles wherever necessary.
+\end{itemize}
+
+A generic functional form for the molecular mechanics potential energy is given by:
+
+\begin{equation}
+  V(\mathbf{q}) =
+  \sum_\text{bonds} k_r (r - r_0)^2 +
+  \sum_\text{angles} k_\theta (\theta - \theta_0)^2 +
+  \sum_\text{torsions} V_\text{tor}(\phi) +
+  V_\text{nonbonded},
+\end{equation}
+
+where $V_\text{nonbonded}$ computes van der Waals and electrostatic interactions, and $V_\text{tor}(\phi)$ is the torsional potential.
+
+\subsection{Torsional potentials}
+
+Torsional terms are usually represented as a Fourier series,
+
+\begin{equation}
+  V_\text{tor}(\phi) =
+  \sum_{n} \frac{V_n}{2}\bigl[1 + \cos\bigl(n\phi - \gamma_n\bigr)\bigr],
+\end{equation}
+
+where $V_\text{n}$ are barrier heights, n the periodicity, and $\gamma_\text{n}$ phase offsets. The barrier height controls the rate of interconversion between conformers. Very low or negligible barrier makes the conformers indistiguishable, hence, considered equivalent for all practical purposes. 
+
+If we consider simple organic molecules:
+\begin{itemize}
+  \item Ethane: $n = 3$, $\gamma = 0$, giving three equivalent staggered minima and three eclipsed maxima.
+  \item Butane: interplay between $n=3$ and $n=1$ terms to distinguish anti- and gauche-staggered minima.
+\end{itemize}
+
+
+\subsection{Rotatable bonds}
+Chemically, a rotatable bond can be defined as follows: 
+
+\begin{itemize}
+  \item A single (non-aromatic) bond ($\sigma$ bond) between heavy atoms
+  \item That is not in a ring
+  \item And is not terminal (i.e. not $X--CH_3$ or similar simple substituents)
+  \item Excluding amide C-N bonds, and other formally conjugated single bonds with high torsional barriers.
+\end{itemize}
+
+
+\subsection{Conformational ensembles and thermodynamics}
+
+Given a set of conformers i with relative energies $E_i$, the Boltzmann-weighted population at temperature T is
+
+\begin{equation}
+p_i = \frac{\exp(-E_i/k_\mathrm{B}T)}{\displaystyle\sum_j \exp(-E_j/k_\mathrm{B}T)},
+\end{equation}
+
+so that low-energy conformers dominate the bulk properties. Computational workflows therefore:
+
+\begin{itemize}
+  \item Sample a sufficiently diverse ensemble on the PES (system- and method-dependent).
+  \item Reweight or rescore conformers with higher-level methods when needed.
+  \item Consider entropic contributions associated with loss of conformational freedom upon binding.
+\end{itemize}
+
+\section{Metrics to ensure conformational sampling}
 
 \subsection{Energy-Based Metrics}
 
@@ -72,12 +147,11 @@ The RMSD quantifies geometric similarity between two conformations:
 where $d_i$ represents the distance between atoms $i$ after optimal superposition. RMSD thresholds (typically 1.0--2.0 \r{A}) filter redundant conformations in search output.
 
 
-
 \section{Conformational search methods}
 One of the most challenging aspect of pose prediction is the conformational search algorithm. In general, there are two main classes of conformational search methods, systematic and stochastic.  The users do not always have a choice to select the search algorithm because the developers usually select based on their expertise and code development. Nevertheless, there are programs, such as AutoDock, that allow users to select the search algorithm. 
 
 \subsection{Systematic Methods}
-The systematic search algorithm rotates all possible rotatable bonds (single bonds in the ring structures cannot be rotated as freely as open-chain structures) systematically by a fixed interval to explore all possible conformations. Such a method can explore all possible conformations, however, the complexity increases exponentially as the number of rotatable bonds increases. There are pruning algorithms that act as a “bump check” that rule out torsion angles that lead to significant atomic overlaps. The deterministic nature of systematic sampling guarantees that the same input will yield the same set of conformers, which is advantageous for benchmarking and reproducibility. However, the combinatorial explosion of grid points with increasing rotatable bonds quickly becomes prohibitive, especially for highly flexible ligands, motivating the use of hybrid schemes or coarse‑grained grids in practice\cite{CH2_1}.
+The systematic search algorithm rotates all possible rotatable bonds (single bonds in the ring structures cannot be rotated as freely as open-chain structures) systematically by a fixed interval to explore all possible conformations. Such a method can explore all possible conformations, however, the complexity increases exponentially as the number of rotatable bonds increases. There are pruning algorithms that act as a “bump check” that rule out torsion angles that lead to significant atomic overlaps. The deterministic nature of systematic sampling guarantees that the same input will yield the same set of conformers, which is advantageous for benchmarking and reproducibility. However, the combinatorial explosion of grid points with increasing rotatable bonds quickly becomes prohibitive, especially for highly flexible ligands, motivating the use of hybrid schemes or coarse‑grained grids in practice\cite{CH2_Beusen1996,CH2_Leach2001}.
 
 \subsubsection{Grid-based enumeration} 
  
@@ -90,11 +164,11 @@ N_{\text{conformations}} = 36^n
 
     This method guarantees finding the global minimum but becomes computationally prohibitive for large $n$ (combinatorial explosion). Grid enumeration works well for rigid molecules with 2--4 rotatable bonds but is impractical for flexible compounds.
     
-    In the context of molecular docking, the search space is limited to the binding pocket, often provided as a grid. Therefore, the systematic conformational search engine operates by discretizing the relevant degrees of freedom typically torsional angles on a this grid.  It then generated and evaluates all combinations of torsion angles within that grid. For a molecule with n rotatable bonds, each torsion  is sampled at a fixed interval, producing a Cartesian product of values  $\phi_1 \in {\phi_1^{(1)}, \dots, \phi_1^{(k)}}, \phi_2 \in {\phi_2^{(1)}, \dots, \phi_2^{(k)}}$ and so on. At each grid point, the geometry is energy‑minimized, and the resulting conformers are clustered and ranked by energy or empirical scoring functions. Because the search is exhaustive within the chosen resolution, systematic methods can in principle locate all sterically allowed conformations of a given molecule, provided the grid is sufficiently fine and the force field adequately describes the intramolecular energetics\cite{CH2_2}.
+    In the context of molecular docking, the search space is limited to the binding pocket, often provided as a grid. Therefore, the systematic conformational search engine operates by discretizing the relevant degrees of freedom typically torsional angles on a this grid.  It then generated and evaluates all combinations of torsion angles within that grid. For a molecule with n rotatable bonds, each torsion  is sampled at a fixed interval, producing a Cartesian product of values  $\phi_1 \in {\phi_1^{(1)}, \dots, \phi_1^{(k)}}, \phi_2 \in {\phi_2^{(1)}, \dots, \phi_2^{(k)}}$ and so on. At each grid point, the geometry is energy‑minimized, and the resulting conformers are clustered and ranked by energy or empirical scoring functions. Because the search is exhaustive within the chosen resolution, systematic methods can in principle locate all sterically allowed conformations of a given molecule, provided the grid is sufficiently fine and the force field adequately describes the intramolecular energetics\cite{CH2_Ferreira2015}.
   
 
 \subsubsection{The Z method}
-    The Z method\cite{CH2_3} is a variant of grid-based conformational search protocols that employs statistical information on the rotamers. It partitions the conformational space into subspaces and then applies repeated, uniform changes to a common starting structure, generating large ensembles of trial conformations in parallel. This approach allows rigid systematic searches in high dimensional spaces by combining grid‑based sampling with statistical information from rotamer libraries. The Z Method can also be used hierarchically: low resolution searches identify approximate regions of interest, which are then refined with finer grids or energy minimization protocols. The key advantage is the ability to couple systematic search with probabilistic rotamer preferences, improving the sampling efficiency while preserving the exhaustiveness of the underlying grid. However, to the best of our knowlegde, this method has only been applied protein stucture refinement. We did not find any literature references indicating its use as conformational search tool for small molecules or in molecular docking. 
+    The Z method\cite{CH2_Petrella2011} is a variant of grid-based conformational search protocols that employs statistical information on the rotamers. It partitions the conformational space into subspaces and then applies repeated, uniform changes to a common starting structure, generating large ensembles of trial conformations in parallel. This approach allows rigid systematic searches in high dimensional spaces by combining grid‑based sampling with statistical information from rotamer libraries. The Z Method can also be used hierarchically: low resolution searches identify approximate regions of interest, which are then refined with finer grids or energy minimization protocols. The key advantage is the ability to couple systematic search with probabilistic rotamer preferences, improving the sampling efficiency while preserving the exhaustiveness of the underlying grid. However, to the best of our knowlegde, this method has only been applied protein stucture refinement. We did not find any literature references indicating its use as conformational search tool for small molecules or in molecular docking. 
 
 \subsection{Fragmentation method}
 
@@ -112,16 +186,6 @@ It works on the principle of random sampling for a predetermined number of itera
 
 This method is motivated from the process of natural selection, that evaluates energy or docking score as the fitness criteria for selection and breeding. Akin to natural selection, the conformational degrees of freedom are encoded as binary numbers which represents specify values of the torsion angles. At the beginning, several random mutations are made in the binary numbers (interchanging “0” to “1”) and generating an initial population. The fitness score is evaluated for each member. Following which the top ranked (fittest members) are retained for breeding. To generate future generations, either cross-over is performed or mutations. This process is repeated for a pre-determined number of iterations. Autodock and GOLD are examples of docking programs that use genetic algorithm as their conformational search tool.
 
-%\item Genetic Algorithms (GA) and Lamarckian Genetic Algorithm (LGA)
- %   GAs use principles from natural genetics and biological evolution. A ligand's arrangement (translation, orientation, conformation) is defined by state variables, which correspond to "genes" in a chromosome (the genotype). The atomic coordinates are the "phenotype". The "fitness" is the total interaction energy of the ligand with the protein. New individuals (offspring) are generated through crossover (inheriting genes from parents) and mutation (random changes to genes). Selection is based on fitness, allowing better-suited solutions to reproduce. Real-valued genes are used for ligand translation (three Cartesian coordinates), orientation (four variables defining a quaternion), and each torsion angle. Quaternions are used for orientation to avoid "gimbal lock". New random number generators are introduced to ensure results can be reproduced on any hardware platform given the same seed values.
-    
-%\item Lamarckian Genetic Algorithm (LGA)
-%    This is a hybrid search method combining the GA with a local search (LS) method. In LGA, environmental adaptations (local optimization by LS) of an individual's phenotype are "reverse transcribed" into its genotype and become heritable traits. This means the results of the local search update the individual's genotype, influencing future generations. The LS method is based on Solis and Wets, which has the advantage of not requiring gradient information about the local energy landscape, thus facilitating torsional space search. It is also adaptive, adjusting its step size based on success or failure in finding lower energies. The step size can be different for each type of gene (e.g., translational vs. rotational).  LGA has shown enhanced performance relative to SA and GA alone. Across various test systems, LGA was found to be the most efficient (finding lowest energy for a given number of evaluations), most reliable (finding reproducible conformations), and most successful (reproducing crystal structures most often) among the three search methods. For instance, LGA successfully docked systems with up to 10 rotatable bonds where SA failed.
-
-
-
-
-% MD will be entire chapter in itself
 \subsection{Molecular Dynamics Simulations}
 
 At this point, it is appropriate to gently introduce another powerful conformational search method, namely \textit{molecular dynamics (MD) simulations}. It simulates the atomic motions as a function of time by solving the Newton's equation of motion. 
@@ -152,9 +216,65 @@ The SA protocol may be repeated 100+ times from different initial conformations,
 
 \section{Practical Considerations}
 
-\subsection{Handling Ring Systems}
 
-Acyclic molecules with many rotatable bonds dominate conformational search applications. Ring systems pose special challenges: ring conformations (chair, twist, boat forms for cyclohexane; envelope conformations for five-membered rings) must be explicitly sampled. Most tools handle six-membered rings well; smaller rings and fused ring systems require careful validation. 
+\subsection{Conformational flexibility in acyclic systems}
+
+For simple alkanes, conformational preferences are well rationalised by
+\emph{Newman projections}:
+\begin{itemize}
+  \item Staggered conformers minimise torsional strain and often benefit from
+        hyperconjugative stabilisation.
+  \item Eclipsed conformers are higher in energy due to torsional and sometimes
+        steric/electrostatic repulsions.
+\end{itemize}
+In butane, the anti-staggered conformer is lowest in energy, with gauche
+conformers slightly higher but still populated at room temperature; this basic
+model generalises to many drug-like substituents.
+
+Hyperconjugation and stereoelectronic effects (e.g.the gauche effect,
+anomeric effect) often bias torsional preferences away from purely steric
+expectations. These effects are naturally captured in quantum chemical PES
+scans and, when parametrised appropriately, in modern force fields.
+
+\subsection{Conformational flexibility in ring systems}
+
+\subsubsection{Ring strain components}
+
+Cycloalkanes illustrate several types of strain:
+\begin{itemize}
+  \item \textit{Angle strain}: deviation of bond angles from the ideal tetrahedral value (\(\approx\SI{109.5}{\degree}\)).
+  \item \textit{Torsional strain}: eclipsing interactions between neighbouring bonds.
+  \item \textit{Steric (non-bonded) strain}: 1,3-diaxial interactions, transannular repulsions in medium/large rings, etc.
+\end{itemize}
+Small rings (cyclopropane, cyclobutane) are strongly angle- and torsionally strained; cyclopentane relieves torsional strain by puckering; cyclohexane adopts near strain-free conformations.
+
+\subsubsection{Cyclohexane: chair, boat and twist-boat}
+
+In cyclohexane, the most important conformations are:
+\begin{itemize}
+  \item Two equivalent chair conformers, related by a ring flip.
+  \item Higher-energy boat and twist-boat conformations.
+\end{itemize}
+
+In the ideal chair, all C--C bonds are staggered and the internal bond angles are close to tetrahedral. A ring flip exchanges axial and equatorial positions; for monosubstituted cyclohexanes, the equilibrium strongly favours the equatorial conformer for bulky substituents due to reduced 1,3-diaxial repulsions.
+
+From a computational perspective, the PES in the relevant ring-puckering coordinates shows:
+\begin{itemize}
+  \item Two deep minima (chairs),
+  \item A pathway via twist-boat and boat conformations connecting them,
+  \item Barriers that set the timescale for ring inversions.
+\end{itemize}
+
+\subsubsection{Conformational analysis of substituted and heterocyclic rings}
+
+Substitution and heteroatoms modify ring conformations and relative energies:
+
+\begin{itemize}
+  \item Electronegative or $\sigma$-accepting substituents can introduce stereoelectronic effects (e.g.\ anomeric effect in pyranoses).
+  \item Heteroatoms change bond lengths/angles and steric profiles, altering A-values (axial penalty) and flipping preferences.
+  \item Fused ring systems transmit conformational bias conformational transmission, important in polycyclic scaffolds used in medicinal chemistry.
+\end{itemize}
+Accurate treatment of these systems often requires a combination of high-quality force fields and validation against quantum chemical PES scans or experiment.
 
 \subsection{Accounting for solvation effects}
 
@@ -172,27 +292,20 @@ RMSD:
 
 Clusters identify recurring poses.
 
-
-
 \subsection{Validation Metrics}
 
 Conformational search quality is evaluated by:
 
 \begin{enumerate}
-\item \textbf{Recovery of Crystallographic Conformations}: For validation datasets with known bioactive structures (e.g., protein-bound ligand conformations), the minimum RMSD from the ensemble to experimental structure indicates success. Recovery within 2 Å RMSD is considered good.
+\item \textit{Recovery of Crystallographic Conformations}: For validation datasets with known bioactive structures (e.g., protein-bound ligand conformations), the minimum RMSD from the ensemble to experimental structure indicates success. Recovery within 2 \r{A} RMSD is considered good.
 
-\item \textbf{Conformational Diversity}: The range of geometries in the final ensemble should comprehensively represent the conformational space. Metrics include distribution of dihedral angles and range of relative energies.
+\item \textit{Conformational Diversity}: The range of geometries in the final ensemble should comprehensively represent the conformational space. Metrics include distribution of dihedral angles and range of relative energies.
 
-\item \textbf{Computational Efficiency}: Wall-clock time and peak memory usage relative to molecular size determine practical viability. For drug discovery pipelines screening millions of compounds, efficiency is paramount.
+\item \textit{Computational Efficiency}: Wall-clock time and peak memory usage relative to molecular size determine practical viability. For drug discovery pipelines screening millions of compounds, efficiency is paramount.
 \end{enumerate}
-
-
-
 
 \section{Summary}
 Conformational search is the computational engine that enables docking. Understanding both the physics of the scoring function and the algorithms used to explore conformational space is essential for reliable predictions. Hybrid strategies that combine stochastic global exploration with local refinement currently offer the best trade-off between efficiency and accuracy.
-
-
 
 
 \bibliographystyle{plain}
