@@ -1,0 +1,112 @@
+%%%%%%%%%%%%%%%%%%%% book.tex %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% sample root file for the chapters of your "monograph"
+%
+% Use this file as a template for your own input.
+%
+%%%%%%%%%%%%%%%% Springer-Verlag %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% RECOMMENDED %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[graybox,envcountchap,sectrefs]{svmono}
+
+% choose options for [] as required from the list
+% in the Reference Guide
+
+%\usepackage{mathptmx}
+%\usepackage{helvet}
+%\usepackage{courier}
+%
+\usepackage{type1cm}         
+
+\usepackage{makeidx}         % allows index generation
+\usepackage{graphicx}        % standard LaTeX graphics tool
+                             % when including figure files
+\usepackage{multicol}        % used for the two-column index
+\usepackage[bottom]{footmisc}% places footnotes at page bottom
+
+\usepackage{newtxtext}       % 
+\usepackage[varvw]{newtxmath}       % selects Times Roman as basic font
+
+% see the list of further useful packages
+% in the Reference Guide
+
+\makeindex             % used for the subject index
+                       % please use the style svind.ist with
+                       % your makeindex program
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\date{today}
+
+\begin{document}
+
+\author{Elvis A. F. Martis}
+\title{A Practical Guide to Molecular Docking}
+\subtitle{-- Monograph --}
+\maketitle
+
+\frontmatter%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\include{FrontMatter/dedication}
+\include{FrontMatter/foreword}
+\include{FrontMatter/preface}
+\include{FrontMatter/acknowledgement}
+
+\tableofcontents
+
+\include{FrontMatter/abbreviations}
+
+
+\mainmatter%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\include{part}
+%Chapter 1
+\include{MainMatter/Introduction}
+%Chapter 2
+\include{MainMatter/Conformational_Search_Methods}
+%Chapter 3
+\include{MainMatter/Scoring_Functions}
+%Chapter 4
+\include{MainMatter/Source_and_Quality_assessment_of_Macromolecular_structures}
+%Chapter 5 
+\include{MainMatter/Binding_site_identification_and_validation}
+%Chapter 6 
+\include{MainMatter/Preparing_small_molecules_for_docking}
+%Chapter 7 
+\include{MainMatter/Molecular_docking_programs}
+%Chapter 8 
+\include{MainMatter/Analysing_and_validation_of_molecular_docking_results}
+%Chapter 9 
+\include{MainMatter/molecular_dynamics_simulations}
+%Chapter 10 
+\include{MainMatter/Binding_affinity_predictions_and_free_energy_methods}
+%Chapter 11 
+\include{MainMatter/Presenting_and_communicating_results}
+%Chapter 12 
+\include{MainMatter/Ensuring_reproducibility_and_data_Integrety}
+%Chapter 13 
+\include{MainMatter/Union_of_artifical_intelligence_and_molecular_docking}
+%Chapter 14 
+\include{MainMatter/Practical_recommendations_and_Summary}
+
+
+
+
+\include{appendix}
+
+\backmatter%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\include{BackMatter/glossary}
+\include{BackMatter/about}
+\include{BackMatter/index}
+\include{BackMatter/code}
+\include{BackMatter/about}
+\printindex
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
+
+
+
+
+
