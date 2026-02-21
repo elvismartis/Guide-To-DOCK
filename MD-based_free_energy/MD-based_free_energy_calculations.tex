@@ -1,0 +1,161 @@
+\subsection{Statistical thermodynamics of binding}
+From statistical thermodynamics, the equilibrium constant can be expressed in terms of partition functions.\cite{CH3_DillBromberg} For a simple association reaction,
+\begin{equ}
+P + L \rightleftharpoons PL,
+\]
+the standard association constant \(K_a\) can be written as
+\[
+K_a = \frac{Q_{PL}/V^\circ}{(Q_P/V^\circ)(Q_L/V^\circ)} = \frac{Q_{PL} \, V^\circ}{Q_P Q_L},
+\]
+where \(Q_P\), \(Q_L\), and \(Q_{PL}\) are the canonical partition functions of the protein, ligand, and complex, respectively, and \(V^\circ\) is the standard-state volume corresponding to \(c^\circ\) (for \(c^\circ = \SI{1}{M}\), \(V^\circ \approx \SI{1661}{\angstrom^3}\) per molecule). The corresponding standard free energy of binding is then
+\[
+\Delta G^\circ = -k_B T \ln \left( \frac{Q_{PL} \, V^\circ}{Q_P Q_L} \right),
+\]
+with \(k_B\) the Boltzmann constant.
+
+In practice, the partition functions are high-dimensional integrals over all positions and momenta of the atoms. For condensed-phase systems at constant temperature, it is common to integrate out the momenta and focus on the configurational integrals:
+\[
+Q_X \propto \int \mathrm{d}\mathbf{r} \, e^{-\beta U_X(\mathbf{r})},
+\]
+where \(U_X(\mathbf{r})\) is the potential energy of species \(X\) as a function of the coordinates \(\mathbf{r}\) and \(\beta = 1/(k_B T)\). Advanced simulation-based free energy methods, such as alchemical transformations or potential of mean force calculations, aim to evaluate \(\Delta G^\circ\) by computing appropriate free energy differences between such configurational integrals.\cite{CH3_GilsonZhou2007,CH3_MichelEssex2010}
+
+An important subtlety in simulation-based calculations is the treatment of the standard state. When a ligand is restrained in a binding site by a biasing potential during an alchemical calculation, one must add a correction term that converts the free energy of forming a restrained complex in a finite simulation box to the standard-state free energy of binding in bulk solution.
+
+\subsection{Decomposing the binding free energy}
+
+Although \(\Delta G^\circ\) is a state function and thus independent of pathway, it is often helpful to decompose it into contributions corresponding to physically distinct processes.\cite{CH3_GilsonZhou2007,BaronMcCammon2013} A schematic decomposition is
+\[
+\Delta G^\circ_{\text{bind}} =
+\Delta G^\circ_{\text{inter}} +
+\Delta G^\circ_{\text{desolv,prot}} +
+\Delta G^\circ_{\text{desolv,lig}} +
+\Delta G^\circ_{\text{conf}} +
+\Delta G^\circ_{\text{t+r}},
+\]
+where
+\begin{itemize}
+  \item \(\Delta G^\circ_{\text{inter}}\) describes the direct protein--ligand interaction (electrostatics, van der Waals, hydrogen bonding, etc.) in the bound complex;
+  \item \(\Delta G^\circ_{\text{desolv,prot}}\) and \(\Delta G^\circ_{\text{desolv,lig}}\) account for desolvation of the binding site and ligand, including the free energy cost of displacing water molecules;
+  \item \(\Delta G^\circ_{\text{conf}}\) reflects conformational reorganization of the protein and ligand between free and bound states;
+  \item \(\Delta G^\circ_{\text{t+r}}\) represents the loss of translational and rotational entropy upon forming the complex.
+\end{itemize}
+
+This decomposition is not unique and individual terms are not directly observable, but it is conceptually useful.\cite{CH3_ferenczy2015,CH3_reynolds2011} For example, a ligand that forms many strong hydrogen bonds and salt bridges may have a very favorable \(\Delta G^\circ_{\text{inter}}\), but if it is highly flexible and requires a large conformational change on binding, \(\Delta G^\circ_{\text{conf}}\) and \(\Delta G^\circ_{\text{t+r}}\) may be strongly unfavorable. Likewise, hydrophobic ligands often gain binding affinity through the release of structured water from nonpolar surfaces, which is largely entropic in origin, although the desolvation of polar groups can incur an enthalpic penalty.\cite{CH3_DillBromberg,CH3_reynolds2011}
+
+
+%@article{CH3_reynolds2011,
+%  title={Thermodynamics of ligand binding and efficiency},
+%  author={Reynolds, Charles H and Holloway, M Katharine},
+%  journal={ACS medicinal chemistry letters},
+%  volume={2},
+%  number={6},
+%  pages={433--437},
+%  year={2011},
+%}
+%@book{CH3_DillBromberg,
+%  title={Molecular driving forces: statistical thermodynamics in biology, chemistry, physics, and nanoscience},
+%  author={Dill, Ken and Bromberg, Sarina},
+%  year={2010},
+%  publisher={Garland Science}
+%}
+
+@book{Ch3_AtkinsDePaula,
+  title={Physical chemistry for the life sciences},
+  author={Atkins, Peter William and Ratcliffe, R George and De Paula, Julio and Wormald, Mark},
+  year={2023},
+  publisher={Oxford University Press}
+}
+
+@article{CH3_GilsonZhou2007,
+  title={Calculation of protein-ligand binding affinities},
+  author={Gilson, Michael K and Zhou, Huan-Xiang},
+  journal={Annu. Rev. Biophys. Biomol. Struct.},
+  volume={36},
+  number={1},
+  pages={21--42},
+  year={2007}
+}
+
+@article{CH3_holdgate2005,
+  title={Measurements of binding thermodynamics in drug discovery},
+  author={Holdgate, Geoffrey A and Ward, Walter HJ},
+  journal={Drug discovery today},
+  volume={10},
+  number={22},
+  pages={1543--1550},
+  year={2005}
+}
+
+@article{CH3_reynolds2011,
+  title={Thermodynamics of ligand binding and efficiency},
+  author={Reynolds, Charles H and Holloway, M Katharine},
+  journal={ACS medicinal chemistry letters},
+  volume={2},
+  number={6},
+  pages={433--437},
+  year={2011},
+}
+
+@article{CH3_MichelEssex2010,
+  title={Prediction of protein--ligand binding affinity by free energy simulations: assumptions, pitfalls and expectations},
+  author={Michel, Julien and Essex, Jonathan W},
+  journal={Journal of computer-aided molecular design},
+  volume={24},
+  number={8},
+  pages={639--658},
+  year={2010}
+}
+
+
+@article{CH3_BaronMcCammon2013,
+  title={Molecular recognition and ligand association},
+  author={Baron, Riccardo and McCammon, J Andrew},
+  journal={Annual review of physical chemistry},
+  volume={64},
+  number={1},
+  pages={151--175},
+  year={2013}
+}
+
+
+@article{CH3_ferenczy2015,
+  title={The impact of binding thermodynamics on medicinal chemistry optimizations},
+  author={Ferenczy, Gy{\"o}rgy G and Keser{\H{u}}, Gy{\"o}rgy M},
+  journal={Future Medicinal Chemistry},
+  volume={7},
+  number={10},
+  pages={1285--1303},
+  year={2015}
+}
+
+@article{CH3_Strelow2017,
+  title={A perspective on the kinetics of covalent and irreversible inhibition},
+  author={Strelow, John M},
+  journal={SLAS Discovery: Advancing Life Sciences R\&D},
+  volume={22},
+  number={1},
+  pages={3--20},
+  year={2017},
+}
+
+@article{CH3_sutanto2020,
+  title={Covalent inhibitors: a rational approach to drug discovery},
+  author={Sutanto, Fandi and Konstantinidou, Markella and D{\"o}mling, Alexander},
+  journal={RSC medicinal chemistry},
+  volume={11},
+  number={8},
+  pages={876--884},
+  year={2020}
+}
+@article{CH3_Schramm2011,
+  title={Enzymatic transition states, transition-state analogs, dynamics, thermodynamics, and lifetimes},
+  author={Schramm, Vern L},
+  journal={Annual review of biochemistry},
+  volume={80},
+  number={1},
+  pages={703--732},
+  year={2011}
+}
+
+
+

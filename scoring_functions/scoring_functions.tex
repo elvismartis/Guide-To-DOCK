@@ -1,0 +1,114 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+\usepackage{natbib}
+\usepackage{hyperref}
+\bibliographystyle{plain}
+%\usepackage[margin=1in]{geometry}
+
+\begin{document}
+
+\title{Scoring Functions}
+\author{Elvis Martis}
+\date{}
+\maketitle
+
+\section{Thermodynamics of protein--ligand binding}
+
+Small molecules acting as messenger molecules or substrate molecules bind to their respective target receptors to show their biological or biochemical functions. This is a central process in biochemistry, and fundamental concept that is essential to understand to excel at drug discovery. From a thermodynamic point of view, binding is a reversible association (see section \ref{covalent_binding} on covalent association) between a macromolecular receptor, typically a protein, and a small molecule that can be described by equilibrium constants and associated changes in Gibbs free energy, enthalpy, and entropy.\cite{CH3_DillBromberg,CH3_AtkinsDePaula} 
+
+For computational chemists in general, and in particular, for the development of scoring functions in molecular docking, it is essential to understand how these thermodynamic quantities are defined, how they relate to experimental observables such as dissociation constants, and how they can be interpreted in terms of microscopic interactions and molecular motions.\cite{CH3_GilsonZhou2007}.
+
+
+\subsection{Macroscopic description of binding equilibria}
+
+Consider a protein \emph{P} and a ligand \emph{L} that reversibly form a complex \emph{PL}:
+\begin{equation}
+P + L \rightleftharpoons PL.
+\label{PL_compl}
+\end{equation}
+Under conditions, where the solution is sufficiently dilute and ideal, this equilibrium can be characterized by an association constant $K_a$ or a dissociation constant $K_d$. Using molar concentrations indicated by square brackets,
+\begin{equation}
+K_a = \frac{[PL]}{[P][L]}, \qquad K_d = \frac{[P][L]}{[PL]} = \frac{1}{K_a}.
+\label{molar_binding}
+\end{equation}
+Because equilibrium constants are dimensionless, a standard state concentration $c^\circ$, typically $c^\circ = \SI{1}{M}$ is introduced. The thermodynamic standard Gibbs free energy of binding, $\Delta G^\circ$, is related to $K_a$ as show in \ref{dg_ka}
+\begin{equation}
+\Delta G^\circ = -RT \ln K_a,
+\label{dg_ka}
+\end{equation}
+where R is the gas constant and T is the absolute temperature.\cite{CH3_DillBromberg,CH3_AtkinsDePaula} 
+A more explicit definition that emphasizes the standard state is
+\begin{equation}
+K_a = \frac{[PL]/c^\circ}{([P]/c^\circ)([L]/c^\circ)}, \qquad
+\Delta G^\circ = -RT \ln K_a,
+\label{dg_ka_ext}
+\end{equation}
+ensuring that the logarithm is dimensionless.
+
+In drug discovery, affinity is reported as $K_d$ or as an inhibitory concentration such as $K_i$ or \(\mathrm{IC}_{50}\); under suitable assumptions, these quantities can be related back to $\Delta G^\circ$.\cite{CH3_GilsonZhou2007} For example, at $T = 298 K$, a tenfold change in $K_d$ corresponds to a change in $\Delta G^\circ$ of $\approx$ 1.36 kcal/mol, illustrating how small energetic differences translate into large changes in affinity.
+
+\subsection{Enthalpy, entropy, and the van 't Hoff relation}
+
+The standard free energy of binding can be decomposed into standard enthalpic and entropic contributions:
+\begin{equation}
+\Delta G^\circ = \Delta H^\circ - T \Delta S^\circ.
+\label{gibbs_eq}
+\end{equation}
+Here, $\Delta H^\circ$ is the standard enthalpy change and $\Delta S^\circ$ is the standard entropy change upon binding.\cite{CH3_DillBromberg} Conceptually, $\Delta H^\circ$ reflects changes in the average internal energy of the system (including protein, ligand, and solvent) at constant pressure, while $\Delta S^\circ$ incorporates changes in the number of accessible microstates, including translational, rotational, and conformational degrees of freedom of the protein, ligand, and surrounding solvent.
+
+Experimentally, $\Delta H^\circ$ and $\Delta S^\circ$ can be obtained from calorimetric measurements, such as isothermal titration calorimetry (ITC), or from the temperature dependence of the equilibrium constant.\cite{CH3_holdgate2005} Under the approximation that $\Delta H^\circ$ is independent of temperature over a limited range, the van 't Hoff equation relates the temperature derivative of $\ln K_a$ to $\Delta H^\circ$:
+\begin{equation}
+\left( \frac{\partial \ln K_a}{\partial (1/T)} \right)_p = -\frac{\Delta H^\circ}{R}.
+\label{vant_hoff}
+\end{equation}
+Integrating between two temperatures $T_1$ and $T_2$ gives
+\[
+\ln \frac{K_a(T_2)}{K_a(T_1)} = -\frac{\Delta H^\circ}{R} \left( \frac{1}{T_2} - \frac{1}{T_1} \right).
+\]
+
+The enthalpy and entropy of binding often exhibit compensation: more favorable (negative) $\Delta H^\circ$ is accompanied by less favorable (more negative) $\Delta S^\circ$, and vice versa.\cite{CH3_reynolds2011} This enthalpy--entropy compensation is a common feature of protein--ligand systems and complicates intuitive reasoning about the driving forces of binding.
+
+
+\subsection{Thermodynamics of covalent binding}\label{covalent_binding}
+
+For covalent inhibitors, binding is typically described as a two-step process:\cite{CH3_Strelow2017,CH3_sutanto2020}
+\begin{equation}
+P + L \;\underset{k_{\!off}}{\overset{k_{\!on}}{\rightleftharpoons}}\; P\!:\!L
+\;\xrightarrow{k_{\text{inact}}}\;
+P\!-\!L,
+\label{covbind_eq1}
+\end{equation}
+
+where P is the protein, L the ligand, $P\!:\!L$ a reversible noncovalent complex, and $P\!-\!L$ the covalently modified protein. The first step is governed by classical binding thermodynamics: formation of $P\!:\!L$ is characterized by an equilibrium constant
+\begin{equation}
+K_I = \frac{k_{\text{off}}}{k_{\text{on}}}
+\label{covbind_eq2a}
+\end{equation}
+and a corresponding standard free energy
+\begin{equation}
+\Delta G^\circ_{\text{noncovalent}} = -RT \ln K_I.
+\label{covbind_eq2b}
+\end{equation}
+Thus, all of the concepts developed for noncovalent binding (enthalpy/entropy balance, solvation, conformational and translational/rotational entropy) apply directly to this pre-equilibrium.\cite{CH3_Strelow2017}
+
+The second step is a chemical reaction in which a nucleophilic residue on the protein (e.g. Cys, Ser, Lys) attacks an electrophilic warhead on the ligand. Its rate is governed by the inactivation rate constant $k_{\text{inact}}$, which is determined by an activation free energy $\Delta G^\ddagger$ using the transition state theory:\cite{CH3_Schramm2011}
+\begin{equation}
+k_{\text{inact}} \approx \frac{k_B T}{h} \exp\!\left(-\frac{\Delta G^\ddagger}{RT}\right),
+\label{covbind_eq3}
+\end{equation}
+
+with $\Delta G^\ddagger = \Delta H^\ddagger - T \Delta S^\ddagger$. The overall efficiency of a covalent inhibitor is then quantified by the second-order parameter $k_{\text{inact}}/K_I$, which combines the thermodynamics of noncovalent complex formation with the thermodynamics of the chemical step.\cite{CH3_Strelow2017} In addition, the reaction free energy $\Delta G^\circ_{\text{rxn}}$ for forming the covalent adduct is often strongly negative, making dissociation negligible on experimental timescales and conferring prolonged target occupancy characteristic of covalent drugs.
+
+
+%edit from here
+\subsection{Implications for scoring functions and docking}
+
+Scoring functions used in molecular docking aim to provide rapid estimates of relative binding affinities. Ideally, a scoring function would approximate \(\Delta G^\circ_{\text{bind}}\), but in practice many empirical scoring functions are dominated by enthalpy-like terms such as pairwise van der Waals and electrostatic interactions, sometimes augmented by implicit solvation and simple entropic terms.\cite{CH3_GilsonZhou2007,CH3_MichelEssex2010} For example, ligand conformational entropy is often approximated by counting rotatable bonds, and hydrophobic effects may be modeled via buried solvent-accessible surface area.
+
+Understanding the thermodynamic underpinnings of binding clarifies both the strengths and limitations of such models. Missing or poorly modeled contributions, such as changes in protein conformational entropy or explicit water-mediated interactions, can lead to systematic errors and poor transferability.\cite{CH3_BaronMcCammon2013} More physics-based approaches, including alchemical free energy calculations with explicit solvent, attempt to predict $\Delta G^\circ$ more rigorously at higher computational cost, and are increasingly used alongside docking in structure-based design.\cite{CH3_MichelEssex2010}
+
+\bibliography{scoring_functions}
+
+\end{document}
