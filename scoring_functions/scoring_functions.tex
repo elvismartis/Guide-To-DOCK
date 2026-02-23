@@ -25,25 +25,25 @@ For computational chemists in general, and in particular, for the development of
 
 Consider a protein \emph{P} and a ligand \emph{L} that reversibly form a complex \emph{PL}:
 \begin{equation}
-P + L \rightleftharpoons PL.
-\label{PL_compl}
+P + L \rightleftharpoons PL
+\label{eq:PL_compl}
 \end{equation}
 Under conditions, where the solution is sufficiently dilute and ideal, this equilibrium can be characterized by an association constant $K_a$ or a dissociation constant $K_d$. Using molar concentrations indicated by square brackets,
 \begin{equation}
-K_a = \frac{[PL]}{[P][L]}, \qquad K_d = \frac{[P][L]}{[PL]} = \frac{1}{K_a}.
-\label{molar_binding}
+K_a = \frac{[PL]}{[P][L]}, \qquad K_d = \frac{[P][L]}{[PL]} = \frac{1}{K_a}
+\label{eq:molar_binding}
 \end{equation}
 Because equilibrium constants are dimensionless, a standard state concentration $c^\circ$, typically $c^\circ = \SI{1}{M}$ is introduced. The thermodynamic standard Gibbs free energy of binding, $\Delta G^\circ$, is related to $K_a$ as show in \ref{dg_ka}
 \begin{equation}
 \Delta G^\circ = -RT \ln K_a,
-\label{dg_ka}
+\label{eq:dg_ka}
 \end{equation}
 where R is the gas constant and T is the absolute temperature.\cite{CH3_DillBromberg,CH3_AtkinsDePaula} 
 A more explicit definition that emphasizes the standard state is
 \begin{equation}
 K_a = \frac{[PL]/c^\circ}{([P]/c^\circ)([L]/c^\circ)}, \qquad
-\Delta G^\circ = -RT \ln K_a,
-\label{dg_ka_ext}
+\Delta G^\circ = -RT \ln K_a
+\label{eq:dg_ka_ext}
 \end{equation}
 ensuring that the logarithm is dimensionless.
 
@@ -54,11 +54,12 @@ In drug discovery, affinity is reported as $K_d$ or as an inhibitory concentrati
 The standard free energy of binding can be decomposed into standard enthalpic and entropic contributions:
 \begin{equation}
 \Delta G^\circ = \Delta H^\circ - T \Delta S^\circ.
-\label{gibbs_eq}
+\label{eq:gibbs_eq}
 \end{equation}
 Here, $\Delta H^\circ$ is the standard enthalpy change and $\Delta S^\circ$ is the standard entropy change upon binding.\cite{CH3_DillBromberg} Conceptually, $\Delta H^\circ$ reflects changes in the average internal energy of the system (including protein, ligand, and solvent) at constant pressure, while $\Delta S^\circ$ incorporates changes in the number of accessible microstates, including translational, rotational, and conformational degrees of freedom of the protein, ligand, and surrounding solvent.
 
 Experimentally, $\Delta H^\circ$ and $\Delta S^\circ$ can be obtained from calorimetric measurements, such as isothermal titration calorimetry (ITC), or from the temperature dependence of the equilibrium constant.\cite{CH3_holdgate2005} Under the approximation that $\Delta H^\circ$ is independent of temperature over a limited range, the van 't Hoff equation relates the temperature derivative of $\ln K_a$ to $\Delta H^\circ$:
+
 \begin{equation}
 \left( \frac{\partial \ln K_a}{\partial (1/T)} \right)_p = -\frac{\Delta H^\circ}{R}.
 \label{vant_hoff}
@@ -71,61 +72,70 @@ Integrating between two temperatures $T_1$ and $T_2$ gives
 The enthalpy and entropy of binding often exhibit compensation: more favorable (negative) $\Delta H^\circ$ is accompanied by less favorable (more negative) $\Delta S^\circ$, and vice versa.\cite{CH3_reynolds2011} This enthalpy--entropy compensation is a common feature of protein--ligand systems and complicates intuitive reasoning about the driving forces of binding.
 
 
-\subsection{Thermodynamics of covalent binding}\label{covalent_binding}
+\subsection{Thermodynamics of covalent binding}\label{sec:covalent_binding}
 
 For covalent inhibitors, binding is typically described as a two-step process:\cite{CH3_Strelow2017,CH3_sutanto2020}
+
 \begin{equation}
 P + L \;\underset{k_{\!off}}{\overset{k_{\!on}}{\rightleftharpoons}}\; P\!:\!L
 \;\xrightarrow{k_{\text{inact}}}\;
 P\!-\!L,
-\label{covbind_eq1}
+\label{eq:covbind_eq1}
 \end{equation}
 
 where P is the protein, L the ligand, $P\!:\!L$ a reversible noncovalent complex, and $P\!-\!L$ the covalently modified protein. The first step is governed by classical binding thermodynamics: formation of $P\!:\!L$ is characterized by an equilibrium constant
+
 \begin{equation}
 K_I = \frac{k_{\text{off}}}{k_{\text{on}}}
 \label{covbind_eq2a}
 \end{equation}
 and a corresponding standard free energy
 \begin{equation}
-\Delta G^\circ_{\text{noncovalent}} = -RT \ln K_I.
-\label{covbind_eq2b}
+\Delta G^\circ_{\text{noncovalent}} = -RT \ln K_I
+\label{eq:covbind_eq2b}
 \end{equation}
+
 Thus, all of the concepts developed for noncovalent binding (enthalpy/entropy balance, solvation, conformational and translational/rotational entropy) apply directly to this pre-equilibrium.\cite{CH3_Strelow2017}
 
 The second step is a chemical reaction in which a nucleophilic residue on the protein (e.g. Cys, Ser, Lys) attacks an electrophilic warhead on the ligand. Its rate is governed by the inactivation rate constant $k_{\text{inact}}$, which is determined by an activation free energy $\Delta G^\ddagger$ using the transition state theory:\cite{CH3_Schramm2011}
+
 \begin{equation}
-k_{\text{inact}} \approx \frac{k_B T}{h} \exp\!\left(-\frac{\Delta G^\ddagger}{RT}\right),
-\label{covbind_eq3}
+k_{\text{inact}} \approx \frac{k_B T}{h} \exp\!\left(-\frac{\Delta G^\ddagger}{RT}\right)
+\label{eq:covbind_eq3}
 \end{equation}
 
 with $\Delta G^\ddagger = \Delta H^\ddagger - T \Delta S^\ddagger$. The overall efficiency of a covalent inhibitor is then quantified by the second-order parameter $k_{\text{inact}}/K_I$, which combines the thermodynamics of noncovalent complex formation with the thermodynamics of the chemical step.\cite{CH3_Strelow2017} In addition, the reaction free energy $\Delta G^\circ_{\text{rxn}}$ for forming the covalent adduct is often strongly negative, making dissociation negligible on experimental timescales and conferring prolonged target occupancy characteristic of covalent drugs.
 
-%edit from here
+
 \section{Scoring functions}
 
 Docking workflows use scoring functions for pose prediction (finding bioactive conformation), affinity prediction (estimate free energy of binding), and virtual screening (finding new hit molecules from large databases). Since scoring functions are developed using experimental binding data alongwith structural data from protein data bank, its perfomance such as pose prediction, scoring, and ranking, must be validated using external benchmark sets that were not a part of the dataset for development.\cite{CH3_Su2019_CASF2016,CH3_Wang2014_CASF2013_Set,CH3_Wang2014_CASF2013_Results} 
 
-In this chapter, we emphasis on the classes of scoring functions used in docking, emphasizing their mathematical forms and underlying physical/statistical assumptions. we also discuss on parameterisation, testing, and validation of scoring functions. For validation, we discuss various datasets and benchmarks (e.g., PDBbind, CASF, DUD-E, CSAR) that have emerged over the years with the help of molecular modeling community that conduct blind challenges to rigoursly test every aspect of docking and scoring ability of a molecular docking engine. Finally, it highlights key challenges---data bias, overfitting, protein flexibility, solvation, and generalization---that motivate current research, including machine-learning-based scoring functions.\cite{CH3_Wang2017} 
+Here, we emphasis on the classes of scoring functions used in docking, emphasizing their mathematical forms and underlying physical/statistical assumptions. we also discuss on parameterisation, testing, and validation of scoring functions. For validation, we enlist and discuss various datasets and benchmarks (e.g., PDBbind, CASF, DUD-E, CSAR) that have emerged over the years. These benchmark sets and datasets have been curated with the help of molecular modeling community that conduct blind challenges to rigoursly test every aspect of docking and scoring ability of a molecular docking program. We also highlights key challenges such as data bias, overfitting, protein flexibility, solvation, and generalization, 
+which motivates current research for improving the docking methods in general, and scoring functions in particular.\cite{CH3_Wang2017} 
 
 \section{Classes of Scoring Functions}
 
-From a high-level perspective, protein--ligand scoring functions can be grouped into four major categories:
+ Protein--ligand scoring functions are classified under four classes based on their parameterisation philosophy, and are given as follows:
 \begin{enumerate}
-    \item Force-field-based (physics-based) scoring functions.
+    \item Force field-based (physics-based) scoring functions.
     \item Empirical scoring functions.
-    \item Knowledge-based (statistical potential) scoring functions.
+    \item Knowledge based (statistical potential) scoring functions.
     \item Machine-learning-based scoring functions (Covered in chapter \textbf{Link to AI chapter}).
 \end{enumerate}
-In practice, many modern scoring functions are hybrids that combine elements from multiple categories, but these distinctions are useful pedagogically and conceptually.\cite{CH3_Wang2017}
+
+In recent times, several good scoring functions in use today are consensus scoring functions, which implement several elements from different scoring functions. They are further fine tuned using suitable wieghting functions or fitting coefficients to reproduce biological binding affinity. Nevertheless, for historical reasons, we explain each class of scoring functions and their philosophies. This should prepare the reader to appreciate the modern scoring functions. 
 
 \subsection{Force Field Based Scoring Functions}
 
-Force-field-based scoring functions derive directly from classical molecular mechanics (MM) energy expressions. A typical MM energy for a protein--ligand complex is written as
+Force field-based scoring functions are derive directly from classical molecular mechanics (MM) energy expressions. A typical MM energy for a protein--ligand complex is written as
+
 \begin{equation}
-E_{\text{MM}} = E_{\text{bond}} + E_{\text{angle}} + E_{\text{tors}} + E_{\text{vdW}} + E_{\text{elec}} ,
+E_{\text{MM}} = E_{\text{bond}} + E_{\text{angle}} + E_{\text{tors}} + E_{\text{vdW}} + E_{\text{elec}}
+\label{eq:FF_general}
 \end{equation}
-where the bonded terms model internal strain and the nonbonded terms account for intermolecular van der Waals (vdW) and electrostatic interactions. In docking, the bonded terms within the protein are often held fixed (rigid receptor assumption), while bonded terms within the ligand and cross terms (e.g., ligand dihedrals coupled to receptor) may be partially considered.
+
+where the bonded terms model internal strain, and the nonbonded terms account for intermolecular interactions further classified as  van der Waals (vdW) and electrostatic interactions. In docking, the bonded terms within the protein are often held fixed (rigid receptor assumption), while bonded terms within the ligand and cross terms (e.g., ligand dihedrals coupled to receptor) may be partially considered. However, for most practical reasons components describing bonds and angles are held fixed for both ligand and receptors. 
 
 A generic form of the nonbonded MM energy between protein and ligand can be written as
 \begin{equation}
@@ -140,115 +150,128 @@ E_{\text{PL}}^{\text{MM}} =
 \right],
 \label{eq:MM_nonbonded}
 \end{equation}
-where $r_{ij}$ is the distance between atoms $i$ and $j$, $A_{ij}$ and $B_{ij}$ are Lennard--Jones parameters, $q_i$ and $q_j$ are partial charges, and $\varepsilon_r$ represents an effective dielectric constant. The Lennard--Jones term approximates dispersion and steric repulsion, while the Coulombic term captures electrostatics.
 
-In a purely force-field-based scoring function, the docking score is often taken to be
+where $r_{ij}$ is the distance between ligand atoms i and receptor atoms j, $A_{ij}$ and $B_{ij}$ are Lennard--Jones parameters, $q_i$ and $q_j$ are partial charges, and $\varepsilon_r$ represents an effective dielectric constant. The Lennard--Jones term approximates dispersion and steric repulsion, while the Coulombic term captures electrostatics. 
+
+In a purely force field-based scoring function, the docking score is often taken to be
+
 \begin{equation}
-S_{\text{FF}} = E_{\text{PL}}^{\text{MM}} + E_{\text{env}},
+S_{\text{FF}} = E_{\text{PL}}^{\text{MM}} + E_{\text{env}}
+\label{eq:MM_scoring}
 \end{equation}
-where $E_{\text{env}}$ is an environmental term that approximately accounts for solvation and sometimes entropic contributions. In docking implementations, $E_{\text{env}}$ is frequently modeled by implicit-solvent schemes, such as generalized Born (GB) or Poisson--Boltzmann (PB) plus a surface-area term, leading to MM/GBSA or MM/PBSA-type rescoring.\cite{CH3_wang2019end} 
 
-Even when not explicitly labeled as force-field-based, many docking programs employ grid-based precomputation of the receptor's nonbonded potential for each atom type, effectively discretizing Eq.~\ref{eq:MM_nonbonded} on a 3D lattice. The ligand is then placed in this field and its energy is interpolated, trading some physical fidelity for efficiency.
+where $E_{\text{env}}$ is an environmental term that approximately accounts for solvation and sometimes entropic contributions. In docking implementations, $E_{\text{env}}$ is frequently modeled by implicit solvent schemes, such as generalized Born (GB) or Poisson--Boltzmann (PB) plus a surface area term, leading to MM/GBSA or MM/PBSA-type rescoring.\cite{CH3_wang2019end} 
 
-The strengths of force-field-based scoring functions include:
+Even when not explicitly labeled as force field-based, many docking programs employ grid-based precomputation of the receptor's nonbonded potential for each atom type, effectively discretizing Eq.~\ref{eq:MM_nonbonded} on a 3D lattice. The ligand is then placed in this field and its energy is interpolated, trading some physical fidelity for efficiency (\textbf{Link to docking programs chapters}).
+
+The strengths of force field-based scoring functions include:
 \begin{itemize}
     \item Clear physical interpretation of terms.
-    \item Transferability across chemical space when parameters are well calibrated.
-    \item Seamless connection to more rigorous free-energy methods (FEP, TI) for later refinement.
+    \item Transferability across chemical groups when parameters are well defined.
+    \item More amenable with rigorous free-energy methods (FEP, TI) for post-processing.
 \end{itemize}
 However, limitations include:
 \begin{itemize}
-    \item Difficulty in accurately modeling desolvation and entropic contributions in a simple additive energy function.
+    \item Difficulty in accurately modeling desolvation, and entropic contributions in a simple additive energy function.
     \item Sensitivity to protonation states, tautomers, and partial charge assignments.
-    \item High computational cost if used with explicit solvent or extensive conformational sampling.
 \end{itemize}
 
 \subsection{Empirical Scoring Functions}
 
-Empirical scoring functions approximate the binding free energy as a weighted sum of physically motivated descriptors calibrated against experimental binding data. A generic functional form is
+Empirical scoring functions approximate the binding free energy as a weighted sum of physics-based descriptors fitted against experimental binding data. 
+
+A general functional form is given as:
 \begin{equation}
-\Delta G_{\text{bind}}^{\text{emp}} = w_0 + \sum_{k=1}^{K} w_k f_k(\mathbf{R}),
+\Delta G_{\text{bind}}^{\text{emp}} = w_0 + \sum_{k=1}^{K} w_k f_k(\mathbf{R})
 \label{eq:empirical_general}
 \end{equation}
-where $\mathbf{R}$ denotes the protein--ligand complex geometry, $f_k(\mathbf{R})$ are descriptor functions (e.g., counts of hydrogen bonds, hydrophobic contacts, metal coordination interactions, buried surface area, number of rotatable bonds), and $w_k$ are parameters fitted by regression to experimental binding free energies (converted from $K_d$, $K_i$, or IC$_{50}$ values).\cite{CH3_Wang2017}
+
+where $\mathbf{R}$ denotes the protein--ligand complex, $f_k(\mathbf{R})$ are descriptor functions (e.g., counts of hydrogen bonds, hydrophobic contacts, metal coordination interactions, buried surface area, number of rotatable bonds), and $w_k$ are wieghting functions or coefficients fitted by regression to experimental binding free energies (converted from $K_d$, $K_i$, or IC$_{50}$ values).\cite{CH3_Wang2017}
 
 For example, classical empirical scoring functions such as ChemScore and X-Score use terms like
-\begin{equation}
-\Delta G_{\text{bind}} = \Delta G_{\text{vdW}} + \Delta G_{\text{Hbond}} + \Delta G_{\text{lipophilic}} + \Delta G_{\text{rot}} + \Delta G_0,
-\end{equation}
-where each $\Delta G$ term is itself a linear function of structural descriptors (e.g., hydrogen bond counts weighted by geometry-dependent factors). The parameters are obtained by least-squares fitting to a training set of complexes with high-quality structures and measured binding affinities.\cite{CH3_Wang2017}
 
-Empirical scoring functions are generally fast to evaluate, making them attractive for high-throughput virtual screening. Their limitations include:
+\begin{equation}
+\Delta G_{\text{bind}} = \Delta G_{\text{vdW}} + \Delta G_{\text{Hbond}} + \Delta G_{\text{lipophilic}} + \Delta G_{\text{rot}} + \Delta G_0
+\label{eq:classicalEMP}
+\end{equation}
+
+where each $\Delta G$ term is itself a linear function of structural descriptors (e.g., hydrogen bond counts weighted by geometry-dependent factors). These parameters are obtained by least-squares fitting to the training set of complexes with high-quality structures and experimentally measured binding affinities.\cite{CH3_Wang2017}
+
+Empirical scoring functions are generally fast to evaluate, making them an attractive choice for high-throughput virtual screening. 
+Their limitations include:
 \begin{itemize}
-    \item Dependence on the composition and quality of the training set, which can introduce bias.
-    \item Linear additivity assumptions that may fail in the presence of cooperative effects (e.g., multiple hydrogen bonds in a constrained geometry).
+    \item Dependence on the composition and quality of the training set, which may introduce several biases.
+    \item Linear additivity assumptions may fail in the presence of cooperative effects (e.g., multiple hydrogen bonds in a constrained geometry).
     \item Limited explicit treatment of water-mediated interactions, protonation equilibria, and protein flexibility.
 \end{itemize}
 
 \subsection{Knowledge-Based Scoring Functions}
 
-Knowledge-based scoring functions (also called statistical potentials or potentials of mean force, PMFs) derive effective interaction potentials from the observed frequencies of contacts in a structural database, typically the Protein Data Bank (PDB) or curated subsets such as PDBbind.\cite{CH3_Wang2017}.  The central idea is the inverse Boltzmann relation: if a particular atom-type pair at a certain distance occurs more (or less) frequently than expected by chance, then that configuration is associated with an effective favorable (or unfavorable) free energy.
+Knowledge-based scoring functions, also called statistical potentials or potentials of mean force (PMFs),  derive effective interaction potentials from the observed frequencies of contacts in a structural database, typically the Protein Data Bank (PDB) or curated subsets such as PDBbind.\cite{CH3_Wang2017}.  The central idea is the inverse Boltzmann relation which that \emph{if a particular atom-type pair at a certain distance occurs more (or less) frequently than expected by chance, then that configuration is associated with an effective favorable (or unfavorable) free energy.}
 
-Let $\alpha$ and $\beta$ denote atom types (e.g., protein carbonyl oxygen and ligand aromatic carbon). The radial distribution function $g_{\alpha\beta}(r)$ is estimated from a training set by counting occurrences of atom-type pairs at distance $r$ and normalizing by a reference distribution $g_{\alpha\beta}^{\text{ref}}(r)$ (often the distribution for a noninteracting reference state). The potential of mean force is then
+Let $\alpha$ and $\beta$ denote atom types (e.g., protein carbonyl oxygen and ligand aromatic carbon). The radial distribution function $g_{\alpha\beta}(r)$ is estimated from the training set by counting occurrences of atom-type pairs at distance r, and normalizing by a reference distribution $g_{\alpha\beta}^{\text{ref}}(r)$ (often the distribution for a noninteracting reference state). 
+The potential of mean force is then calculated as:
+
 \begin{equation}
 U_{\alpha\beta}(r) = - k_B T \, \ln \left( \frac{g_{\alpha\beta}(r)}{g_{\alpha\beta}^{\text{ref}}(r)} \right),
-\label{eq:PMF}
+\label{eq:PMF1}
 \end{equation}
-where $k_B$ is Boltzmann's constant and $T$ the temperature.
 
+where $k_B$ is Boltzmann's constant and T the temperature.
 Given a protein--ligand complex, the total score is computed as a sum over all intermolecular atom pairs:
+
 \begin{equation}
-S_{\text{PMF}} = \sum_{i \in \text{protein}} \sum_{j \in \text{ligand}} U_{\alpha(i)\beta(j)}\bigl(r_{ij}\bigr).
+S_{\text{PMF}} = \sum_{i \in \text{protein}} \sum_{j \in \text{ligand}} U_{\alpha(i)\beta(j)}\bigl(r_{ij}\bigr)
+\label{eq:PMF2}
 \end{equation}
 
-Such statistical potentials can approximate complex many-body effects (solvation, packing, indirect interactions) implicitly encoded in the structural database. They have several attractive features:
+Such statistical potentials can approximate complex many-body effects, such as solvation, packing, indirect interactions, implicitly encoded in the structural database. These lead to several advantages such as:
 \begin{itemize}
-    \item Incorporation of large-scale structural information from many complexes.
-    \item Straightforward extension to new atom types or interaction classes by recomputing statistics.
-    \item Conceptual simplicity and computational efficiency.
+    \item Incorporation of large scale structural information from many protein--ligand complexes.
+    \item Straightforward extension to new atom types or interaction classes by recomputing statistical weights.
 \end{itemize}
-However, they depend strongly on the choice of reference state and on the representativeness of the training dataset, and may not extrapolate well beyond the domain of observed chemistries.
 
-\subsection{Consensus and Hybrid Scoring}
+However, the main observed disadvantage is their strong dependence on the choice of reference state, and on the representativeness of the training dataset. Furthermore, they may not extrapolate well beyond the domain of observed chemical class, this may be remendied by either continous development to incorporate new atom-pair information or on-the-fly learning which is mainly observed in machine-learning or deep-learning based scoring functions (These will dealt with in later chapter \textbf{Link AI docking chapter} ).
 
-Consensus scoring combines multiple scoring functions (from different categories) to improve robustness. For instance, one may average or take the median of ranks from a force-field-based score, an empirical score, and a knowledge-based score, or train a meta-model that uses individual scores as features. Consensus approaches often yield better enrichment in virtual screening than any single component, particularly when the underlying scorers capture complementary information.\cite{CH3_Wang2017}
+\subsection{Consensus Scoring functions}
+\textbf{rewrite}.\cite{CH3_Wang2017}
 
+\section{Datasets and validation for Scoring Functions}
 
+Reliable development and evaluation of scoring functions require curated datasets that link high-quality  structural data on protein--ligand complexes with experimentally measured binding affinity data. Following sections will briefly discuss a commonly use and publicaly available datasets. 
 
-\section{Datasets for Scoring Functions}
+\subsection{PDBbind Database}
 
-Reliable development and evaluation of scoring functions require curated datasets that link high-quality 3D structures of protein--ligand complexes with experimentally measured binding data. Over the past two decades, several such datasets and benchmarks have become standard in the field.
-
-\subsection{The PDBbind Database}
-
-PDBbind was created specifically to provide a comprehensive collection of binding affinities for biomolecular complexes in the Protein Data Bank (PDB).\cite{CH3_Wang2004_PDBbind,CH3_Wang2005_PDBbind,CH3_Liu2015_PDBbind} It links PDB entries with experimentally measured $K_d$, $K_i$, or IC$_{50}$ values extracted from primary literature, and provides processed structural files suitable for docking and scoring studies.
+PDBbind was created to provide a comprehensive collection of binding affinities for biomolecular complexes in the Protein Data Bank (PDB).\cite{CH3_Wang2004_PDBbind,CH3_Wang2005_PDBbind,CH3_Liu2015_PDBbind} It links PDB entries with experimentally measured $K_d$, $K_i$, or IC$_{50}$ values extracted from primary literature, and provides processed structural files suitable for docking and scoring studies.
 
 PDBbind is organized into three key subsets:
 \begin{itemize}
-    \item \textbf{General set}: All complexes with available binding data and acceptable structural quality (tens of thousands of entries in recent versions).
-    \item \textbf{Refined set}: A high-quality subset filtered by criteria such as resolution ($\leq 2.5$~\AA), absence of severe structural issues, and reliable binding constants.
-    \item \textbf{Core set}: A nonredundant subset clustered by protein sequence identity (e.g., 90\%) with a small number of representatives per cluster. This core set is used as the test set in the CASF benchmarks.
+    \item \textit{General set}: All complexes with available binding data and acceptable structural quality.
+    \item \textit{Refined set}: A high-quality subset filtered by criteria such as resolution ($\leq 2.5$ \r{A}), absence of severe structural issues, and reliable binding constants.
+    \item \textit{Core set}: A nonredundant subset clustered by protein sequence identity (e.g., 90\%) with a small number of representatives per cluster. This core set is used as the test set in the CASF benchmarks.
 \end{itemize}
 
-Generally, classical scoring functions have been trained or evaluated using PDBbind.\cite{CH3_Trott2010_Vina,CH3_Wang2017} However, PDBbind is not free from biases and artifacts: redundancy, uneven coverage of target classes, and issues with protonation states or ligand modeling can all affect performance estimates. Recent works have proposed reorganized splits (e.g., structure-aware or sequence-dissimilar splits) and ``leak-proof'' variants that reduce train--test overlap.\cite{CH3_li2017structural,CH3_li2021machine}
+Generally, classical scoring functions have been trained or evaluated using PDBbind.\cite{CH3_Trott2010_Vina,CH3_Wang2017} However, PDBbind is not free from biases and artifacts: redundancy, uneven coverage of target classes, and issues with protonation states or ligand modeling can all affect performance estimates. Recent developements have proposed reorganized splits (e.g., structure-aware or sequence-dissimilar splits) and leak-proof variants that reduce train--test overlap.\cite{CH3_li2017structural,CH3_li2021machine}
 
 \subsection{CASF Benchmarks}
 
-The Comparative Assessment of Scoring Functions (CASF) benchmark series was developed to provide standardized, objective evaluations of scoring functions.\cite{CH3_Wang2014_CASF2013_Set,CH3_Wang2014_CASF2013_Results,CH3_Su2019_CASF2016} CASF decouples scoring from docking by using predefined sets of protein--ligand poses (usually near-native plus decoys) so that different scoring functions can be compared under identical sampling conditions.
+The Comparative Assessment of Scoring Functions (CASF) benchmark series was developed to provide standardized, objective evaluations of scoring functions.\cite{CH3_Wang2014_CASF2013_Set,CH3_Wang2014_CASF2013_Results,CH3_Su2019_CASF2016} CASF decouples scoring from docking by predefined sets of protein--ligand poses, usually near-native plus decoys, so that different scoring functions can be compared under identical sampling conditions.
 
 In CASF-2013, a core set of 195 high-quality complexes from PDBbind v2013 was assembled.\cite{CH3_Wang2014_CASF2013_Set} CASF-2016 updated this to 285 complexes and improved evaluation protocols.\cite{CH3_Su2019_CASF2016}
+
 For each scoring function, four types of performance are assessed:
 \begin{enumerate}
-    \item \textbf{Scoring power}: correlation (Pearson $R_p$) between predicted scores and experimental binding affinities across the test set.
-    \item \textbf{Ranking power}: ability to correctly rank ligands binding to the same target by affinity.
-    \item \textbf{Docking power}: ability to identify near-native poses (e.g., RMSD $\leq 2.0$~\AA) among decoy poses.
-    \item \textbf{Screening power}: enrichment of true actives among a background of decoy ligands in a virtual screening scenario.
+    \item \textit{Scoring power}: correlation (Pearson $R_p$) between predicted scores and experimental binding affinities across the test set.
+    \item \textit{Ranking power}: ability to correctly rank ligands binding to the same target by affinity.
+    \item \textit{Docking power}: ability to identify near-native poses (e.g., RMSD $\leq 2.0$ \r{A}) among decoy poses.
+    \item \textit{Screening power}: enrichment of true actives spicked in the set of decoys in a virtual screening scenario.
 \end{enumerate}
+
 These benchmarks have become the de facto standard for reporting the performance of new scoring functions.
 
 \subsection{DUD and DUD-E for Virtual Screening}
 
-For virtual screening, datasets of actives and carefully designed decoys are required. The Directory of Useful Decoys (DUD) and its enhanced successor DUD-E provide such benchmarks.\cite{CH3_Mysinger2012_DUDE} DUD-E contains 102 protein targets with 22,886 active ligands and, for each active, 50 property-matched decoys drawn from the ZINC database. Decoys are chosen to match key physicochemical properties (e.g., molecular weight, cLogP, number of hydrogen-bond donors/acceptors) while being topologically dissimilar, reducing trivial discrimination by simple property filters. DUD-E is widely used to assess the screening power of docking and scoring methods via metrics such as enrichment factor (EF), receiver-operating characteristic (ROC) area under the curve (AUC), and Boltzmann-enhanced discrimination of ROC (BEDROC).
+For virtual screening, datasets of actives, and carefully designed decoys are required. The Directory of Useful Decoys (DUD), and its successor DUD-E provide such benchmarks.\cite{CH3_Mysinger2012_DUDE} DUD-E contains 102 protein targets with 22,886 active ligands and, for each active, 50 property-matched decoys drawn from the ZINC database. Decoys are chosen to match key physicochemical properties (e.g., molecular weight, cLogP, number of hydrogen-bond donors/acceptors) while being topologically dissimilar, reducing trivial discrimination by simple property filters. DUD-E is widely used to assess the screening power of docking and scoring methods using metrics such as enrichment factor (EF), receiver-operating characteristic (ROC) area under the curve (AUC), and Boltzmann-enhanced discrimination of ROC (BEDROC).
 
 \subsection{CSAR Benchmarks}
 
@@ -256,8 +279,8 @@ The Community Structure--Activity Resource (CSAR) benchmark exercises have provi
 
 CSAR benchmark sets include:
 \begin{itemize}
-    \item Pose-prediction tasks with pre-generated decoy poses for multiple ligands.
-    \item Affinity-ranking tasks where participants must rank ligands by experimental binding data.
+    \item Pose prediction tasks with pre-generated decoy poses for multiple ligands.
+    \item Affinity ranking tasks where participants must rank ligands by experimental binding data.
     \item Decoupled scoring tasks where only scoring (not docking) is evaluated by providing fixed pose ensembles.
 \end{itemize}
 These exercises emphasize realistic, prospectively challenging problems and highlight limitations of current methods, particularly in handling protein flexibility, water networks, and subtle structure--activity relationships.
@@ -266,11 +289,12 @@ These exercises emphasize realistic, prospectively challenging problems and high
 
 Additional datasets used to develop and validate scoring functions include:
 \begin{itemize}
-    \item \textbf{Astex Diverse Set}: A curated set of protein--ligand complexes with high-quality crystal structures, often used to test docking pose prediction.
-    \item \textbf{sc-PDB}: A database of ligandable binding sites extracted from the PDB, designed for docking and pharmacophore modeling.\cite{CH3_scPDB2014}
-    \item \textbf{DEKOIS 2.0}: A collection of challenging benchmarks for virtual screening, complementing DUD-E by focusing on difficult targets and well-matched decoys.\cite{CH3_Mysinger2012_DUDE} (DEKOIS is discussed alongside DUD-E as a benchmark set)
-    \item \textbf{Cross-docked sets}: Large datasets where ligands are redocked into multiple related receptor structures to assess robustness to receptor conformational variation.\cite{CH3_sutherland2007lessons,CH3_wierbowski2020cross}
+    \item \textit{Astex Diverse Set}: A curated set of protein--ligand complexes with high-quality crystal structures, often used to test docking pose prediction.
+    \item \textit{sc-PDB}: A database of ligandable binding sites extracted from the PDB, designed for docking and pharmacophore modeling.\cite{CH3_scPDB2014}
+    \item \textit{DEKOIS 2.0}: A collection of challenging benchmarks for virtual screening, complementing DUD-E by focusing on difficult targets and well-matched decoys.\cite{CH3_Mysinger2012_DUDE} (DEKOIS is discussed alongside DUD-E as a benchmark set)
+    \item \textit{Cross-docked sets}: Large datasets where ligands are redocked into multiple related receptor structures to assess robustness to receptor conformational variation.\cite{CH3_sutherland2007lessons,CH3_wierbowski2020cross}
 \end{itemize}
+
 Together with PDBbind and CASF, these resources form the backbone of modern scoring function development and evaluation.
 
 \section{Development of Scoring Functions}
@@ -279,31 +303,31 @@ This section outlines a typical workflow for developing protein--ligand scoring 
 
 \subsection{Problem Definition and Target Application}
 
-Scoring functions are rarely ``universal''; they are implicitly optimized for specific tasks. Three main use cases are:
+Scoring functions are rarely universal; they are implicitly optimized for specific tasks. Three main use cases are:
 \begin{itemize}
-    \item \textbf{Pose prediction}: selecting the near-native pose of a ligand bound to a known receptor structure.
-    \item \textbf{Binding affinity prediction}: predicting absolute or relative binding free energies across diverse ligands and targets.
-    \item \textbf{Virtual screening}: discriminating actives from inactives in large ligand libraries.
+    \item \textit{Pose prediction}: selecting the near native pose or bioactive conformations of a ligand bound to a known receptor structure.
+    \item \textit{Binding affinity prediction}: predicting absolute or relative binding free energies across diverse ligands and targets.
+    \item \textit{Virtual screening}: discriminating actives from inactives in large ligand libraries.
 \end{itemize}
 
-For example, AutoDock Vina's scoring function was trained primarily to improve docking (pose prediction) performance relative to AutoDock 4, rather than to maximize correlation with experimental binding affinities.\cite{CH3_Trott2010_Vina}
-Defining the primary objective at the outset informs descriptor design, loss function choice, and evaluation metrics.
+For example, AutoDock-Vina's scoring function was trained primarily to improve docking (pose prediction) performance relative to AutoDock4, rather than to maximize correlation with experimental binding affinities.\cite{CH3_Trott2010_Vina}
 
 \subsection{Data Curation and Preprocessing}
 
-High-quality data are essential for meaningful scoring function development. Typical preprocessing steps include:\cite{CH3_Wang2005_PDBbind,CH3_Liu2015_PDBbind}
+High-quality data are essential for meaningful scoring function development\cite{CH3_Wang2005_PDBbind,CH3_Liu2015_PDBbind}. Typical preprocessing steps include:
 
 \begin{enumerate}
-    \item \textbf{Structure selection}: Choose complexes with good resolution (e.g., $\leq 2.5$~\AA), low R-factors, no severe clashes or missing residues in the binding site, and well-resolved ligands.
-    \item \textbf{Binding data extraction and harmonization}: Collect $K_d$, $K_i$, or IC$_{50}$ values from primary literature, ensuring that the reported measurements correspond to the crystallized complex and similar experimental conditions.
-    \item \textbf{Conversion to uniform targets}: Convert binding constants to binding free energies via
+    \item \textit{Structure selection}: Choose complexes with good resolution (e.g., $\leq 2.5$ \r{A}), low R-factors, no severe clashes or missing residues in the binding site, and well-resolved ligands.
+    \item \textit{Binding data extraction and harmonization}: Extract $K_d$, $K_i$, or IC$_{50}$ values from primary literature, ensuring that the reported measurements correspond to the crystallized complex and similar experimental conditions.
+    \item \textit{Conversion to uniform targets}: Convert binding constants to binding free energies using the equation \ref{eq:bindconts}
     \begin{equation}
-    \Delta G_{\text{bind}} = RT \ln K_d,
+    \Delta G_{\text{bind}} = RT \ln K_d
+    \label{eq:bindconts}
     \end{equation}
     or to $pK_d$ values, e.g., $pK_d = -\log_{10} K_d$.
-    \item \textbf{Protonation and tautomer states}: Assign chemically reasonable protonation states and tautomers at a reference pH (typically $\sim 7$), as these strongly influence electrostatics and hydrogen bonding.
-    \item \textbf{Structure preparation}: Add missing hydrogens, resolve alternate conformations, optimize side-chain orientations in the binding site if necessary, and standardize atom naming and types.
-    \item \textbf{Redundancy control}: Cluster complexes by sequence similarity and/or ligand similarity to control redundancy and avoid near-duplicate complexes in training and test sets.
+    \item \textit{Structure preparation}: Add missing hydrogens, resolve alternate conformations, optimize side-chain orientations in the binding site if necessary, and standardize atom naming and types.
+    \item \textit{Protonation and tautomer states}: Assign physiologically appropriate protonation states and tautomers at a reference pH (typically $\sim 7$), as these strongly influence electrostatics and hydrogen bonding.
+    \item \textit{Redundancy control}: Cluster complexes by sequence similarity and/or ligand similarity to control redundancy and avoid near-duplicate complexes in training and test sets.
 \end{enumerate}
 
 \subsection{Descriptor Design and Model Form}
@@ -312,7 +336,7 @@ The choice of descriptors $f_k(\mathbf{R})$ and model form $f_{\boldsymbol{\thet
 
 \subsubsection{Classical (Empirical, Force-Field, Knowledge-Based) Models}
 
-Classical scoring functions define descriptors with clear physical or structural interpretations:
+Classical scoring functions define descriptors with clear physics-based or structural interpretations:
 \begin{itemize}
     \item Number and geometry of hydrogen bonds.
     \item Hydrophobic contact surface area or counts of hydrophobic atom contacts.
@@ -323,61 +347,47 @@ Classical scoring functions define descriptors with clear physical or structural
 \end{itemize}
 These descriptors feed into relatively simple functional forms, such as linear combinations (Eq.~\ref{eq:empirical_general}) or pairwise additive potentials (Eq.~\ref{eq:PMF}).
 
-\subsubsection{ML Models}
-
-Feature-based ML scoring functions may use:
-\begin{itemize}
-    \item Atom-type pair counts within distance bins (RF-Score).
-    \item Interaction fingerprints (e.g., bit strings encoding hydrogen bonds, salt bridges, $\pi$--$\pi$ stacking).
-    \item Classical energy terms (e.g., MM/GBSA energies) as features for a higher-level regressor.
-\end{itemize}
-Deep learning models avoid manual feature engineering and instead process:
-\begin{itemize}
-    \item 3D grids with per-voxel atom-type densities.
-    \item Graph representations of proteins and ligands, with edges capturing covalent or noncovalent interactions.
-    \item Surface-based representations of binding pockets.
-\end{itemize}
-In all cases, careful design is needed to preserve relevant invariances (rotational, translational, permutational) and to encode appropriate inductive biases.
 
 \subsection{Parameter Estimation and Training}
 
 For empirical models, parameters $w_k$ are typically fitted by linear or nonlinear regression. A common approach is to minimize the sum of squared differences between predicted and experimental $\Delta G_{\text{bind}}$ over a training set:
 \begin{equation}
-\min_{\{w_k\}} \sum_{n=1}^{N} \left( \Delta G_{\text{bind},n}^{\text{exp}} - \Delta G_{\text{bind},n}^{\text{emp}} \right)^2.
+\min_{\{w_k\}} \sum_{n=1}^{N} \left( \Delta G_{\text{bind},n}^{\text{exp}} - \Delta G_{\text{bind},n}^{\text{emp}} \right)^2
+\label{eq:parameter_fitting}
 \end{equation}
-Regularization or constraints may be applied to keep parameters within physically reasonable ranges.
+Regularization or constraints may be applied to keep parameters within realms of laws of physics.
 
-AutoDock Vina adopted a more complex optimization strategy, tuning not only linear weights but also functional forms (e.g., widths of Gaussian potentials) using PDBbind as a training set and optimizing performance on both scoring and docking tasks.\cite{CH3_Trott2010_Vina} % [cite:29]
+AutoDock Vina adopted a more complex optimization strategy, tuning not only linear weights but also functional forms (e.g., widths of Gaussian potentials) using PDBbind as a training set and optimizing performance on both scoring and docking tasks.\cite{CH3_Trott2010_Vina}
 
-Knowledge-based potentials rely less on explicit parameter fitting and more on statistical estimation of $g_{\alpha\beta}(r)$ and the choice of reference state. Some smoothing or regularization is usually applied to avoid overfitting to noisy histograms.
-
+Knowledge-based potentials rely less on explicit parameter fitting and more on statistical estimation of $g_{\alpha\beta}(r)$, and the choice of reference state. Some smoothing or regularization is usually applied to avoid overfitting.
 
 \section{Testing and Validation of Scoring Functions}
 
-Rigorous validation is essential to assess how well a scoring function will perform on new, unseen targets and ligands. This section summarizes common evaluation protocols and metrics.
+Rigorous validation is essential to assess how well a scoring function will perform on new, unseen targets and ligands.
 
 \subsection{Internal Validation: Cross-Validation and Bootstrapping}
 
-During development, internal validation methods such as $k$-fold cross-validation or bootstrapping are often used:
+During development, internal validation methods such as k-fold cross-validation or bootstrapping are often used:
 \begin{itemize}
-    \item In $k$-fold cross-validation, the dataset is split into $k$ subsets; each subset is held out in turn as a test set while the model is trained on the remaining $k-1$ subsets.
+    \item In k-fold cross-validation, the dataset is split into k subsets; each subset is held out in turn as a test set while the model is trained on the remaining k-1 subsets.
     \item Bootstrapping involves sampling (with replacement) multiple training sets and evaluating performance on the out-of-bag samples.
 \end{itemize}
-These methods provide estimates of predictive performance, but can be misleading if random splits allow highly similar complexes to appear in both training and test sets. Structure-aware splitting schemes that enforce dissimilarity in protein sequence and/or ligand scaffolds are now recommended for ML scoring functions.\cite{CH3_li2017structural}
+
+These methods provide estimates of predictive performance, however, can be misleading if random splits allow highly similar complexes to appear in both training and test sets. Structure-aware splitting schemes that enforce dissimilarity in protein sequence and/or ligand scaffolds are now recommended for ML scoring functions.\cite{CH3_li2017structural}
 
 \subsection{External Benchmarks: CASF}
 
-As noted above, the CASF benchmarks provide a standardized external evaluation of scoring functions.\cite{CH3_Wang2014_CASF2013_Results,CH3_Su2019_CASF2016}
+As already dicussed above (\textbf{Link this previous section}), the CASF benchmarks provide a standardized external evaluation of scoring functions.\cite{CH3_Wang2014_CASF2013_Results,CH3_Su2019_CASF2016}
 
 Key metrics include:
 \begin{itemize}
-    \item \textbf{Scoring power}: Pearson correlation coefficient $R_p$ between predicted and experimental binding affinities ($\Delta G_{\text{bind}}$ or $pK_d$) over the core set. Root-mean-square error (RMSE) is also reported.
-    \item \textbf{Ranking power}: Percentage of correctly ranked pairs or triplets of ligands binding to the same target; rank correlation coefficients (Spearman $\rho$, Kendall $\tau$) are used.
-    \item \textbf{Docking power}: Percentage of complexes for which the top-ranked pose is within a specified RMSD threshold (e.g., 2.0~\AA) of the crystal pose.
-    \item \textbf{Screening power}: Enrichment factors or ROC AUC when discriminating actives from decoys.
+    \item \textit{Scoring power}: Pearson correlation coefficient $R_p$ between predicted and experimental binding affinities ($\Delta G_{\text{bind}}$ or $pK_d$) over the core set. Root-mean-square error (RMSE) is also reported.
+    \item \textit{Ranking power}: Percentage of correctly ranked pairs or triplets of ligands binding to the same target; rank correlation coefficients (Spearman $\rho$, Kendall $\tau$) are used.
+    \item \textit{Docking power}: Percentage of complexes for which the top-ranked pose is within a specified RMSD threshold (e.g., 2.0 \r{A}) of the crystal pose.
+    \item \textit{Screening power}: Enrichment factors or ROC AUC when discriminating actives from decoys.
 \end{itemize}
 
-Comparative CASF studies have shown that classical scoring functions tend to perform better in docking and screening power than in absolute scoring and ranking power, reflecting the difficulty of accurately capturing subtle free-energy differences.\cite{CH3_Su2019_CASF2016,CH3_Wang2014_CASF2013_Results}
+Comparative CASF studies have shown that classical scoring functions tend to perform better in docking and virtual screening tasks than in absolute scoring and ranking tasks, reflecting the difficulty of accurately capturing subtle free-energy differences.\cite{CH3_Su2019_CASF2016,CH3_Wang2014_CASF2013_Results}
 
 \subsection{Virtual Screening Benchmarks: DUD-E and Others}
 
@@ -385,52 +395,49 @@ To evaluate virtual screening performance, scoring functions are applied to data
 
 Common metrics include:
 \begin{itemize}
-    \item \textbf{Enrichment factor} at a given fraction $f$ (e.g., 1\%): ratio of the fraction of actives retrieved in the top $f$ of the ranked list to the fraction expected by random selection.
-    \item \textbf{ROC AUC}: area under the ROC curve, measuring discrimination across all thresholds.
-    \item \textbf{BEDROC}: emphasizes early recognition of actives.
+    \item \textit{Enrichment factor} at a given fraction $f$ (e.g., 1\%): ratio of the fraction of actives retrieved in the top f of the ranked list to the fraction expected by random selection.
+    \item \textit{ROC AUC}: area under the ROC curve, measuring discrimination across all thresholds.
+    \item \textit{BEDROC}: emphasizes early recognition of actives.
 \end{itemize}
-
 
 
 \subsection{Pose-Prediction and CSAR Benchmarks}
 
-Pose-prediction benchmarks, including those in CSAR exercises, provide decoy pose sets for which only one (or a few) near-native poses exist.\cite{CH3_CSAR2013} 
+Pose prediction benchmarks, including those in CSAR exercises, provide decoy pose sets for which only one or a few near-native (close to bioactive or experimentally observed) poses exist.\cite{CH3_CSAR2013} 
+These tests directly assess the ability of a score to recognize the correct binding pose given an ensemble of candidate poses. They also highlight the interplay between sampling and scoring: even an excellent scoring function cannot succeed when the correct pose is absent from the candidate set.
 
 Scoring functions are evaluated by:
 \begin{itemize}
-    \item Percentage of systems where a near-native pose is ranked in the top $N$ (e.g., top 1 or top 3).
+    \item Percentage of systems where a near-native pose is ranked in the top N (e.g., top 1 or top 3).
     \item Distributions of RMSD for top-ranked poses.
 \end{itemize}
-These tests directly assess the ability of a score to recognize the correct binding mode given an ensemble of candidate poses. They also highlight the interplay between sampling and scoring: even an excellent scoring function cannot succeed when the correct pose is absent from the candidate set.
 
 \section{Current Challenges and Future Directions}
 
-Despite decades of development, current scoring functions still fall short of fully reliable binding affinity prediction, especially for prospective applications. Important challenges include:\cite{CH3_Wang2017,CH3_Su2019_CASF2016} 
+Despite years of development, current scoring functions still fall short of fully reliable binding affinity prediction, especially for prospective applications\cite{CH3_Wang2017,CH3_Su2019_CASF2016} . Important challenges include:
 \begin{itemize}
-    \item \textbf{Desolvation and water-mediated interactions}: Accurately modeling the energetic cost of desolvating both ligand and binding site, as well as the contributions of displaced, retained, or bridging water molecules, remains difficult in simple additive scoring functions.
-    \item \textbf{Protein flexibility}: Most docking scoring functions assume a rigid or semi-rigid receptor; large conformational changes upon binding are poorly captured.
-    \item \textbf{Entropy}: Configurational and conformational entropies of ligand, receptor, and solvent are only crudely approximated (e.g., via penalties for rotatable bonds).
-    \item \textbf{Protonation and tautomerism}: Binding often involves shifts in protonation states or tautomeric forms; static protonation assignments can be incorrect.
-    \item \textbf{Transferability}: Parameters optimized on limited datasets may not transfer well to new targets, especially those with different binding modes or chemistries.
+    \item \textit{Desolvation and water-mediated interactions}: Accurately modeling the energetic cost of desolvating both ligand and binding site, as well as the contributions of displaced, retained, or bridging water molecules, remains difficult in simple additive scoring functions.
+    \item \textit{Protein flexibility}: Most scoring functions assume a rigid or semi-rigid receptor; large conformational changes upon binding are poorly captured.
+    \item \textit{Entropy}: Configurational and conformational entropies of ligand, receptor, and solvent are only crudely approximated (e.g., via penalties for rotatable bonds).
+    \item \textit{Protonation and tautomerism}: Binding often involves shifts in protonation states or tautomeric forms; static protonation assignments can be incorrect and largely misleading.
+    \item \textit{Transferability}: Parameters optimized on limited datasets may not be transferable to new targets, especially those with different atom-types or atom-pairs.
 \end{itemize}
 
-Hybrid approaches that combine physics-based methods (e.g., MM/GBSA, FEP) with ML corrections, as well as more physically informed ML architectures (e.g., equivariant neural networks that respect symmetries and conservation laws), are promising avenues. There is also growing emphasis on uncertainty quantification and domain-of-applicability estimation, so that users can gauge confidence in scoring predictions rather than relying on point estimates alone.
-
+Consensus approaches that combine physics-based methods (e.g., MM/GBSA, FEP) with ML corrections, as well as more physics-informed ML architectures (e.g., equivariant neural networks that respect symmetries and conservation laws), are promising avenues. There is also growing emphasis on uncertainty quantification and domain-of-applicability estimation, so that users can gauge confidence in scoring predictions rather than relying on point estimates alone. Implementation of Machine-learning and Deep-learning techniques will be dealt with in chapter (\textbf{Link to AI docking chapter})
 On the data side, improved curation of structural and binding data, careful splitting strategies, and new high-quality datasets (including prospective validation campaigns) will be critical to drive progress.\cite{CH3_Liu2015_PDBbind}
 
 \section{Summary}
 
-Scoring functions are central to molecular docking and structure-based drug design, providing a bridge between 3D molecular structures and quantitative assessments of binding. Classical force-field, empirical, and knowledge-based scoring functions have laid the foundation for modern docking workflows, while machine-learning-based models have demonstrated the potential for substantial improvements when supported by high-quality data and rigorous validation.
+Scoring functions are central to molecular docking and structure-based drug design, providing a bridge between 3D molecular structures and quantitative assessments of binding. Classical force field, empirical, and knowledge-based scoring functions have laid the foundation for modern docking workflows, while machine learning-based models have demonstrated tremendous potential for substantial improvements  supported by high-quality data and rigorous validation.
 
-However, no single approach is universally superior: each scoring function reflects trade-offs between physical interpretability, computational efficiency, and flexibility to learn complex structure--affinity relationships. For graduate students and practitioners, understanding the assumptions and limitations of different scoring paradigms, as well as the properties and biases of the datasets used to develop them, is essential for responsible use and further innovation.
+However, no single approach is universally superior: each scoring function reflects trade-offs between physical interpretability, computational efficiency, and flexibility to learn complex structure--affinity relationships. 
 
 Continued progress will likely rely on:
 \begin{itemize}
-    \item Better integration of physical theory and data-driven modeling.
+    \item Better integration of physics-informed machine-learning methods.
     \item More rigorous benchmarking frameworks that minimize leakage and bias.
     \item Prospective validation of scoring functions in real drug discovery campaigns.
 \end{itemize}
-By combining advances in computational chemistry, structural biology, and machine learning, the community aims to develop scoring functions that are not only accurate on benchmarks but also truly predictive and reliable in practice.
 
 \bibliography{scoring_functions}
 
