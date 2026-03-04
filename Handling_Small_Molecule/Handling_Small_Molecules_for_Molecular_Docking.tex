@@ -16,13 +16,13 @@
 
 \section{Introduction}
 
-Structure-based virtual screening (SBVS) via molecular docking has become a standard component of contemporary drug discovery workflows. In most docking campaigns, the computational protocol is only as reliable as the quality of the input  the receptor structure, and equally critically, the representation and preparation of small-molecule ligands. Inadequate ligand preparation---incorrect protonation, missing tautomers, unrealistic conformations, or inconsistent valence and stereochemistry---can easily dominate the error budget of a docking calculation and lead to misleading enrichments, even if the underlying search and scoring algorithms are otherwise robust.\cite{CH6_Sastry2013,CH6_kolb2009,CH6_KeyTopicsDocking} 
+Small molecules that interact with the receptors are referred to as ligands. Although the terms \emph{ligand} and \emph{drug} are sometimes used interchangeably, it is important to recognise that while all drugs are ligands, not all ligands qualify as drugs. Ligands are typically represented initially as 2D atomic connectivity graphs. These representations are converted into 3D structures and subjected to energy minimisation prior to molecular docking simulations. When screening large chemical libraries, often comprising millions or even billions of compounds, an initial filtering stage is commonly applied to enrich for molecules with drug-like properties. This process typically involves evaluating physicochemical descriptors such as molecular weight, lipophilicity (log P), the number of rotatable bonds, and the counts of hydrogen bond donors and acceptors. One of the most widely applied guidelines for such filtering is Lipinski’s Rule of Five, originally proposed by Christopher Lipinski\cite{CH6_lipinski1997}.  It should be noted that the Rule of Five primarily applies to orally administered drugs that permeate biological membranes through passive diffusion rather than active or receptor-mediated transport mechanisms. Nevertheless, these filters remain valuable for excluding compounds that are unlikely to exhibit suitable pharmacokinetic properties. In addition to physicochemical filtering, the identification and removal of pan-assay interference compounds (PAINS)\cite{CH6_baell2010} constitute an important step in early screening workflows. PAINS are chemical structures that frequently appear as active across multiple assay systems and are therefore often associated with assay interference or false-positive activity. 
 
-The aim of this chapter is to provide a systematic and in-depth overview of methods and software for preparing and handling small molecules for docking-based virtual screening. The focus is on both theoretical underpinnings (e.g., protonation equilibria, tautomerism, conformational sampling, charge models) and practical aspects (software packages, file formats, and databases). Emphasis is placed on reproducible workflows, verification of structural correctness, and the use of curated ligand datasets and benchmarks. 
+In most docking campaigns, the computational protocol is only as reliable as the quality of the input  the receptor structure, and equally critically, the representation and preparation of small molecules. Inadequate ligand preparation, such as incorrect protonation, missing tautomers, unrealistic conformations, or inconsistent valence and stereochemistry, can lead to misleading enrichments, even if the underlying search and scoring algorithms are otherwise robust.\cite{CH6_Sastry2013,CH6_kolb2009,CH6_KeyTopicsDocking} 
 
-After introducing the conceptual framework for ligand preparation, the chapter discusses: (i) treatment of protonation, tautomerism, and stereochemistry; (ii) conformer generation and 3D coordinate assignment; (iii) energy minimization and charge assignment; (iv) the software ecosystem for ligand preparation; (v) methods to verify structural correctness of ligands and conformations for docking; (vi) relevant small-molecule databases and benchmark datasets; and (vii) commonly used molecular structure formats with illustrative examples. 
+The aim of this chapter is to provide a systematic and in-depth overview of methods and software for preparing and handling small molecules for molecular docking. The focus is on both theoretical concepts (e.g., protonation equilibria, tautomerism, conformational sampling, charge models) and practical aspects (software packages, file formats, and databases). Emphasis is placed on reproducible workflows, verification of structural correctness, and the use of curated ligand datasets and benchmarks. 
 
-\section{Conceptual Overview of Small-Molecule Preparation for Docking}
+\section{Concepts}
 
 \subsection{Role of ligand preparation in docking}
 
@@ -30,33 +30,33 @@ From a physical perspective, docking attempts to approximate the binding free en
 \[
 \Delta G_{\mathrm{bind}} \approx -RT \ln K_d,
 \]
-where \(K_d\) is the dissociation constant, \(R\) is the gas constant, and \(T\) is the absolute temperature. A docking score is a rough surrogate for \(\Delta G_{\mathrm{bind}}\), and is computed on a particular protein--ligand complex geometry.\cite{CH6_KeyTopicsDocking} For this score to be meaningful, the docked pose must correspond to a chemically realistic ligand in an accessible protonation, tautomeric, and conformational state. 
+where $K_d$ is the dissociation constant, R is the gas constant, and T is the absolute temperature. A docking score is a rough surrogate for $\Delta G_{\mathrm{bind}}$, and is computed on a particular protein--ligand complex geometry.\cite{CH6_KeyTopicsDocking} For this score to be meaningful, the docked pose must correspond to a chemically realistic ligand in an accessible protonation, tautomeric, and conformational state. 
 
 Ligand preparation therefore aims to:
 \begin{enumerate}
-  \item \textbf{Standardize connectivity and valence}: ensure correct bond orders, aromaticity perception, and formal charges are consistent with chemical intuition and experimental p\(K_a\)/redox state.
-  \item \textbf{Generate relevant protonation and tautomeric states}: enumerate or select those states likely populated at the target pH and environment.
-  \item \textbf{Resolve stereochemistry and isomerism}: define chiral centers and E/Z double-bond stereochemistry, enumerating alternatives if necessary.
-  \item \textbf{Generate low-energy 3D conformations}: sample accessible conformational space so that docking can identify plausible binding modes.
-  \item \textbf{Assign force-field parameters and partial charges}: provide the parameters required by the docking engine's scoring function.
-  \item \textbf{Filter and quality-control}: remove impossible or highly strained structures, salts, and problematic chemotypes.
+  \item Standardize connectivity and valence: ensure correct bond orders, aromaticity perception, and formal charges are consistent with chemical intuition and experimental p$K_a$/redox state.
+  \item Generate relevant protonation and tautomeric states: enumerate or select those states likely populated at the target pH and environment.
+  \item Resolve stereochemistry and isomerism: define chiral centers and E/Z double-bond stereochemistry, enumerating alternatives if necessary.
+  \item Generate low-energy 3D conformations: sample accessible conformational space so that docking can identify plausible binding modes.
+  \item Assign force-field parameters and partial charges: provide the parameters required by the docking engine's scoring function.
+  \item Filter and quality-control: remove impossible or highly strained structures, salts, and problematic chemotypes.
 \end{enumerate}
 
 Extensive benchmarking has shown that systematic attention to these steps can markedly improve virtual screening enrichment factors, sometimes by factors of two or more.\cite{CH6_Sastry2013,CH6_DEKOIS2}
 
 \subsection{Typical workflow}
 
-A typical ligand preparation workflow for docking-based virtual screening can be outlined as:
+A typical ligand preparation workflow for docking can be outlined as:
 
 \begin{enumerate}
-  \item Input 1D/2D structures (SMILES, SDF, etc.) and perform basic sanitization (valence checks, standardization).
-  \item Strip salts and solvents; select the main organic component.
+  \item Input 1D/2D structures (SMILES or SDF) and perform basic correctness such as valence checks, and standardization.
+  \item Delete salts and solvents atoms.
   \item Predict and enumerate relevant protonation states and tautomers at specified pH (e.g., 7.4 \(\pm\) 1).
   \item Enumerate undefined stereocenters and E/Z isomers, within user-defined limits.
   \item Generate 3D coordinates for each state and perform conformational sampling.
-  \item Perform restrained energy minimization using a small-molecule force field.
+  \item Perform restrained energy minimization using a force field suitable for small-molecule.
   \item Assign partial charges and any special atom types needed by the docking program.
-  \item Export to the docking engine's preferred file format (e.g., MOL2, PDBQT, Maestro).
+  \item Export to the docking engine's preferred file format (e.g., MOL2, PDBQT, or SDF).
   \item Verify geometry and chemistry with automated and manual checks.
 \end{enumerate}
 
@@ -68,35 +68,33 @@ Software such as Open Babel,\cite{CH6_OBoyle2011} RDKit (with ETKDG-based embedd
 
 Small molecules may be initially represented as:
 \begin{itemize}
-  \item \textbf{1D line notations}: e.g., SMILES,\cite{CH6_Weininger1988} InChI.\cite{CH6_Heller2013} These encode molecular graphs as strings, convenient for storage and substructure/similarity search.
-  \item \textbf{2D connection tables}: e.g., MDL MOL/SDF, which store atom types, bond orders, and sometimes 2D coordinates.
-  \item \textbf{3D coordinate files}: e.g., MOL2, PDB, Maestro, which include 3D coordinates suitable for docking and molecular mechanics.
+  \item 1D line notations: e.g., SMILES,\cite{CH6_Weininger1988} InChI.\cite{CH6_Heller2013} These encode molecular graphs as strings, convenient for storage for large databases and substructure/similarity search.
+  \item 2D connection tables: e.g., MDL MOL/SDF, which store atom types, bond orders, and sometimes 2D coordinates. Molecular formats like SDF allow storing of molecular properties as well.
+  \item 3D coordinate files: e.g., MOL2, PDB, SDF or PDBQT, which include 3D coordinates suitable for docking, depending on the software one might choose for docking.
 \end{itemize}
 
-Docking requires 3D geometries, but upstream ligand sources (ChEMBL, ZINC, PubChem) are often provided as 1D SMILES or 2D SDF formats, necessitating generation of 3D coordinates and conformers.\cite{CH6_Irwin2005,CH6_Gaulton2012,CH6_KimPubChem}
+Docking requires 3D geometries, however, databases used as ligand sources (ChEMBL, ZINC, PubChem) are often provided as 1D SMILES or 2D SDF formats, necessitating generation of 3D coordinates and conformers.\cite{CH6_Irwin2005,CH6_Gaulton2012,CH6_KimPubChem}
 
-\subsection{Sanitization: valence, aromaticity, and charge checking}
+\subsection{Sanitization: valence, aromaticity, and charge assignment}
 
-Most cheminformatics toolkits implement a ``sanitization'' step that verifies chemical plausibility:
+Most cheminformatics toolkits implement a sanitization step that verifies chemical correctness:
 \begin{itemize}
-  \item \textbf{Valence checks}: ensure that valence counts of atoms conform to allowed patterns (e.g., tetravalent carbon, trivalent nitrogen in amines).
-  \item \textbf{Aromaticity perception}: apply a model (e.g., H\"uckel-like rules or pre-tabulated aromatic atom types) to label aromatic rings.
-  \item \textbf{Bond order perception}: infer missing bond orders from connectivity and valence rules.
-  \item \textbf{Charge balancing}: ensure total charge is consistent with valence and, where possible, with expected p\(K_a\).
+  \item Valence checks: ensure that valence counts of atoms conform to allowed patterns (e.g., tetravalent carbon, trivalent nitrogen in amines).
+  \item Aromaticity perception: apply a model (e.g., H\"uckel-like rules or pretabulated aromatic atom types) to label aromatic rings.
+  \item Bond order perception: infer missing bond orders from connectivity and valence rules.
+  \item Charge assignment: ensure total charge is consistent with valence and, where possible, with expected p$K_a$.
 \end{itemize}
 
-In RDKit, for example, sanitization is performed via \verb|Chem.SanitizeMol|, which checks valence, aromaticity, conjugation, and ring information, raising errors or warnings when invalid structures are encountered. Open Babel provides analogous functionality, including detection of impossible valence and inconsistent aromaticity.\cite{CH6_OBoyle2011}
+In RDKit, for example, sanitization is performed via \verb|Chem.SanitizeMol|, which checks valence, aromaticity, conjugation, and ring information, raising errors or warnings when invalid structures are encountered. Open Babel provides analogous functionality, including detection of impossible valence and inconsistent aromaticity.\cite{CH6_OBoyle2011} Sanitization should be done \emph{before} any optimization or docking-related processing. 
 
-Sanitization should be done \emph{before} any optimization or docking-related processing, because errors at this stage can invalidate the entire pipeline.
-
-\subsection{Standardization and normalization}
+\subsection{Standardization}
 
 Standardization aims to convert diverse input representations into a consistent internal representation. Common steps include:
 \begin{itemize}
-  \item \textbf{Salt stripping}: remove counterions (e.g., chloride, sodium) and solvents (e.g., water, DMSO) using fragment-based rules.
-  \item \textbf{Normalization of functional groups}: convert alternative representations (e.g., nitro as \(\mathrm{N}^{+}(=O)[O^-]\)) into a canonical pattern.
-  \item \textbf{Neutralization or pH normalization}: adjust charges on strong acids/bases to a standard reference pH or to a neutral form.
-  \item \textbf{Stereo cleanup}: remove or set undefined chiral centers when the input stereo is ambiguous.
+  \item Deleting salts: remove counterions (e.g., chloride, sodium) and solvents (e.g., water, DMSO) using fragment-based rules.
+  \item Normalization of functional groups: convert alternative representations (e.g., nitro as \(\mathrm{N}^{+}(=O)[O^-]\)) into a canonical pattern.
+  \item Neutralization: adjust charges on strong acids/bases to a standard reference pH or to a neutral form.
+  \item Stereochemistry cleanup: remove or set undefined chiral centers when the input stereo is ambiguous.
 \end{itemize}
 
 Standardization libraries (e.g., RDKit's \verb|rdMolStandardize|, commercial standardization tools) encapsulate rules curated from medicinal chemistry practice.
@@ -118,17 +116,17 @@ Rearranging,
 \frac{[\mathrm{A}^-]}{[\mathrm{HA}]} = 10^{\mathrm{pH} - \mathrm{p}K_a}.
 \]
 
-For a given pH and known p\(K_a\), this allows the computation of the fractional populations of each protonation microstate. For multiple ionizable centers, microstate populations can be computed from a micro-\(K_a\) or micro-\(pK_a\) model; in practice, software such as Epik, ChemAxon p\(K_a\) predictors, or Dimorphite-DL (used within Gypsum-DL) implement empirical or semi-empirical models to enumerate and score protonation microstates.\cite{CH6_Ropp2019,CH6_Sastry2013}
+For a given pH and known p$K_a$, this allows the computation of the fractional populations of each protonation microstate. For multiple ionizable centers, microstate populations can be computed from a micro-$K_a$ or micro-$pK_a$ model; in practice, software such as Epik, ChemAxon p$K_a$ predictors, or Dimorphite-DL (used within Gypsum-DL) implement empirical or semi-empirical models to enumerate and score protonation microstates.\cite{CH6_Ropp2019,CH6_Sastry2013}
 
-In docking, it is rarely sufficient to consider a single protonation state; instead, all states within a reasonable free energy window (often a few kcal/mol at the working pH) should be generated. The Boltzmann weight of each state \(i\) is
+In docking, it is rarely sufficient to consider a single protonation state; instead, all states within a reasonable free energy window (often a few kcal/mol at the working pH) should be generated. The Boltzmann weight of each state i is
 \[
 p_i = \frac{e^{-\beta G_i}}{\sum_j e^{-\beta G_j}}, \quad \beta = \frac{1}{k_B T},
 \]
-where \(G_i\) is the free energy of microstate \(i\). At typical screening pH, states whose populations are below 1--5\,\% may be neglected, but borderline cases (e.g., histidines, anilines) can strongly influence binding modes.
+where $G_i$ is the free energy of microstate i. At typical screening pH, states whose populations are below 1--5\% may be neglected, but borderline cases (e.g., histidines, anilines) can strongly influence binding modes.
 
 \subsection{Tautomerism}
 
-Many heterocycles and functional groups exhibit tautomerism (e.g., keto--enol, amide--imidic acid, lactam--lactim). Tautomers often differ in hydrogen placement and formal charges, with potentially large effects on hydrogen bonding and electrostatics in the binding site. Automatic tautomer enumeration proceeds by defining substructure-based transformation rules (SMARTS patterns) that map between tautomeric forms.
+Many heterocycles and functional groups exhibit tautomerism, such as keto--enol, amide--imidic acid, and lactam--lactim. Tautomers often differ in hydrogen placement and formal charges, with potentially large effects on hydrogen bonding and electrostatics in the binding site. Automatic tautomer enumeration proceeds by defining substructure-based transformation rules (SMARTS patterns) that map between tautomeric forms.
 
 In practice:
 \begin{itemize}
@@ -137,7 +135,7 @@ In practice:
   \item A subset of low-energy tautomers is selected for docking, sometimes weighted by estimated populations.
 \end{itemize}
 
-Tools such as Gypsum-DL explicitly enumerate tautomers (and other isomeric forms) and produce 3D structures for each selected form.\cite{CH6_Ropp2019} [cite:135] Commercial programs (e.g., LigPrep/Epik, MOE Wash) implement proprietary tautomer generators and scoring schemes.\cite{CH6_Sastry2013}
+Tools such as Gypsum-DL explicitly enumerate tautomers (and other isomeric forms) and produce 3D structures for each selected form.\cite{CH6_Ropp2019} Commercial programs (e.g., LigPrep/Epik, and MOE) implement proprietary tautomer generators and scoring schemes.\cite{CH6_Sastry2013}
 
 \subsection{Stereochemistry and E/Z isomerism}
 
@@ -150,53 +148,51 @@ Stereochemical ambiguities are common in large virtual libraries:
 
 A general strategy is to:
 \begin{enumerate}
-  \item Keep experimentally known stereochemistry fixed (from curated databases like ChEMBL or PDB ligands).
-  \item Enumerate all reasonable stereoisomers for undefined centers, but cap the total number of isomers per molecule to control combinatorial explosion.
-  \item For flexible or unassigned stereocenters (e.g., tertiary alcohols in fragment libraries), consider whether stereochemistry is relevant to the docking hypothesis.
+  \item Keep experimentally known stereochemistry fixed from curated databases like ChEMBL or PDB ligands.
+  \item Enumerate all reasonable stereoisomers for undefined centers, however, cap the total number of isomers per molecule to control combinatorial explosion.
+  \item For flexible or unassigned stereocenters, consider whether stereochemistry is relevant to the docking hypothesis.
 \end{enumerate}
 
 Gypsum-DL, for example, can enumerate R/S stereocenters, E/Z isomers, and ring conformers, within user-defined limits, for each input molecule.\cite{CH6_Ropp2019}
 
 \section{3D Coordinate Generation and Conformational Sampling}
 
-\subsection{Systematic vs. stochastic conformer generation}
+\subsection{Systematic v/s stochastic conformer generation}
 
-The goal of conformer generation is to produce an ensemble of low-energy 3D geometries that approximate the accessible conformational space of a molecule in solution, while respecting chirality and other stereochemical constraints. Broadly, two classes of methods are used:\cite{CH6_Hawkins2010,CH6_Riniker2015} 
+The goal of conformer generation is to produce an ensemble of low energy 3D geometries that approximate the accessible conformational space of a molecule in solution, while respecting chirality and other stereochemical constraints. Broadly, two classes of methods are used:\cite{CH6_Hawkins2010,CH6_Riniker2015} 
 \begin{itemize}
-  \item \textbf{Systematic, rule-based sampling}: Rotatable bonds are identified, and torsions are sampled from libraries of preferred angles; combinatorial explosion is controlled by pruning and energy filters.
-  \item \textbf{Stochastic sampling}: Monte Carlo or distance-geometry–based methods sample conformational space randomly or quasi-randomly, often combined with local minimization.
-\end{itemize} [cite:18][cite:54]
+  \item Systematic, rule-based sampling: Rotatable bonds are identified, and torsions are sampled from libraries of preferred angles; combinatorial explosion is controlled by pruning and energy filters.
+  \item Stochastic sampling: Monte Carlo or distance-geometry–based methods sample conformational space randomly or quasi-randomly, often combined with local minimization.
+\end{itemize}
 
 \subsection{OMEGA: systematic rule-based conformer generation}
 
 OMEGA (OpenEye) is a widely used systematic conformer generator for small molecules, and has become a de facto standard in many docking workflows.\cite{CH6_Hawkins2010} Its algorithm operates in three phases:
 \begin{enumerate}
-  \item \textbf{Fragment-based initial structure assembly}: Molecules are decomposed into fragments at rotatable bonds; fragment libraries derived from crystallographic data provide 3D templates.
-  \item \textbf{Exhaustive torsion enumeration}: Rotatable bonds are sampled at discrete torsion angles from a knowledge-based torsion library. This generates a potentially large raw conformer set.
-  \item \textbf{Pruning by geometry and energy}: Conformers that are too similar (RMSD threshold) or too high in strain energy are discarded to yield a diverse low-energy ensemble.
+  \item Fragment-based initial structure assembly: Molecules are decomposed into fragments at rotatable bonds; fragment libraries derived from crystallographic data provide 3D templates.
+  \item Exhaustive torsion enumeration: Rotatable bonds are sampled at discrete torsion angles from a knowledge-based torsion library. This generates a potentially large raw conformer set.
+  \item Pruning by geometry and energy: Conformers that are too similar (RMSD threshold) or too high in strain energy are discarded to yield a diverse low energy ensemble.
 \end{enumerate}
 
 A simple measure of structural similarity between two conformers is the heavy-atom root-mean-square deviation (RMSD),
 \[
 \mathrm{RMSD} = \sqrt{\frac{1}{N} \sum_{i=1}^{N} \left\lVert \mathbf{r}_i^{(\mathrm{ref})} - \mathbf{r}_i^{(\mathrm{fit})} \right\rVert^2},
 \]
-where \(N\) is the number of matched atoms, and \(\mathbf{r}_i^{(\mathrm{ref})}\) and \(\mathbf{r}_i^{(\mathrm{fit})}\) are their coordinates after optimal superposition.
+where N is the number of matched atoms, and $\mathbf{r}_i^{(\mathrm{ref})}$ and $\mathbf{r}_i^{(\mathrm{fit})}$ are their coordinates after optimal superposition.
 
-OMEGA has been extensively validated against high-quality crystal structures from the PDB and Cambridge Structural Database, demonstrating high success rates in reproducing experimental ligand conformations within low RMSD thresholds.\cite{CH6_Hawkins2010}
+OMEGA has been extensively validated against high quality crystal structures from the PDB and Cambridge Structural Database, demonstrating high success rates in reproducing experimental ligand conformations within low RMSD thresholds.\cite{CH6_Hawkins2010}
 
 \subsection{Distance geometry and ETKDG (RDKit)}
 
-Distance geometry (DG) methods construct 3D coordinates by embedding a matrix of pairwise distance bounds between atoms.\cite{CH6_Riniker2015} Briefly:
+Distance geometry (DG) methods (See conform gen chapter for in depth discussion \textbf{Link to chapter}) construct 3D coordinates by embedding a matrix of pairwise distance bounds between atoms.\cite{CH6_Riniker2015} Briefly:
 \begin{enumerate}
-  \item Define lower and upper bounds \(d_{ij}^{\mathrm{min}}, d_{ij}^{\mathrm{max}}\) for each atom pair \(i,j\), based on covalent geometry and topological distance.
+  \item Define lower and upper bounds $d_{ij}^{\mathrm{min}}, d_{ij}^{\mathrm{max}}$ for each atom pair $i,j$, based on covalent geometry and topological distance.
   \item Apply triangle inequality constraints to make the bounds matrix metrically consistent.
   \item Sample a distance matrix from within the bounds and perform metric matrix embedding (eigen-decomposition) to obtain coordinates.
   \item Optionally refine the coordinates with a force field.
 \end{enumerate}
 
-The ETKDG (Experimental-Torsion Knowledge Distance Geometry) method extends basic DG by incorporating empirical torsion angle preferences derived from crystallographic databases, and by applying additional constraints for ring systems.\cite{CH6_Riniker2015} Implemented in RDKit, ETKDG produces conformers that both reproduce experimental torsion distributions and reduce the need for extensive post-embedding minimization. [cite:54]
-
-For macrocycles and very flexible molecules, ETKDG variants and specialized sampling strategies are needed to adequately explore conformational space.\cite{CH6_Riniker2015}
+The ETKDG (Experimental-Torsion Knowledge Distance Geometry) method extends basic DG by incorporating empirical torsion angle preferences derived from crystallographic databases, and by applying additional constraints for ring systems. Implemented in RDKit, ETKDG produces conformers that both reproduce experimental torsion distributions and reduce the need for extensive post-embedding minimization. For macrocycles and very flexible molecules, ETKDG variants and specialized sampling strategies are needed to adequately explore conformational space.\cite{CH6_Riniker2015}
 
 \subsection{Energy minimization and strain filtering}
 
@@ -204,36 +200,37 @@ Conformers produced by OMEGA, ETKDG, or other methods are often subjected to a b
 \[
 E = \sum_{i<j} \left[ 4 \varepsilon_{ij} \left( \left( \frac{\sigma_{ij}}{r_{ij}} \right)^{12} - \left( \frac{\sigma_{ij}}{r_{ij}} \right)^{6} \right) + \frac{q_i q_j}{4 \pi \varepsilon_0 \varepsilon_r r_{ij}} \right],
 \]
-where \(r_{ij}\) is the interatomic distance, \(\varepsilon_{ij}\) and \(\sigma_{ij}\) are Lennard--Jones parameters, and \(q_i\) are partial charges.
+where $r_{ij}$ is the interatomic distance, $\varepsilon_{ij}$ and $\sigma_{ij}$ are Lennard--Jones parameters, and $q_i$ are partial charges.
 
-Strain energy thresholds are applied to filter out highly strained conformers that would be unlikely in solution and could bias docking scores. In practice, these thresholds are empirical (e.g., 10--15 kcal/mol above the global minimum for a small molecule), but they should be chosen carefully: overzealous filtering might remove conformers relevant for binding, especially in tight or distorted pockets.
+Strain energy thresholds are applied to filter out highly strained conformers that would be unlikely in solution and could bias docking scores. In practice, these thresholds are empirical, typically 10--15 kcal/mol above the global minimum for a small molecule. However, they should be chosen carefully: overzealous filtering might weed out conformers relevant for binding, especially in tight or distorted pockets.
 
-\section{Partial Charge Assignment and Force-Field Parameters}
+\section{Partial Charge Assignment and Force Field Parameters}
 
-\subsection{Charge models for docking}
+\subsection{Charge models}
 
 Docking scoring functions typically include an electrostatic term that depends on partial atomic charges. Common small-molecule charge models include:
 \begin{itemize}
-  \item \textbf{Empirical charge equilibration}: e.g., Gasteiger–Marsili charges, fast and widely available in Open Babel, RDKit, and many docking codes.
-  \item \textbf{Semiempirical-based schemes}: e.g., AM1-BCC charges, which fit bond-charge corrections to reproduce HF/6-31G* electrostatic potentials.\cite{CH6_Sastry2013}
-  \item \textbf{RESP/ESP-fitted charges}: derived from higher-level QM calculations; common in MD force fields (e.g., GAFF/AMBER), but expensive for large libraries.
+  \item Empirical charge equilibration: e.g., Gasteiger–Marsili charges, fast and widely available in Open Babel, RDKit, and many docking codes.
+  \item Semiempirical-based schemes: AM1-BCC charges, which fit bond-charge corrections to reproduce HF/6-31G* electrostatic potentials.
+  \item RESP/ESP-fitted charges: derived from higher-level QM calculations; common in MD force fields (GAFF/AMBER). However these are expensive computations to handle large screening libraries.
 \end{itemize}
 
-The choice of charge model must be compatible with the docking engine and, ideally, with the force field used for both ligand and receptor. Some protocols (e.g., Glide/SP) use internally parameterized charges and do not expose them to the user, while others (e.g., AutoDock4, Vina) require explicit charge assignment in the input (Gasteiger or similar).
+The choice of charge model must be compatible with the docking software and, ideally, with the force field compatible with both ligand and receptor. Some protocols (e.g., Glide/SP) use internally parameterized charges and do not expose them to the user, while others (e.g., AutoDock4, Vina) require explicit charge assignment in the input (Usually, Gasteiger charges).
 
 \subsection{Parameter assignment tools}
 
-For general organic molecules, GAFF (AMBER) and CGenFF (CHARMM) are commonly used to assign force-field parameters for downstream MD, but for docking, simpler parameterizations are often sufficient. Open-source tools such as Open Babel and RDKit can assign basic atom types and MMFF94 parameters; commercial suites provide more extensive coverage of medicinal chemistry space.
+For general organic molecules, AMBER's GAFF\cite{CH6_gaff} and CHARMM's CGenFF\cite{CH6_cgenff} are commonly used to assign force-field parameters for downstream MD, but for docking, simpler parameterizations are often sufficient. Open-source tools such as Open Babel and RDKit can assign basic atom types and MMFF94 parameters; commercial suites provide more extensive coverage of medicinal chemistry space.
 
-\section{Software Ecosystem for Ligand Preparation}
+\section{Software for Ligand Preparation}
 
 \subsection{Open-source tools}
 
-\paragraph{Open Babel.} Open Babel is a widely used open-source cheminformatics toolkit that supports interconversion between over 100 file formats, basic geometry optimization, charge assignment, and 3D coordinate generation.\cite{CH6_OBoyle2011} It is frequently used as a glue layer in ligand preparation pipelines, especially for converting between SMILES, SDF, MOL2, and PDBQT formats.
+\begin{enumerate}
+\item Open Babel: Open Babel is a widely used open-source cheminformatics toolkit that supports interconversion between over 100 file formats, basic geometry optimization, charge assignment, and 3D coordinate generation.\cite{CH6_OBoyle2011} It is frequently used as a glue layer in ligand preparation pipelines, especially for converting between SMILES, SDF, MOL2, and PDBQT formats.
 
-\paragraph{RDKit.} RDKit is a modern open-source cheminformatics library with robust functionality for molecule sanitization, standardization, ETKDG-based conformer generation, substructure search, and basic property calculations.\cite{CH6_Riniker2015} Its Python API makes it an attractive choice for custom ligand preparation scripts.
+\item RDKit: RDKit is a modern open-source cheminformatics library with robust functionality for molecule sanitization, standardization, ETKDG-based conformer generation, substructure search, and basic property calculations.\cite{CH6_Riniker2015} Its Python API makes it an attractive choice for custom ligand preparation scripts.
 
-\paragraph{Gypsum-DL.} Gypsum-DL is an open-source program specifically designed to prepare small-molecule libraries for structure-based virtual screening.\cite{CH6_Ropp2019} Given SMILES or SDF input, Gypsum-DL:
+\item Gypsum-DL: Gypsum-DL is an open-source program specifically designed to prepare small-molecule libraries for structure-based virtual screening.\cite{CH6_Ropp2019} Given SMILES or SDF input, Gypsum-DL:
 \begin{itemize}
   \item Enumerates ionization states (via Dimorphite-DL) over a user-defined pH range.
   \item Enumerates tautomers, R/S stereocenters, E/Z isomers, and ring conformers.
@@ -241,16 +238,18 @@ For general organic molecules, GAFF (AMBER) and CGenFF (CHARMM) are commonly use
 \end{itemize}
 Gypsum-DL has been shown to improve docking pose prediction in combination with PDBbind-derived complexes.\cite{CH6_Ropp2019}
 
-\paragraph{Other tools.} Additional open-source utilities include:
+\item Additional open-source utilities include:
 \begin{itemize}
-  \item \textbf{Cinfony}: a Python wrapper that unifies interfaces to Open Babel, RDKit, and CDK.\cite{Cinfony}
-  \item \textbf{Dimorphite-DL}: pH-dependent protonation state predictor, often used with Gypsum-DL.
-  \item \textbf{OpenEye free academic tools}: limited but valuable for conformer and charge generation.
+  \item Cinfony: a Python wrapper that unifies interfaces to Open Babel, RDKit, and CDK.\cite{CH6_Cinfony}
+  \item Dimorphite-DL: pH-dependent protonation state predictor, often used with Gypsum-DL.
+  \item OpenEye free academic tools: limited but valuable for conformer and charge generation.
 \end{itemize}
+\end{enumerate}
 
 \subsection{Commercial ligand preparation suites}
 
-\paragraph{Schr\"odinger LigPrep/Epik.} LigPrep, coupled with Epik for p\(K_a\) prediction, is widely used in industry for systematic ligand preparation.\cite{CH6_Sastry2013} It performs:
+\begin{enumerate}
+\item Schr\"odinger's LigPrep/Epik: LigPrep, coupled with Epik for p$K_a$ prediction, is widely used in industry for systematic ligand preparation.\cite{CH6_Sastry2013} It performs:
 \begin{itemize}
   \item State enumeration (protonation and tautomeric) across pH.
   \item Stereoisomer enumeration.
@@ -259,19 +258,20 @@ Gypsum-DL has been shown to improve docking pose prediction in combination with 
 \end{itemize}
 The impact of various settings in these tools on virtual screening enrichments has been systematically explored.\cite{CH6_Sastry2013}
 
-\paragraph{OpenEye QUACPAC/OMEGA.} In addition to OMEGA for conformer generation, OpenEye provides QUACPAC for charge state and partial charge assignment, and FILTER for removal of undesirable chemotypes.\cite{CH6_Hawkins2010} These tools are heavily used in industrial pipelines.
+\item OpenEye's QUACPAC/OMEGA: In addition to OMEGA for conformer generation, OpenEye provides QUACPAC for charge state and partial charge assignment, and FILTER for removal of undesirable chemotypes.\cite{CH6_Hawkins2010} These tools are heavily used in industrial pipelines.
 
-\paragraph{MOE, Discovery Studio, others.} Both MOE (Chemical Computing Group) and Discovery Studio (BIOVIA) implement comprehensive ligand preparation workflows (salt stripping, neutralization, protonation, stereochemistry, conformer generation) integrated with their docking engines.
+\item MOE, and Discovery Studio: Both MOE (Chemical Computing Group) and Discovery Studio (BIOVIA) implement comprehensive ligand preparation workflows (salt stripping, neutralization, protonation, stereochemistry, conformer generation) integrated with their docking engines.
+\end{enumerate}
 
-\section{Verification and Quality Control of Ligand Structures}
+\section{Verification of Ligand Structures}
 
 \subsection{Chemistry and valence validation}
 
 Key checks include:
 \begin{itemize}
-  \item \textbf{Valence violations}: atoms with impossible valence (e.g., pentavalent carbon, pentavalent neutral nitrogen) or hypervalent halogens without appropriate hypervalent models.
-  \item \textbf{Aromaticity and ring perception}: ensure aromatic rings are planar and correctly labeled; avoid inconsistent aromatic/antiaromatic assignments.
-  \item \textbf{Formal charge sanity}: check for unexpected charge separation, zwitterions, or net charges inconsistent with known chemistry.
+  \item Valence violations: atoms with impossible valence (e.g., pentavalent carbon, pentavalent neutral nitrogen) or hypervalent halogens without appropriate hypervalent models.
+  \item Aromaticity and ring perception: ensure aromatic rings are planar and correctly labeled; avoid inconsistent aromatic/antiaromatic assignments.
+  \item Formal charge sanity: check for unexpected charge separation, zwitterions, or net charges inconsistent with known chemistry.
 \end{itemize}
 
 Automated sanitization in RDKit or Open Babel catches many such problems, but additional curated filters (e.g., PAINS, reactive groups) are commonly applied in drug-like libraries.
@@ -280,7 +280,7 @@ Automated sanitization in RDKit or Open Babel catches many such problems, but ad
 
 \subsubsection{Bond lengths and angles}
 
-Bond lengths and angles should be within reasonable ranges for the corresponding bond orders and atom types. Force-field minimization tends to regularize these, but conformations generated purely by distance geometry may exhibit distorted geometries if poorly refined.\cite{CH6_Riniker2015} Visual inspection of a subset of ligands and targeted checks for pathologies (e.g., extremely short nonbonded distances, highly bent triple bonds) are recommended.
+Bond lengths and angles should be within reasonable ranges for the corresponding bond orders and atom types. Force field minimization tends to regularize these, but conformations generated purely by distance geometry may exhibit distorted geometries if poorly refined.\cite{CH6_Riniker2015} Visual inspection of a subset of ligands and targeted checks for pathologies (e.g., extremely short nonbonded distances, highly bent triple bonds) are recommended.
 
 \subsubsection{Ring conformations and planarity}
 
@@ -288,51 +288,38 @@ For aromatic and conjugated rings (e.g., benzene, heteroaromatics, amides), plan
 \[
 \mathrm{RMSD}_{\mathrm{plane}} = \sqrt{\frac{1}{N} \sum_{i=1}^{N} d_i^2},
 \]
-where \(d_i\) is the perpendicular distance of atom \(i\) from the best-fit plane. Large deviations (e.g., \(>0.1\)--0.2\,\AA{} for benzene) suggest geometric artifacts.
+where $d_i$ is the perpendicular distance of atom i from the best-fit plane. Large deviations (e.g., $>$ 0.1--0.2 \r{A} for benzene) suggest geometric artifacts.
 
 Macrocycles and flexible rings may legitimately adopt nonplanar conformations, but small aromatic rings and amide linkages should be close to planar in starting conformers.
 
 \subsection{Internal strain and unrealistic intramolecular interactions}
 
-Excessive internal strain---e.g., extremely close nonbonded contacts, twisted amides, eclipsed torsions---may artificially stabilize or destabilize certain docking poses when combined with the receptor. Minimization with a physically sensible force field mitigates many such issues, but energy-based filters can be more systematic.
+Excessive internal strain, such as extremely close nonbonded contacts, twisted amides, eclipsed torsions, may artificially stabilize or destabilize certain docking poses when combined with the receptor. Minimization with a suitable force field mitigates many such issues, however, energy-based filters can be more systematic.
 
-If an approximate relative strain energy \(E_i\) of conformer \(i\) can be computed (e.g., MMFF94), a Boltzmann-like weight can be used to filter:
+If an approximate relative strain energy $E_i$ of conformer i can be computed (e.g., MMFF94), a Boltzmann-like weight can be used to filter:
 \[
 w_i = \frac{e^{-\beta E_i}}{\sum_j e^{-\beta E_j}}.
 \]
 Conformers whose weights fall below a threshold may be discarded from the docking ensemble.
 
-\subsection{Matching prepared ligands to experimental structures}
+\subsection{Comparison of prepared ligands to experimental structures}
 
-For retrospective validation and method development, it is valuable to compare prepared ligand conformations and protonation states with crystallographic reference structures from PDB, PDBbind, or curated sets (DUD-E, DEKOIS 2.0). RMSD between prepared and crystallographic conformers, as well as agreement in hydrogen-bond donor/acceptor patterns and formal charges, provide sanity checks.\cite{CH6_Hawkins2010,CH6_PDBbind,CH6_WangPDBbind}
-
-Irwin and co-workers have emphasized the importance of verifying that docking scores and poses correspond to chemically reasonable structures, arguing that simple metrics like RMSD to known structures and inspection of key interactions are essential to ensure docking is ``right for the right reasons.''\cite{CH6_Irwin2015}
-
-\subsection{Pose-level verification for docking}
-
-Although this chapter focuses on pre-docking preparation, pose-level checks during or after docking are closely related. Useful diagnostics include:
-\begin{itemize}
-  \item \textbf{Ligand strain on binding}: compare energy of docked conformer in isolation vs. its lowest-energy solution conformer.
-  \item \textbf{Clashes}: detect steric clashes between ligand and protein atoms beyond what the scoring function penalizes.
-  \item \textbf{Interaction patterns}: ensure hydrogen bonds, salt bridges, and hydrophobic contacts are physically plausible, given prepared protonation states.
-\end{itemize}
-
-Benchmarks such as DUD-E and DEKOIS 2.0 provide frameworks to evaluate how ligand preparation and pose filtering impact early enrichment and enrichment factors.\cite{CH6_Mysinger2012,DEKOIS2}
+For retrospective validation and method development, it is valuable to compare prepared ligand conformations and protonation states with crystallographic reference structures from PDB, PDBbind, or curated sets (DUD-E, DEKOIS 2.0). RMSD between prepared and crystallographic conformers, as well as agreement in hydrogen-bond donor/acceptor patterns and formal charges, provide sanity checks.\cite{CH6_Hawkins2010,CH6_WangPDBbind} Irwin and co-workers have emphasized the importance of verifying that docking scores and poses correspond to chemically reasonable structures, arguing that simple metrics like RMSD to known structures and inspection of key interactions are essential to ensure docking is \emph{right for the right reasons}. \cite{CH6_Irwin2005}
 
 \section{Databases and Datasets for Docking-Based Virtual Screening}
 
-\subsection{ZINC: commercially available compounds for virtual screening}
+\subsection{ZINC}
 
-ZINC (``ZINC Is Not Commercial'') is a free database of commercially available small molecules prepared specifically for virtual screening.\cite{CH6_Irwin2005} It provides:
+ZINC is a free database of commercially available small molecules prepared specifically for virtual screening.\cite{CH6_Irwin2005} It provides:
 \begin{itemize}
   \item Ready-to-dock 3D structures, often in multiple protonation and tautomeric states.
   \item Multiple file formats (SMILES, MOL2, SDF, DOCK flexibases).
-  \item Annotated subsets (e.g., lead-like, fragment-like, drug-like).
-\end{itemize} [cite:20][cite:23]
+  \item Annotated subsets, such as lead-like, fragment-like, drug-like).
+\end{itemize}
 
-The database has grown from hundreds of thousands of compounds in early versions to tens of millions of purchasable molecules in recent releases, and remains a primary source for structure-based virtual screening libraries.
+The database has grown from hundreds of thousands of compounds in early versions to tens of millions of purchasable molecules in recent releases, and remains a primary source for structure-based virtual screening libraries\cite{CH6_Irwin2005}.
 
-\subsection{ChEMBL: bioactivity-centric compound database}
+\subsection{ChEMBL}
 
 ChEMBL is an open, manually curated bioactivity database that aggregates binding, functional, and ADMET data for over a million small molecules and thousands of protein targets.\cite{CH6_Gaulton2012} For docking, ChEMBL is primarily:
 \begin{itemize}
@@ -340,14 +327,14 @@ ChEMBL is an open, manually curated bioactivity database that aggregates binding
   \item A source for constructing focused libraries around chemotypes of interest.
 \end{itemize}
 
-ChEMBL is distributed with compound structures (typically as standardized SMILES or SDF), which can be fed into ligand preparation pipelines. Efforts to curate stereochemistry, salt forms, and activity data quality make it attractive for structure-based modeling.
+ChEMBL is distributed with compound structures, typically as standardized SMILES or SDF, which can act as an input into ligand preparation pipelines. Efforts to curate stereochemistry, salt forms, and activity data quality make it attractive for structure-based modeling.
 
-\subsection{PubChem: large public chemical information repository}
+\subsection{PubChem}
 
 PubChem, maintained by NCBI, is a large public chemical database with substance, compound, and bioassay collections, encompassing hundreds of millions of substance records and tens of millions of unique structures.\cite{CH6_KimPubChem} It offers:
 \begin{itemize}
   \item Open access to chemical structures and associated bioactivity data.
-  \item Powerful search tools (substructure, similarity, property filters).
+  \item Powerful search tools, like substructure, similarity, and property filters.
   \item Links to genes, proteins, and pathways.
 \end{itemize}
 
@@ -356,65 +343,67 @@ For docking, PubChem is often used to:
   \item Retrieve known ligands and analogs of a target.
   \item Build custom libraries around scaffolds or pharmacophores of interest.
 \end{itemize}
+
 Because PubChem structures originate from many depositors, rigorous ligand preparation and standardization are essential before docking.
 
-\subsection{PDB and PDBbind: protein–ligand complexes and binding affinities}
+\subsection{PDB and PDBbind}
 
 The Protein Data Bank (PDB) is the primary repository of macromolecular structures, including many protein–ligand complexes.\cite{CH6_Berman2000} These complexes define binding site geometries, water networks, and ligand poses used for docking validation and training.
 
-The PDBbind database builds on PDB by collecting experimentally measured binding affinities (Kd, Ki, IC\(_{50}\)) for protein–ligand complexes and organizing them into curated sets.\cite{CH6_WangPDBbind} PDBbind's ``refined set'' is widely used to:
+The PDBbind database builds on PDB by collecting experimentally measured binding affinities ($K_d$, $K_i$, $IC_{50}$) for protein–ligand complexes and organizing them into curated sets.\cite{CH6_WangPDBbind} PDBbind's \emph{refined set} is widely used to:
+
 \begin{itemize}
   \item Benchmark docking and scoring functions.
-  \item Train machine-learning models of binding affinity.
+  \item Train machine learning models of binding affinity.
   \item Validate ligand preparation and conformer generation against crystallographic ligands.
 \end{itemize}
 
-\subsection{DUD-E: directory of useful decoys, enhanced}
+\subsection{DUD-E}
 
 DUD-E is a benchmark library designed to evaluate docking and virtual screening methods.\cite{CH6_Mysinger2012} It comprises:
 \begin{itemize}
   \item 102 protein targets with known active ligands.
-  \item Property-matched decoys: compounds that resemble actives in simple physicochemical properties but are topologically dissimilar and presumed inactive.
+  \item Property matched decoys: compounds that resemble actives in simple physicochemical properties but are topologically dissimilar and presumed inactive.
 \end{itemize}
 
-DUD-E allows assessment of enrichment metrics (e.g., ROC-AUC, early enrichment at 1\,\%) and sensitivity to ligand preparation. Mysinger \emph{et al.} showed that improved decoy selection and more diverse ligands in DUD-E enhance the discriminatory power of docking benchmarks.\cite{CH6_Mysinger2012}
+DUD-E allows assessment of enrichment metrics, such as ROC-AUC, early enrichment at 1\,\%, and sensitivity to ligand preparation. Mysinger \emph{et al.} showed that improved decoy selection and more diverse ligands in DUD-E enhance the discriminatory power of docking benchmarks.\cite{CH6_Mysinger2012}
 
-\subsection{DEKOIS 2.0: challenging docking benchmark sets}
+\subsection{DEKOIS 2.0}
 
 DEKOIS 2.0 provides challenging docking benchmark sets built from BindingDB bioactivity data for 81 diverse targets.\cite{CH6_DEKOIS2} It emphasizes:
 \begin{itemize}
   \item Rigorous physicochemical matching of decoys to actives, including charge.
   \item Elimination of latent actives among decoys.
-\end{itemize} [cite:84][cite:81]
+\end{itemize}
 
 Bauer \emph{et al.} used DEKOIS 2.0 to investigate the impact of ligand and protein preparation (e.g., protonation states, conformer generation) on virtual screening performance, highlighting how different preparation protocols can significantly alter enrichment.\cite{CH6_DEKOIS2,CH6_IbrahimDEKOIS}
 
-\subsection{Other datasets and ML-focused docking resources}
+\subsection{Other datasets and ML focused docking resources}
 
-Beyond classical benchmarks, more recent datasets geared towards ML-based docking and scoring, such as Smiles2Dock, provide large-scale collections of docked poses and scores for millions of ligand–protein pairs.\cite{CH6_Smiles2Dock} These resources encourage development of docking surrogates and hybrid ML--physics approaches, but require careful consideration of the underlying ligand preparation methods used in dataset generation.
+Beyond classical benchmarks, more recent datasets geared towards ML-based docking and scoring, such as Smiles2Dock, provide large scale collections of docked poses and scores for millions of ligand–protein pairs.\cite{CH6_Smiles2Dock} These resources encourage development of docking surrogates and hybrid ML--physics-based approaches, however, require careful consideration of the underlying ligand preparation methods used in dataset generation.
 
 \section{Molecular Structure File Formats}
 
 \subsection{SMILES: simplified molecular-input line-entry system}
 
-SMILES, introduced by Weininger,\cite{CH6_Weininger1988,CH6_weininger1989smiles,CH6_weininger1990smiles} is a line notation for encoding molecular graphs as ASCII strings. It supports branching, ring closures, stereochemistry, and charges. Examples:
+SMILES, introduced by Weininger,\cite{CH6_Weininger1988,CH6_weininger1989smiles,CH6_weininger1990smiles} is a line notation for encoding molecular graphs as ASCII strings. It supports branching, ring closures, stereochemistry, and charges. SMILES is compact and human-readable, and is ubiquitous in cheminformatics databases and ligand preparation workflows. However, it does not contain 3D coordinates; conversion to 3D requires embedding via tools like RDKit or Open Babel.
+
+Examples:
 \begin{itemize}
   \item Ethanol: \verb|CCO| or \verb|OCC|
   \item Benzene: \verb|c1ccccc1|
   \item Protonated amine: \verb|C[NH3+]|
-\end{itemize} [cite:106]
-
-SMILES is compact and human-readable, and is ubiquitous in cheminformatics databases and ligand preparation workflows. However, it does not contain 3D coordinates; conversion to 3D requires embedding via tools like RDKit or Open Babel.
+\end{itemize} 
 
 \subsection{InChI: IUPAC International Chemical Identifier}
 
-InChI is a nonproprietary identifier developed under IUPAC to provide a unique, canonical label for a defined chemical structure.\cite{CH6_Heller2013,CH6_McNaught2006,CH6_heller2009iupac} InChI strings encode layers (connectivity, hydrogen, charge, stereochemistry, isotopes), and InChIKey is a hashed, fixed-length representation suitable for indexing and web search.
+InChI is a nonproprietary identifier developed under IUPAC to provide a unique, canonical label for a defined chemical structure.\cite{CH6_Heller2013,CH6_McNaught2006,CH6_heller2009iupac} InChI strings encode layers (connectivity, hydrogen, charge, stereochemistry, isotopes), and InChIKey is a hashed, fixed-length representation suitable for indexing and web search. InChI is ideal for database linking and deduplication, but is less convenient for substructure or similarity search than SMILES. It is not directly used as a docking input format but is often used to harmonize ligand sets across databases (e.g., PDBbind–ChEMBL cross-mapping).
 
-InChI is ideal for database linking and deduplication, but is less convenient for substructure or similarity search than SMILES. It is not directly used as a docking input format but is often used to harmonize ligand sets across databases (e.g., PDBbind–ChEMBL cross-mapping).
+\textbf{Add InChI examples}
 
 \subsection{SDF/MOL: MDL connection tables}
 
-MDL MOL files (single molecules) and SDF (Structure Data File, multiple molecules) are widely used connection table formats. An SDF record for ethanol might look like:
+MDL MOL files (single molecules) and SDF (Structure Data File, multiple molecules) are widely used connection table formats.  SDF allows arbitrary associated data fields (e.g., ID, SMILES, properties) and is a common interchange format for docking libraries. An SDF record for ethanol might look like:
 
 \begin{verbatim}
 Ethanol
@@ -435,11 +424,10 @@ CCO
 
 \end{verbatim}
 
-SDF allows arbitrary associated data fields (e.g., ID, SMILES, properties) and is a common interchange format for docking libraries.
 
 \subsection{MOL2: Tripos MOL2 format}
 
-MOL2 is a richer 3D format that stores atom types, charges, and substructure information. A simplified MOL2 for ethanol might include:
+MOL2 is a richer 3D format that stores atom types, charges, and substructure information. MOL2 is commonly used by docking programs such as DOCK, GOLD, and FRED, and is well supported by Open Babel and RDKit. A simplified MOL2 for ethanol might include:
 
 \begin{verbatim}
 @<TRIPOS>MOLECULE
@@ -458,11 +446,10 @@ NO_CHARGES
 2 2 3 1
 \end{verbatim}
 
-MOL2 is commonly used by docking programs such as DOCK, GOLD, and FRED, and is well supported by Open Babel and RDKit.
-
 \subsection{PDB and PDBQT}
 
-\paragraph{PDB.} The PDB format was originally developed for macromolecular structures.\cite{CH6_Berman2000} Small-molecule ligands in PDB files are represented using \verb|HETATM| records. A minimal ligand block:
+\begin{enumerate}
+\item PDB: The PDB format was originally developed for macromolecular structures.\cite{CH6_Berman2000} Small-molecule ligands in PDB files are represented using \verb|HETATM| records. For docking, PDB is often converted to other formats (e.g., MOL2, PDBQT) that store explicit bond orders and charges more reliably than legacy PDB conventions. A minimal ligand block:
 
 \begin{verbatim}
 HETATM    1  C1  LIG A   1      10.123  12.345   5.678  1.00 20.00           C
@@ -470,9 +457,9 @@ HETATM    2  C2  LIG A   1      11.500  12.000   5.500  1.00 20.00           C
 HETATM    3  O3  LIG A   1      12.000  13.200   5.800  1.00 20.00           O
 \end{verbatim}
 
-For docking, PDB is often converted to other formats (e.g., MOL2, PDBQT) that store explicit bond orders and charges more reliably than legacy PDB conventions.
 
-\paragraph{PDBQT.} PDBQT is an extension of PDB used by AutoDock and AutoDock Vina, adding partial charges (Q) and atom types (T) for the AutoDock force field. Bonds and rotatable torsions are encoded in separate sections. For example:
+\item PDBQT: PDBQT is an extension of PDB used by AutoDock and AutoDock Vina, adding partial charges (Q) and atom types (T) for the AutoDock force field. Bonds and rotatable torsions are encoded in separate sections. Conversion from SDF/MOL2 to PDBQT is typically done via AutoDockTools scripts or wrappers in Open Babel (\verb|obabel -i sdf -o pdbqt|).
+ For example:
 
 \begin{verbatim}
 REMARK  Autodock PDBQT file
@@ -485,10 +472,9 @@ ENDBRANCH 1 2
 ENDROOT
 TORSDOF 1
 \end{verbatim}
+\end{enumerate}
 
-Conversion from SDF/MOL2 to PDBQT is typically done via AutoDockTools scripts or wrappers in Open Babel (\verb|obabel -i sdf -o pdbqt|).
-
-\subsection{Maestro (MAE) and other proprietary formats}
+\subsection{Maestro (MAE)}
 
 Schr\"odinger's Maestro (MAE) format and other proprietary binary/ASCII formats (e.g., SD Encrypted) store rich structural and property information. Although not human-readable, they are well supported within their respective ecosystems and often serve as the internal canonical representation during ligand preparation.
 
@@ -504,7 +490,7 @@ Choice of file format for docking involves trade-offs:
 
 Open Babel, RDKit, and other toolkits are typically used to interconvert between these formats.\cite{CH6_OBoyle2011}
 
-\section{Putting It All Together: A Practical Ligand Preparation Workflow}
+\section{A Practical Ligand Preparation Workflow}
 
 This section outlines a concrete, fully open-source workflow for preparing a library of SMILES strings for docking with a generic docking engine that accepts MOL2 or PDBQT inputs.
 
@@ -527,7 +513,7 @@ This section outlines a concrete, fully open-source workflow for preparing a lib
     \item Limit the number of protonation/tautomeric states per molecule (e.g., up to 16).
     \item Reject highly unstable or chemically unreasonable states.
   \end{itemize}
-  \item Alternatively, use RDKit plus an external p\(K_a\) estimator or ChemAxon tools if available.
+  \item Alternatively, use RDKit plus an external p$K_a$ estimator or ChemAxon tools if available.
 \end{enumerate}
 
 \subsection{Step 3: Stereochemistry and isomer enumeration}
@@ -569,7 +555,7 @@ This section outlines a concrete, fully open-source workflow for preparing a lib
   \item For AutoDock/Vina, convert MOL2/SDF to PDBQT and define rotatable bonds.
 \end{enumerate}
 
-\subsection{Step 8: Quality control}
+\subsection{Step 8: Quality Check}
 
 \begin{enumerate}
   \item Randomly sample a few hundred ligands and visually inspect:
@@ -584,21 +570,19 @@ This section outlines a concrete, fully open-source workflow for preparing a lib
   \end{itemize}
 \end{enumerate}
 
-\section{Conclusions and Best-Practice Recommendations}
+\section{Best Practice Recommendations}
 
 Robust small-molecule preparation is a prerequisite for meaningful docking-based virtual screening. Key recommendations are:
 
 \begin{itemize}
-  \item \textbf{Treat ligand preparation as a modeling step, not a trivial pre-processing task}. Empirical studies show that preparation parameters can substantially affect enrichment.\cite{CH6_Sastry2013,CH6_DEKOIS2} 
-  \item \textbf{Use chemically informed protonation and tautomer states}. Incorporate p\(K_a\) prediction and tautomer enumeration; avoid assuming a single arbitrary state for multiprotic systems.
-  \item \textbf{Enumerate relevant stereochemistry}. Do not ignore undefined stereocenters if stereochemistry is expected to affect binding.
-  \item \textbf{Employ validated conformer generators}. Use tools such as OMEGA and RDKit/ETKDG, which have been benchmarked against crystallographic data.\cite{Hawkins2010,Riniker2015} 
-  \item \textbf{Filter out chemically implausible and highly strained conformers}. Apply energetic and geometric criteria to remove outliers.
-  \item \textbf{Leverage curated databases}. Build libraries from ZINC, ChEMBL, PubChem, PDBbind, and established benchmarks (DUD-E, DEKOIS 2.0) to maximize data quality and facilitate comparison with literature.\cite{CH6_Irwin2005,CH6_Gaulton2012,Mysinger2012,DEKOIS2,WangPDBbind} 
-  \item \textbf{Verify}. Combine automatic checks with manual inspection of representative ligands and docked poses to ensure that the modeling remains chemically reasonable and that docking is ``right for the right reasons.''\cite{CH6_Irwin2015}
+  \item Treat ligand preparation as a modeling step, not a trivial pre-processing task. Empirical studies show that preparation parameters can substantially affect enrichment. 
+  \item Use chemically informed protonation and tautomer states. Incorporate p$K_a$ prediction and tautomer enumeration; avoid assuming a single arbitrary state for multiprotic systems.
+  \item Enumerate relevant stereochemistry. Do not ignore undefined stereocenters if stereochemistry is expected to affect binding.
+  \item Employ validated conformer generators. Use tools such as OMEGA and RDKit/ETKDG, which have been benchmarked against crystallographic data.
+  \item Filter out chemically implausible and highly strained conformers. Apply energetic and geometric criteria to remove outliers.
+  \item Leverage curated databases. Build libraries from ZINC, ChEMBL, PubChem, PDBbind, and established benchmarks (DUD-E, DEKOIS 2.0) to maximize data quality and facilitate comparison with literature.
+  \item Verify. Combine automatic checks with manual inspection of representative ligands and docked poses to ensure that the modeling remains chemically reasonable.
 \end{itemize}
-
-As docking and machine-learning–based scoring functions continue to evolve, the importance of high-quality ligand preparation only increases. In a data-rich era, careful attention to protonation, tautomerism, stereochemistry, and conformational variability remains essential to converting raw compound collections into physically meaningful, docking-ready libraries.
 
 \bibliography{Handling_Small_Molecules_for_Molecular_Docking}
 
