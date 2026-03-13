@@ -1,33 +1,334 @@
-\chapter*{Reproducibility and Data Integrity}
+\documentclass[12pt]{article}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{natbib}
+\bibliographystyle{plain}
 
-There have been significant questions raised on the reproducibility of results reported in the area of computational science\cite{bib58, bib59}. Often times, the use of a proprietary software or data not available in public domain makes it difficult to assess the reliability of the methods, and hence the results. A recent criticism on publishing the AlphaFold3 paper in Nature\cite{bib57} has renewed the need to adopt policies that make data and methods accessible to all validate the findings and thus enhance its scope beyond what was envisioned by the authors. The FAIR (Findability, Accessibility, Interoperability, and Reusability) principles are guidelines established in \textbf{2016} to improve data management and sharing in scientific research\cite{bib60}. 
-We briefly explain each term as follows: 
+\onehalfspacing
+
+\begin{document}
+
+\title{FAIR and Reproducible Reporting of Molecular Docking and Computational Chemistry Results}
+\author{Elvis Martis}
+\date{}
+\maketitle
+
+
+\section{Introduction}
+
+Molecular docking and other structure-based computational techniques now influence decisions in medicinal chemistry, chemical biology, and structural enzymology on a routine basis.\cite{trott2010vina,plos2025tenDocking} However, despite their widespread use, many published studies still lack sufficient detail to allow another group to recreate the calculation, let alone to systematically extend or challenge the conclusions.\cite{toolsRepro2016,reproWorkflows2017,mdChecklist2023} This situation undermines trust in computational results and slows the maturation of the field. It also contributes to a broader ``reproducibility crisis'' that has been documented across many areas of computational science.\cite{toolsRepro2016,reproWorkflows2017,barba2021role,rigorRepro2020}
+
+The FAIR Guiding Principles for scientific data management and stewardship were formulated in 2016 to provide high-level, domain-independent guidance for how digital research objects --- data, metadata, software, workflows --- should be published and maintained.\cite{wilkinson2016FAIR,goFairPrinciples,nnlmFAIR} Although FAIR was not written specifically for molecular modelling, its concepts map naturally onto the needs of docking and molecular dynamics (MD) communities.\cite{turingWayFAIR,healthFAIR2020} At the same time, community efforts have begun to articulate practical tips and checklists for performing and reporting meaningful and reproducible molecular docking and simulations.\cite{plos2025tenDocking,mdChecklist2023,rigorRepro2020}
+
+In this chapter, I take the perspective of an experienced computational chemist who is dissatisfied with minimal, non-reproducible reporting. I first introduce the FAIR principles with a focus on their implications for computational work. I then translate these principles into concrete reporting recommendations for molecular docking workflows, and show how to package and share data and code via modern repositories such as Zenodo, Figshare, Dryad, the Open Science Framework, and institutional data infrastructures.\cite{uTexasRepos,aguRepos,snsfRepos,publisherReqs} Finally, I discuss the role of open-source versus closed-source software and data in enabling (or hindering) reproducibility and scientific progress.\cite{tenOpenDev,tenCleanOSS,barba2021role,fossCase2021,rigorRepro2020}
+
+\section{The FAIR Guiding Principles}
+
+\subsection{Origins and scope}
+
+The FAIR Guiding Principles were introduced by Wilkinson \emph{et al.} in 2016 as a concise, technology-agnostic set of recommendations for improving the management and stewardship of digital research objects.\cite{wilkinson2016FAIR} Rather than prescribing specific file formats or repositories, FAIR focuses on properties that datasets, metadata, and related digital objects should exhibit so that both humans and machines can discover, access, integrate, and reuse them efficiently.\cite{wilkinson2016FAIR,goFairPrinciples}
+
+Although FAIR was initially motivated by data management challenges in life sciences, it was explicitly formulated to be domain-independent and to apply to a broad collection of scholarly outputs, including software, workflows, vocabularies, and training materials.\cite{wilkinson2016FAIR,goFairPrinciples,turingWayFAIR} Subsequent work has refined how community standards and metadata templates can operationalize FAIR in specific disciplines.\cite{communityTemplates2022,healthFAIR2020}
+
+FAIR is often conflated with ``open data'', but they are conceptually distinct. FAIR describes how digital objects should be structured and documented; it does not mandate that access must be completely unrestricted. Sensitive or proprietary data can still be FAIR, provided that access conditions are clearly and persistently described.\cite{goFairPrinciples,nnlmFAIR}
+
+\subsection{Findable}
+
+For an object to be reusable, it must first be discoverable. The Findable principle emphasizes globally unique and persistent identifiers (such as DOIs), richly described metadata, and indexing in searchable resources.\cite{wilkinson2016FAIR,goFairPrinciples,turingWayFAIR} For computational chemistry, these ideas translate into the following practices:
+
 \begin{itemize}
-    \item \textbf{Findable:} Data should be easily locatable by humans and machines through unique identifiers, rich metadata, and registration in searchable resources.
-    \item \textbf{Accessible:} Data must be retrievable using open, standardized protocols, with metadata remaining accessible even if the data is not.
-    \item \textbf{Interoperable:} Data should integrate smoothly with other datasets using shared languages and controlled vocabularies, including references to related data.
-    \item \textbf{Reusable:} Data should be well-documented, include clear licensing, and provide provenance information to support transparency and reproducibility.
+  \item Assign persistent identifiers (for example, DOIs from Zenodo or institutional repositories) to curated datasets, input decks, workflows, and software releases.
+  \item Provide descriptive metadata that includes, at minimum, the scientific context (targets, ligands, chemical series), methods (software, versions, key parameters), and relationships to publications.
+  \item Register datasets and software in catalogues such as re3data or FAIRsharing where appropriate, to improve global discoverability.\cite{publisherReqs,helpingFAIR2019}
 \end{itemize}
 
-All the input files, preparation steps, and docking parameters should be made available to the scientific community. This ensures fair dissemination of the results, and those who wish can reproduce the results and build upon their own set of experiments to continue and expand the current work. We also advise that even minor modifications must be reported in the methods. This may appear seemingly small but can be crucial for reproducing the results obtained. This can be indicated in the printed pages of the manuscript but would be more helpful in a repository listed in (\textbf{Table \ref{tab:list3}}) wherein users can download and test it themselves. Moreover, many of the repositories listed below allow to raise issues whenever users encounter errors or inconsistencies not foreseen by the authors or developers. 
+In docking, ``findability'' also involves clear linking between the publication, the primary data (e.g., ligand libraries, receptor structures), and the computational workflows used to generate the reported scores and poses.\cite{plos2025tenDocking,rigorRepro2020}
 
-\begin{table}[ht]
-    \centering 
-    \caption{List of repositories for share files in the public domain}
-    \label{tab:list3}
-    \begin{tabular}{|c|c|}
-    \hline
-         \textbf{Software} &  \textbf{Link to access} \\
-    \hline
-        Figshare &  \href{https://figshare.com/}{Click here} \\
-        Mendeley Data &  \href{https://data.mendeley.com/}{Click here}  \\
-        Harvard Dataverse &  \href{https://dataverse.harvard.edu/}{Click here}  \\
-        Dryad Digital Repository & \href{https://datadryad.org/stash}{Click here} \\
-        Open Science Framework &  \href{https://osf.io/}{Click here}  \\
-        Zenodo & \href{https://zenodo.org/}{Click here} \\
-        GitHub & \href{https://github.com/}{Click here} \\
-    \hline
-    \end{tabular}
-\end{table}
+\subsection{Accessible}
 
+Accessibility in FAIR refers to the use of open, standardized communication protocols and to the idea that, even if data themselves cannot be openly released, the metadata describing them should remain accessible.\cite{goFairPrinciples,nnlmFAIR} From a computational chemistry perspective:
 
+\begin{itemize}
+  \item Data and code should be retrievable via standard web protocols (for example, HTTPS), ideally through stable repository landing pages.
+  \item Access conditions (open, embargoed, restricted via data use agreements) must be explicitly described in the metadata.
+  \item Even for proprietary input structures or licensed software, one should provide enough information for qualified users to request access or to reproduce the calculation within their own licensed environment.\cite{goFairPrinciples,nnlmFAIR,rigorRepro2020}
+\end{itemize}
+
+Repositories such as Zenodo, Figshare, Dryad, OSF, and institutional data infrastructures provide persistent identifiers and managed access controls that help satisfy the Accessible principle.\cite{uTexasRepos,aguRepos,snsfRepos}
+
+\subsection{Interoperable}
+
+Interoperability focuses on meaningful data integration and exchange, both between datasets and with analysis tools. It depends on the use of community standards for file formats, controlled vocabularies, and metadata schemas.\cite{wilkinson2016FAIR,goFairPrinciples,helpingFAIR2019} In docking and simulations:
+
+\begin{itemize}
+  \item Where possible, use established, non-proprietary formats (for example, PDB or mmCIF for macromolecules, SDF or SMILES for ligands, widely used trajectory formats) alongside any software-specific representations.
+  \item Describe key scientific concepts using community vocabularies (for example, standard residue and atom naming, ontology terms for organisms, diseases, or assay types).
+  \item When depositing data, provide machine-readable metadata that follow community standards or templates, such as domain-specific checklists or MIxS-like schemas adapted for computational chemistry.\cite{communityTemplates2022,mdChecklist2023}
+\end{itemize}
+
+Interoperability is critical if one wants to mine docking datasets across targets, to benchmark different docking engines, or to integrate computed scores with experimental bioactivity databases such as ChEMBL or BindingDB.
+
+\subsection{Reusable}
+
+The ultimate aim of FAIR is to maximize the potential for reuse of digital objects, whether by the original authors or by others.\cite{wilkinson2016FAIR,goFairPrinciples,nnlmFAIR} Reusability requires rich documentation, explicit licensing, and clear provenance. For docking studies, this means:
+
+\begin{itemize}
+  \item Providing detailed provenance: where structures came from (PDB IDs, homology models), how they were processed (protonation states, missing loops, cofactors, water treatment), and how ligands were curated (sources, filters, stereochemistry, tautomers).
+  \item Using standard, machine-readable licences (for example, Creative Commons or Open Data Commons for data; OSI-approved licences for code) so that the reuse conditions are unambiguous.\cite{fossCase2021,rigorRepro2020}
+  \item Sharing complete input files and configuration parameters for docking runs and subsequent analyses, not just final summary tables or figures.\cite{plos2025tenDocking,toolsRepro2016,reproWorkflows2017}
+\end{itemize}
+
+In the remainder of this chapter I show how these abstract principles can be instantiated for molecular docking and related simulations, and how they interact with choices about software licensing and data openness.
+
+\section{FAIR reporting for molecular docking workflows}
+
+\subsection{Overview of a docking workflow}
+
+A typical structure-based virtual screening workflow consists of: (i) defining and preparing the biological target(s), (ii) assembling and curating a ligand library, (iii) configuring and running the docking engine, (iv) post-processing and analyzing the results, and often (v) validating the docking protocol against known ligands or experimental data.\cite{plos2025tenDocking,rigorRepro2020} At each stage, there are choices that can dramatically affect the outcome: alternate receptor conformations and protonation states, grid definition and search parameters, ligand protonation and tautomeric states, scoring functions, and ranking criteria. Without full disclosure of these choices, it is impossible to assess whether a reported enrichment curve or pose prediction is robust or an artefact of arbitrary settings.
+
+Recent community guidelines for docking emphasize careful validation against reference ligands and experimental binding data, and stress that all input files, preparation steps, and docking parameters should be shared to comply with FAIR recommendations.\cite{plos2025tenDocking,toolsRepro2016,reproWorkflows2017} Journals and funders increasingly expect such practices, but adoption remains inconsistent.\cite{rigorRepro2020,frontiersRepro2025}
+
+\subsection{Reporting the biological target}
+
+A FAIR-compliant description of the target in a docking study should include:
+
+\begin{itemize}
+  \item The biological identity of the target: species, isoform, and any relevant post-translational modifications.
+  \item The source of the 3D structure: PDB ID(s), resolution, experimental technique, or the homology modelling protocol used if no experimental structure was available.
+  \item Details of structure preparation: protonation state model and pH, treatment of missing loops or side chains, inclusion or exclusion of cofactors, metals, and crystallographic waters; any mutation or truncation introduced for computational convenience.
+  \item Definition of the binding site: how the docking box or search region was defined (for example, around a co-crystallized ligand, by pocket detection, or by functional hypotheses), including numerical coordinates and box dimensions.
+\end{itemize}
+
+These details are directly analogous to system description items in MD reproducibility checklists, which ask authors to report all transformations applied to experimental structures before simulation.\cite{mdChecklist2023}
+
+\subsection{Reporting ligand libraries and chemical space}
+
+On the ligand side, FAIR reporting requires transparency about the composition and processing of the chemical library:
+
+\begin{itemize}
+  \item Library provenance: vendor catalogues, in-house collections, public datasets such as ZINC or ChEMBL, or enumerated virtual libraries.
+  \item Curation steps: removal of inorganic species and counterions, standardization of valences and charges, removal of duplicates, rule-based or machine-learning based filters (for example, Lipinski, PAINS, toxicophores).
+  \item Representation and enumeration: how protonation states, tautomers, stereoisomers, and conformers were generated, including pH models, enumeration rules, and any pruning heuristics.
+  \item File formats and identifiers: use of standard identifiers (InChI, SMILES) alongside internal IDs to facilitate cross-database linking and reuse.
+\end{itemize}
+
+Without this information, others cannot know what chemical space was actually sampled, nor can they reuse the library in downstream studies. Depositing the curated library in an open repository, with clear licensing, makes the work substantially more reusable.\cite{uTexasRepos,aguRepos,snsfRepos}
+
+\subsection{Reporting software, versions, and computational environment}
+
+Computational reproducibility often fails because critical details about software versions, compilation options, and runtime environments are omitted.\cite{toolsRepro2016,reproWorkflows2017} For docking studies, authors should at minimum report:
+
+\begin{itemize}
+  \item The docking engine and wrapper tools used (for example, AutoDock Vina, GNINA, Glide), including the exact version number or commit hash.\cite{trott2010vina,autodockVinaGit}
+  \item Any custom patches or forks, with links to public version-controlled repositories where possible.\cite{tenOpenDev,tenCleanOSS}
+  \item The operating system and hardware architecture (CPU and GPU models, number of cores), especially if these influence performance or stochastic behaviour.
+  \item Random seeds and parallelization settings, so that non-deterministic aspects of the search can be reproduced or statistically characterized.
+\end{itemize}
+
+Using containers (for example, Docker, Singularity) or virtual machines and making these images available via repositories can dramatically simplify reproducibility by capturing the full software stack.\cite{reproWorkflows2017,toolsRepro2016}
+
+\subsection{Reporting docking parameters and protocol}
+
+FAIR reporting of the docking protocol itself includes:
+
+\begin{itemize}
+  \item The definition of the search space (grid spacing, box size and centre, or equivalent concepts in other engines).
+  \item The scoring function and any re-scoring or consensus scoring steps.
+  \item Search parameters: exhaustiveness, number of runs or poses per ligand, maximum evaluations or iterations, treatment of receptor and ligand flexibility, constraints or pharmacophore terms.
+  \item Post-processing criteria: how poses were filtered (for example, clash removal, interaction patterns), how scores from multiple conformations or protonation states were combined, and what thresholds defined ``hits''.
+  \item Validation steps: redocking of co-crystallized ligands with RMSD thresholds, enrichment metrics on reference actives and decoys, or correlation with experimental binding data.\cite{plos2025tenDocking}
+\end{itemize}
+
+Reporting only top-ranked poses and scores without this context is insufficient. Community guidelines for docking now explicitly recommend that all input files and full parameter sets be shared to comply with FAIR expectations.\cite{plos2025tenDocking,rigorRepro2020}
+
+\section{Repositories and open sharing of computational data}
+
+\subsection{Generalist data repositories}
+
+In the last decade, a robust ecosystem of generalist data repositories has emerged, many of which support FAIR-aligned data publication at no or low cost.\cite{uTexasRepos,aguRepos,snsfRepos,helpingFAIR2019} Examples include Zenodo, Figshare, Dryad, the Open Science Framework (OSF), Mendeley Data, Harvard Dataverse, Vivli, and institutional platforms operated by universities or consortia.\cite{uTexasRepos,aguRepos,snsfRepos} 
+
+These services typically provide:
+
+\begin{itemize}
+  \item Persistent identifiers (DOIs) for datasets and software releases, satisfying a core requirement of Findability.
+  \item Rich metadata forms supporting descriptive fields, licensing choices, author identifiers (ORCID), and links to related publications and funding information.
+  \item Versioning and immutable records: once published, a dataset is preserved, while newer versions can be linked as updates.
+  \item Access control options ranging from fully open to restricted or embargoed access, enabling compliance with ethical or contractual constraints while remaining FAIR.\cite{aguRepos,snsfRepos,publisherReqs}
+\end{itemize}
+
+Comparison charts from library and society initiatives can help researchers select a repository based on factors such as size limits, curation services, and costs.\cite{aguRepos,uMassOpenData} Several funding agencies explicitly recommend or mandate depositing data and code in repositories registered in catalogues like re3data or FAIRsharing.\cite{publisherReqs,helpingFAIR2019}
+
+\subsection{Discipline-specific and institutional infrastructures}
+
+In addition to generalist repositories, several disciplinary and institutional infrastructures support FAIR-aligned data sharing. FAIRsharing and re3data curate registries of domain-specific repositories (for example, for structural biology, genomics, neuroimaging) and track which repositories are endorsed by journals and funders.\cite{helpingFAIR2019,publisherReqs} For structural data, the Protein Data Bank (PDB) already provides standard deposition channels for experimental structures; docking studies should always reference these canonical entries rather than distributing modified coordinates without provenance.
+
+Some institutions operate their own repositories that issue DOIs and integrate with local research information systems. These may be particularly convenient for large MD trajectories or sensitive datasets that require controlled access while remaining FAIR.\cite{helpingFAIR2019,snsfRepos} When institutional repositories are used, authors should still ensure that metadata are rich, open licences are selected where possible, and links to associated code repositories and generalist archives are provided.
+
+\subsection{Packaging a docking project for deposition}
+
+To maximize reusability and minimize barriers for reviewers and future users, I recommend organizing a docking project for deposition along the following lines:
+
+\begin{itemize}
+  \item A top-level \texttt{README} in plain text or Markdown that provides a narrative overview of the study: scientific questions, methods, and guidelines for reproducing the main results.
+  \item Subdirectories for (i) receptor structures (\texttt{receptors/}), (ii) ligand libraries (\texttt{ligands/}), (iii) docking configuration files and scripts (\texttt{configs/} and \texttt{scripts/}), (iv) raw docking outputs (\texttt{results/raw/}), and (v) processed analysis tables and figures (\texttt{results/processed/}).
+  \item A machine-readable environment specification (for example, a \texttt{conda} environment file, a Dockerfile, or a container image reference) that captures software dependencies.\cite{toolsRepro2016,reproWorkflows2017}
+  \item Clear licensing files specifying permissions for data and code reuse (for example, \texttt{LICENSE} for software and an explicit Creative Commons or CC0 statement for data).\cite{fossCase2021,rigorRepro2020}
+\end{itemize}
+
+Once organized, this directory tree can be archived and uploaded to a generalist repository such as Zenodo or OSF, which in turn will assign a DOI and allow the dataset to be cited alongside the associated article.\cite{uTexasRepos,aguRepos,snsfRepos}
+
+\subsection{Code repositories and archival integration}
+
+For code underlying docking workflows (for example, custom preprocessing scripts, wrappers, or analysis notebooks), the best practice is to use distributed version control (for example, Git) and host the repository on platforms such as GitHub, GitLab, or Bitbucket.\cite{gitRepro2013,tenOpenDev,tenCleanOSS} These platforms provide transparent version histories, issue tracking, and collaboration features.
+
+To align with FAIR, one should:
+
+\begin{itemize}
+  \item Tag a release corresponding to the version of the code used in a published study.
+  \item Archive that release in a data repository that mints a DOI (for example, Zenodo--GitHub integration), so that the exact code snapshot can be cited and preserved.\cite{helpingFAIR2019}
+  \item Include a \texttt{CITATION} file that instructs users how to acknowledge the software in publications.\cite{tenOpenDev,tenCleanOSS}
+\end{itemize}
+
+This combination of public version control and archival DOIs has been recommended as a cornerstone of reproducible computational research.\cite{toolsRepro2016,gitRepro2013,barba2021role}
+
+\section{Checklists for reproducible docking and simulations}
+
+\subsection{Lessons from MD reproducibility checklists}
+
+Recent work has proposed detailed checklists for reporting MD simulations and related computational methods, covering system preparation, force fields, integrators, sampling strategies, and analysis procedures.\cite{mdChecklist2023} These checklists are intended both as author guidelines and as tools for reviewers and editors to assess whether submissions provide enough detail to enable reproduction.
+
+A similar philosophy can be applied to molecular docking. Rather than relying on terse method descriptions or references to software manuals, authors should explicitly confirm that they have reported each class of information necessary to re-run and extend their calculations.\cite{plos2025tenDocking,mdChecklist2023}
+
+\subsection{A practical checklist for docking studies}
+
+Building on published recommendations for docking and general computational reproducibility, one can formulate the following checklist.\cite{plos2025tenDocking,toolsRepro2016,rigorRepro2020}
+
+\subsubsection*{Scientific context}
+
+\begin{itemize}
+  \item Clear statement of the biological question or design objective.
+  \item Justification for selecting the specific targets and ligands.
+\end{itemize}
+
+\subsubsection*{Targets}
+
+\begin{itemize}
+  \item Target identity, isoform, organism.
+  \item Structural source (PDB ID, homology model) and experimental details.
+  \item Structure preparation steps, including protonation, missing regions, cofactors, and water treatment.
+  \item Binding site definition and numerical parameters for docking boxes or equivalent constructs.
+\end{itemize}
+
+\subsubsection*{Ligands}
+
+\begin{itemize}
+  \item Library sources and curation pipeline.
+  \item Enumeration of protonation states, tautomers, stereochemistry, and conformers.
+  \item Representation formats (for example, SDF, SMILES) and identifiers.
+\end{itemize}
+
+\subsubsection*{Software and environment}
+
+\begin{itemize}
+  \item Names, versions, and origin of all key software components (dockers, preparation tools, analysis scripts).
+  \item Description of any custom code and its public repository.
+  \item Operating system and hardware features relevant to performance or stochastic behaviour.
+  \item Availability of container images or environment specifications.
+\end{itemize}
+
+\subsubsection*{Docking protocol}
+
+\begin{itemize}
+  \item Search space and grid parameters.
+  \item Scoring functions and re-scoring steps.
+  \item Search parameters (exhaustiveness, runs, time limits).
+  \item Treatment of flexibility and constraints.
+  \item Criteria for ranking, hit selection, and post-processing.
+\end{itemize}
+
+\subsubsection*{Validation and controls}
+
+\begin{itemize}
+  \item Redocking results for co-crystallized ligands, with RMSD thresholds and statistics.
+  \item Retrospective enrichment metrics on actives and decoys where possible.
+  \item Cross-validation or sensitivity analyses (for example, alternate receptor conformations, parameter variations).
+\end{itemize}
+
+\subsubsection*{Data and code availability}
+
+\begin{itemize}
+  \item Persistent identifiers (DOIs) for datasets and code snapshots.
+  \item Licences for data and code, and any access restrictions.
+  \item Instructions in the \texttt{README} for reproducing key figures and tables from the raw data.
+\end{itemize}
+
+Authors and reviewers can use such a checklist as a concrete interpretation of FAIR principles for docking and related computational chemistry workflows.\cite{plos2025tenDocking,mdChecklist2023,rigorRepro2020}
+
+\section{Open versus closed source software and data}
+
+\subsection{Open-source software and reproducibility}
+
+Open-source scientific software --- that is, programs released under licences that grant users the rights to run, study, modify, and redistribute the code --- has had a transformative impact on many areas of computational research.\cite{tenOpenDev,tenCleanOSS,fossCase2021} Surveys of widely cited bioinformatics tools such as BLAST and ClustalW show that open availability of code is often correlated with high scientific impact, in part because others can build upon and validate the methods.\cite{tenOpenDev,fossCase2021}
+
+From a reproducibility perspective, open-source software offers several advantages:\cite{barba2021role,rigorRepro2020,fossCase2021}
+
+\begin{itemize}
+  \item Transparency: reviewers and readers can, in principle, inspect the implementation and verify that it matches the description in the paper.
+  \item Auditability: bugs or numerical issues can be identified and corrected by the community, and patches can be shared.
+  \item Sustainability: when code is publicly version-controlled, it is easier to maintain, fork, and adapt beyond the lifetime or funding horizon of a single group.
+  \item Equity: researchers in institutions or countries with limited resources are not excluded by licence fees.
+\end{itemize}
+
+These benefits align closely with FAIR expectations that software artefacts should be well documented, accessible, and reusable.\cite{goFairPrinciples,tenCleanOSS,barba2021role}
+
+AutoDock Vina is a canonical example in docking: it is one of the most widely used, open-source docking engines, distributed under a permissive Apache licence, with active development on public GitHub and extensive integration in graphical interfaces and pipelines.\cite{trott2010vina,autodockVinaGit} Its open status has facilitated community-driven benchmarking, method extensions, and incorporation into automated virtual screening workflows.\cite{gninaBench2025}
+
+\subsection{Limitations of closed-source and proprietary tools}
+
+Closed-source or proprietary software, including many commercial docking suites, can deliver sophisticated functionality, optimized performance, and professional support. However, reliance on such tools introduces several challenges for reproducibility and for the broader progress of open science.\cite{rigorRepro2020,barba2021role}
+
+\begin{itemize}
+  \item Opaque implementations: without source access, it is often impossible to ascertain how exactly a scoring function or search heuristic is implemented, or whether it has changed between versions.
+  \item Licence barriers: other researchers, including reviewers, may lack the funds or institutional agreements needed to run the software, undermining the practical reproducibility of published work.\cite{rigorRepro2020}
+  \item Longevity risks: if a vendor discontinues a product or changes its licensing terms, reproducing older studies can become difficult or impossible.
+  \item Constraints on reuse: restrictive licences may prevent the community from developing and sharing extensions or automated workflows that build on proprietary binaries.
+\end{itemize}
+
+These issues do not mean that high-quality work cannot be done with proprietary tools, but they do place a greater burden on authors to document their protocols in detail and to provide as many FAIR-compliant artefacts as possible, such as input files and containerized environments that at least encapsulate the exact version used.\cite{rigorRepro2020,computationalReproGuide}
+
+\subsection{Open data versus controlled access}
+
+A related debate concerns open data versus controlled-access data. FAIR does not equate to complete openness: it explicitly accommodates scenarios where data must be restricted for privacy, security, or intellectual property reasons, provided that the constraints are clearly described.\cite{goFairPrinciples,nnlmFAIR} 
+
+In computational chemistry, restrictions may arise from proprietary compound libraries, confidential target information, or ongoing industrial collaborations. In such cases, authors can still improve reproducibility by:
+
+\begin{itemize}
+  \item Sharing synthetic or down-sampled datasets that capture key statistical properties of the full data.
+  \item Providing detailed metadata and protocol descriptions, including how qualified researchers might request access to the full data under appropriate agreements.\cite{goFairPrinciples,computationalReproGuide}
+  \item Sharing all non-sensitive artefacts fully openly (for example, code, container images, generic workflows), so that barriers apply only where absolutely necessary.\cite{rigorRepro2020,barba2021role}
+\end{itemize}
+
+A useful concept here is ``open verifiable reproducibility'', where the computational workflow and environment are fully open, but sensitive input data are accessed via controlled channels that nonetheless allow independent verification by authorized parties.\cite{computationalReproGuide}
+
+\subsection{Towards a balanced ecosystem}
+
+The question is not whether all software and data must be open, but how to design an ecosystem in which openness and FAIR practices are the default and proprietary components are used judiciously and transparently. Policy surveys of scientific computing journals show a growing recognition that data and software are primary research outputs and that reproducibility policies must explicitly address them.\cite{frontiersRepro2025,rigorRepro2020} 
+
+Concrete steps include:
+
+\begin{itemize}
+  \item Journals requiring that, when proprietary software is used, authors disclose version details and provide maximal FAIR artefacts (input files, scripts, containers).
+  \item Funders supporting the development and maintenance of open-source scientific software and community standards as infrastructure, not as afterthoughts.\cite{helpingFAIR2019,fossCase2021}
+  \item Professional societies and training programmes emphasizing FAIR and open practices as core competencies for computational chemists.
+\end{itemize}
+
+\section{Conclusions}
+
+For molecular docking and related computational chemistry methods to earn the same level of trust as high-quality experimental assays, they must be reported in a way that enables others to reproduce, audit, and extend the work. The FAIR Guiding Principles offer a powerful, widely endorsed framework to structure this reporting, but they must be translated into practical, domain-specific guidance to be effective.\cite{wilkinson2016FAIR,goFairPrinciples,turingWayFAIR} 
+
+By systematically documenting targets, ligand libraries, software environments, and docking protocols; by packaging complete workflows and data into well-structured repositories with persistent identifiers and clear licences; and by favouring open-source tools and open data where possible, computational chemists can greatly enhance the reliability, impact, and longevity of their work.\cite{plos2025tenDocking,toolsRepro2016,mdChecklist2023,tenOpenDev,tenCleanOSS,barba2021role} This requires effort and a shift in community norms, but the payoff is a more cumulative and trustworthy science, in which docking results are not black-box numbers in a table but well-documented, reusable digital experiments.
+
+\bibliography{Reproducibility_and_Data_Integrity}
+
+\end{document}

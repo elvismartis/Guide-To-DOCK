@@ -1,0 +1,33 @@
+\chapter*{Reproducibility and Data Integrity}
+
+There have been significant questions raised on the reproducibility of results reported in the area of computational science\cite{bib58, bib59}. Often times, the use of a proprietary software or data not available in public domain makes it difficult to assess the reliability of the methods, and hence the results. A recent criticism on publishing the AlphaFold3 paper in Nature\cite{bib57} has renewed the need to adopt policies that make data and methods accessible to all validate the findings and thus enhance its scope beyond what was envisioned by the authors. The FAIR (Findability, Accessibility, Interoperability, and Reusability) principles are guidelines established in \textbf{2016} to improve data management and sharing in scientific research\cite{bib60}. 
+We briefly explain each term as follows: 
+\begin{itemize}
+    \item \textbf{Findable:} Data should be easily locatable by humans and machines through unique identifiers, rich metadata, and registration in searchable resources.
+    \item \textbf{Accessible:} Data must be retrievable using open, standardized protocols, with metadata remaining accessible even if the data is not.
+    \item \textbf{Interoperable:} Data should integrate smoothly with other datasets using shared languages and controlled vocabularies, including references to related data.
+    \item \textbf{Reusable:} Data should be well-documented, include clear licensing, and provide provenance information to support transparency and reproducibility.
+\end{itemize}
+
+All the input files, preparation steps, and docking parameters should be made available to the scientific community. This ensures fair dissemination of the results, and those who wish can reproduce the results and build upon their own set of experiments to continue and expand the current work. We also advise that even minor modifications must be reported in the methods. This may appear seemingly small but can be crucial for reproducing the results obtained. This can be indicated in the printed pages of the manuscript but would be more helpful in a repository listed in (\textbf{Table \ref{tab:list3}}) wherein users can download and test it themselves. Moreover, many of the repositories listed below allow to raise issues whenever users encounter errors or inconsistencies not foreseen by the authors or developers. 
+
+\begin{table}[ht]
+    \centering 
+    \caption{List of repositories for share files in the public domain}
+    \label{tab:list3}
+    \begin{tabular}{|c|c|}
+    \hline
+         \textbf{Software} &  \textbf{Link to access} \\
+    \hline
+        Figshare &  \href{https://figshare.com/}{Click here} \\
+        Mendeley Data &  \href{https://data.mendeley.com/}{Click here}  \\
+        Harvard Dataverse &  \href{https://dataverse.harvard.edu/}{Click here}  \\
+        Dryad Digital Repository & \href{https://datadryad.org/stash}{Click here} \\
+        Open Science Framework &  \href{https://osf.io/}{Click here}  \\
+        Zenodo & \href{https://zenodo.org/}{Click here} \\
+        GitHub & \href{https://github.com/}{Click here} \\
+    \hline
+    \end{tabular}
+\end{table}
+
+
