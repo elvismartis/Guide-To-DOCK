@@ -236,6 +236,37 @@ However, the main observed disadvantage is their strong dependence on the choice
 \subsection{Consensus Scoring functions}
 \textbf{rewrite}.\cite{CH3_Wang2017}
 
+
+\subsection{Machine-Learning-Based Scoring Functions}
+
+Machine-learning (ML) scoring functions replace hand-designed linear or pairwise potentials with more flexible models trained to reproduce binding data. Early ML scoring functions used relatively simple descriptors and regression algorithms (e.g., random forests), while recent work employs deep neural networks operating directly on 3D grids or molecular graphs.\cite{CH3_Ballester2010_RFScore,CH3_Wojcikowski2017_RFScoreVS,CH3_Jimenez2018_KDEEP}
+
+In a generic ML scoring function, the goal is to learn a mapping
+\begin{equation}
+\hat{y} = f_{\boldsymbol{\theta}}(\mathbf{x}),
+\end{equation}
+where $\mathbf{x} \in \mathbb{R}^d$ encodes features of the protein--ligand complex (e.g., atom-type pair counts, interaction fingerprints, grid-based densities), $y$ is the target property (e.g., $\Delta G_{\text{bind}}$ or $pK_d$), and $\boldsymbol{\theta}$ are model parameters. The parameters are optimized by minimizing a loss function over a training set $\{(\mathbf{x}_n, y_n)\}_{n=1}^N$, typically the mean-squared error
+\begin{equation}
+\mathcal{L}(\boldsymbol{\theta}) = \frac{1}{N} \sum_{n=1}^N \left( y_n - f_{\boldsymbol{\theta}}(\mathbf{x}_n) \right)^2.
+\end{equation}
+
+\subsubsection{Feature-Based ML Scoring Functions}
+
+RF-Score is a prototypical feature-based ML scoring function.\cite{CH3_Ballester2010_RFScore} It uses a fixed-length descriptor vector whose components are counts of protein--ligand atom-type pairs within a cutoff radius (e.g., 12~\AA). For example, one feature may count all occurrences where a protein carbon atom lies within 6--8~\AA{} of a ligand nitrogen atom. A random forest of decision trees is trained to predict binding affinity from these descriptors. The RF-Score prediction is an average over $M$ trees,
+\begin{equation}
+\hat{y} = \frac{1}{M} \sum_{m=1}^{M} T_m(\mathbf{x}),
+\end{equation}
+where $T_m$ denotes the prediction from the $m$-th tree.
+
+RF-Score-VS extends this idea to virtual screening tasks, training on large numbers of active/decoy complexes (e.g., DUD-E) and optimizing enrichment metrics.\cite{CH3_Wojcikowski2017_RFScoreVS} Related work has shown that ML scoring functions can substantially improve virtual screening hit rates relative to classical scoring functions, but are sensitive to training/test similarity and dataset biases.\cite{CH3_CH3_li2021machine,CH3_CH3_li2017structural}
+
+\subsubsection{Deep Learning Scoring Functions}
+
+Deep learning methods operate directly on spatial or graph representations of protein--ligand complexes. In 3D convolutional neural network (3D-CNN) approaches, atoms are mapped to voxelized grids with channels corresponding to atom types or physicochemical properties, and convolutions learn spatial patterns predictive of binding affinity.\cite{CH3_Jimenez2018_KDEEP} Other models use graph neural networks (GNNs) where nodes represent atoms and edges represent bonds or noncovalent contacts; message-passing layers propagate information and construct learned representations of the complex.\cite{CH3_Wang2017}
+
+While these models often achieve state-of-the-art performance on standard benchmarks such as CASF-2013 and CASF-2016, recent work has emphasized that their apparent gains can be inflated by data leakage and training--test similarity in PDBbind-derived splits.\cite{CH3_li2021machine,CH3_li2017structural} Addressing these issues requires careful dataset design and evaluation, discussed further below.
+
+
 \section{Datasets and validation for Scoring Functions}
 
 Reliable development and evaluation of scoring functions require curated datasets that link high-quality  structural data on protein--ligand complexes with experimentally measured binding affinity data. Following sections will briefly discuss a commonly use and publicaly available datasets. 
