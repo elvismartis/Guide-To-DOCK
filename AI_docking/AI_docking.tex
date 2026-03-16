@@ -16,73 +16,55 @@
 
 \section{Introduction}
 
-Molecular docking has long been a central technology in structure-based drug design, providing computational predictions of how small molecules bind to protein targets. Classical docking algorithms combine a conformational search over ligand (and sometimes receptor) degrees of freedom with an empirical or physics-based scoring function intended to approximate the binding free energy landscape. Although these approaches have enabled decades of successful campaigns, their accuracy is often limited by simplified energy models, incomplete treatment of protein flexibility, and heuristic search schemes that struggle in rugged, high-dimensional landscapes.
+Classical docking algorithms combine a conformational search over ligand (and sometimes receptor) degrees of freedom with an empirical or physics-based scoring function intended to approximate the binding free energy landscape. Although these approaches have enabled decades of successful drug discovery programs, their accuracy is often limited by (over)simplified energy models, incomplete treatment of protein flexibility, and heuristic search schemes that struggle in rugged, high-dimensional landscapes. Over the past decade, artificial intelligence (AI) and deep learning have begun to transform the field of drug discovery in general, and molecular docking in particular. Convolutional neural network (CNN) based scoring functions such as those in GNINA have significantly improved pose ranking relative to AutoDock Vina, particularly when rescoring pre-generated ensembles of poses.\cite{CH13_mcnutt2021gnina} These methods learn complex, non-linear relationships between 3D protein–ligand complex and binding quality directly from structural data. This somewhat bypasses the need to manually finetune functional forms of the scoring function.\cite{CH13_meli2022dlreview} More recently, generative and geometric deep learning models like \emph{EquiBind} and \emph{DiffDock} have started to replace or augment the classical conformational search itself, learning to propose plausible binding poses directly, often with large speedups over sampling-based methods.\cite{CH13_stark2022equibind,CH13_corso2022diffdock} Simultaneously, breakthroughs in protein structure prediction, most notably by AlphaFold2 and 3, have made high-quality structural models of previously intractable targets widely available.\cite{CH13_jumper2021alphafold} Building upon these ideas, new all-atom foundation models such as Boltz-2 now co-fold proteins, nucleic acids and ligands into complexes, while simultaneously predicting binding affinity with accuracy approaching free-energy perturbation (FEP) at orders-of-magnitude lower computational cost.\cite{CH13_passaro2025boltz2}
 
-Over the past decade, artificial intelligence (AI) and deep learning have begun to transform this landscape. Convolutional neural network (CNN) scoring functions such as those in GNINA have significantly improved pose ranking relative to AutoDock Vina, particularly when rescoring pre-generated ensembles of poses.\cite{CH13_mcnutt2021gnina} These methods learn complex, non-linear relationships between 3D protein–ligand arrangements and binding quality directly from structural data, bypassing the need to handcraft functional forms of the scoring function.\cite{CH13_meli2022dlreview} More recently, generative and geometric deep learning models like EquiBind and DiffDock have started to replace or augment the classical conformational search itself, learning to propose physically plausible binding poses directly, often with large speedups over sampling-based methods.\cite{CH13_stark2022equibind,CH13_corso2022diffdock}
-
-In parallel, breakthroughs in protein structure prediction, most notably AlphaFold2, have made high-quality structural models of previously intractable targets widely available.\cite{CH13_jumper2021alphafold} Building upon these ideas, new all-atom foundation models such as Boltz-2 now co-fold proteins, nucleic acids and ligands into complexes while simultaneously predicting binding affinity with accuracy approaching free-energy perturbation (FEP) at orders-of-magnitude lower computational cost.\cite{CH13_passaro2025boltz2} These developments fundamentally blur the line between docking, structure prediction and binding affinity estimation.
-
-This chapter surveys these advances with three main aims:
-\begin{enumerate}
-  \item to provide a concise but rigorous introduction to deep learning concepts relevant to molecular docking,
-  \item to describe how AI has been integrated into both conformational search and scoring, with emphasis on 3D and equivariant architectures, and
-  \item to explain how modern foundation models such as AlphaFold2 and Boltz-2 predict protein–ligand complex structures and binding affinities.
-\end{enumerate}
 
 \section{Classical Molecular Docking: Search and Scoring}
 
-\subsection{Problem formulation}
-
-Given a protein receptor \(R\) and a ligand \(L\), molecular docking seeks the bound complex configuration \(X^{\ast}\) that (approximately) minimizes the binding free energy
+Given a protein receptor R and a ligand L, molecular docking seeks the bound complex configuration $X^{\ast}$ that approximately minimizes the binding free energy
 \[
 \Delta G(R,L) = G(RL) - G(R) - G(L),
 \]
-where \(G(\cdot)\) denotes the free energy of the system. In practice, docking approximates this task by:
+where $G(\cdot)$ denotes the free energy of the system. In practice, docking approximates this task by:
 \begin{enumerate}
-  \item sampling a discrete set of candidate poses \(\{X_k\}_{k=1}^{K}\) over ligand translation, rotation and torsions (and optionally side-chain or backbone degrees of freedom), and
-  \item scoring each pose with an approximate energy or scoring function \(S(X_k)\), selecting low-scoring poses as predictions.
+  \item sampling a discrete set of candidate poses $\{X_k\}_{k=1}^{K}$ over ligand translation, rotation and torsions. If receptor is treated as flexible, then side-chain or backbone degrees of freedom are allowed to move.
+  \item Scoring each pose with an approximate energy or scoring function $S(X_k)$, selecting poses that score very high (as convention a more negative number is better) as predictions.
 \end{enumerate}
 
 Classical scoring functions can be written generically as
 \[
 S(X) = \sum_{i} w_i f_i(X),
 \]
-where \(f_i(X)\) are features (e.g., van der Waals interactions, hydrogen bonding, desolvation, electrostatics, rotatable bond penalties) and \(w_i\) are parameters obtained by fitting to experimental data or by physical reasoning. Search algorithms typically combine stochastic moves (Monte Carlo, genetic algorithms, Lamarckian GA, etc.) with local minimization in the space of ligand pose and conformation.
+where $f_i(X)$ are features, e.g., van der Waals interactions, hydrogen bonding, desolvation, electrostatics, rotatable bond penalties, and $w_i$ are parameters obtained by fitting to experimental data or by physical reasoning. Search algorithms typically combine stochastic moves, such as Monte Carlo, genetic algorithms, Lamarckian GA, systematic search or any combination thereof, with local minimization in the space of ligand pose and conformation.
 
-Despite many engineering refinements, three key challenges remain:
+Despite many refinements, three key challenges remain:
 \begin{itemize}
-  \item \textbf{Approximate scoring}: linear or low-order functional forms struggle to capture subtle enthalpy–entropy balance, water-mediated interactions, and long-range effects.
-  \item \textbf{Limited flexibility}: most workflows treat the receptor as rigid or allow only limited side-chain motion, missing induced-fit or allosteric rearrangements.
-  \item \textbf{Search complexity}: heuristic sampling can undersample near-native basins in large, flexible ligands or cryptic pockets, producing false negatives.
+  \item Approximate scoring: linear or low-order functional forms struggle to capture subtle enthalpy–entropy balance, water-mediated interactions, and long-range effects.
+  \item Limited flexibility: most workflows treat the receptor as rigid or allow only limited side-chain motion, missing induced-fit or allosteric rearrangements.
+  \item Search complexity: heuristic sampling can undersample near-native basins in large, flexible ligands or cryptic pockets, producing false negatives.
 \end{itemize}
 
-These limitations create a natural opportunity for deep learning, which excels at learning complex, non-linear structure–property relationships from large datasets.
-
-\section{Basics of Deep Learning for Chemists}
+\section{Basics of Deep Learning}
 
 \subsection{Feedforward networks and loss minimization}
 
-At its core, deep learning learns a parametric function \(f_{\theta}: \mathcal{X} \to \mathcal{Y}\) from input features \(x\) (e.g., a 3D protein–ligand representation) to outputs \(y\) (e.g., binding affinity, pose quality, or coordinates) by minimizing a loss function over a dataset of examples \(\{(x^{(n)}, y^{(n)})\}_{n=1}^{N}\). A simple fully connected (dense) layer computes
+dDeep learning learns a parametric function $f_{\theta}: \mathcal{X} \to \mathcal{Y}$ from input features x, e.g., a 3D protein–ligand representation, to outputs y, e.g., binding affinity, pose quality, or coordinates, by minimizing a loss function over a dataset of examples $\{(x^{(n)}, y^{(n)})\}_{n=1}^{N}$. A simple fully connected dense layer computes
 \[
 h^{(\ell+1)} = \sigma\!\big( W^{(\ell)} h^{(\ell)} + b^{(\ell)} \big),
 \]
-where \(h^{(\ell)}\) is the input vector to layer \(\ell\), \(W^{(\ell)}\) and \(b^{(\ell)}\) are learnable weights and biases, and \(\sigma\) is a non-linear activation function (such as ReLU).
-
-For regression tasks like binding affinity prediction, the network outputs a scalar \(\hat{y}\) and the standard loss is mean-squared error (MSE):
+where $h^{(\ell)}$ is the input vector to layer $\ell$, $W^{(\ell)}$ and $b^{(\ell)}$ are learnable weights and biases, and $\sigma$ is a non-linear activation function, such as ReLU, Sigmoid or Tanh. For regression tasks like binding affinity prediction, the network outputs a scalar $\hat{y}$ and the standard loss is mean-squared error (MSE):
 \[
 \mathcal{L}_{\text{MSE}}(\theta) = \frac{1}{N} \sum_{n=1}^{N} \big( \hat{y}^{(n)} - y^{(n)} \big)^2.
 \]
-For classification (e.g., binder vs non-binder), one typically uses a cross-entropy loss.
-
-Training proceeds by stochastic gradient descent (SGD) or variants (Adam, RMSProp), using backpropagation to compute gradients \(\partial \mathcal{L} / \partial \theta\) and update \(\theta\).
+For classification, such as binder vs non-binder, one uses a cross-entropy loss. Training proceeds by stochastic gradient descent (SGD) or variants (Adam, RMSProp), using backpropagation to compute gradients $\partial \mathcal{L} / \partial \theta$ and update $\theta$.
 
 \subsection{Convolutional and 3D voxel models}
 
-To model spatially local patterns in images or 3D densities, convolutional neural networks (CNNs) replace dense layers with convolutions. In 3D, a convolutional layer applies a learnable kernel \(K\) across a voxel grid representation of a protein–ligand complex:
+To model spatially local patterns in images or 3D densities, convolutional neural networks (CNNs) replace dense layers with convolutions. In 3D, a convolutional layer applies a learnable kernel K across a voxel grid representation of a protein–ligand complex:
 \[
 (h * K)(\mathbf{r}) = \sum_{\mathbf{s}} h(\mathbf{r} - \mathbf{s}) K(\mathbf{s}),
 \]
-where \(\mathbf{r}\) and \(\mathbf{s}\) index grid positions in 3D space. CNNs are translation-equivariant and can efficiently capture local interaction motifs such as hydrogen bonds or hydrophobic packing when complexes are encoded as multi-channel atomic density grids.
+where $\mathbf{r}$ and $\mathbf{s}$ index grid positions in 3D space. CNNs are translation-equivariant and can efficiently capture local interaction motifs such as hydrogen bonds or hydrophobic packing when complexes are encoded as multi-channel atomic density grids.
 
 \subsection{Graph neural networks and equivariance}
 
@@ -90,50 +72,50 @@ Molecules and proteins are naturally represented as graphs with atoms as nodes a
 \[
 h_i^{(\ell+1)} = \phi\big(h_i^{(\ell)}, \big\{ m_{ij}^{(\ell)} : j \in \mathcal{N}(i) \big\}\big),
 \]
-where messages \(m_{ij}^{(\ell)} = \psi(h_i^{(\ell)}, h_j^{(\ell)}, e_{ij})\) depend on neighbor features and edge attributes (e.g., distances, bond types), and \(\phi,\psi\) are learnable functions. This allows learning local chemical environments and non-covalent interaction patterns.
-
-For 3D docking, it is crucial that models respect Euclidean symmetries: a rigid rotation or translation of the input complex should not change predicted energies, or should transform coordinates in a predictable way. SE(3)-equivariant networks enforce
+where messages $m_{ij}^{(\ell)} = \psi(h_i^{(\ell)}, h_j^{(\ell)}, e_{ij})$ depend on neighbor features and edge attributes, such as  distances, bond types, and $\phi,\psi$ are learnable functions. This allows learning local chemical environments and non-covalent interaction patterns. For docking, it is crucial that models respect Euclidean symmetries: a rigid rotation or translation of the input complex should not change predicted energies, or should transform coordinates in a predictable way. SE(3)-equivariant networks enforce
 \[
 f\big(R X + t\big) = R f(X) + t,
 \]
-for any rotation \(R\) and translation \(t\). Here \(X\) denotes the set of atomic coordinates. Such architectures underlie many modern models including EquiBind, DiffDock’s score network, and AlphaFold2’s structure module, enabling more data-efficient learning and physically consistent predictions.\cite{CH13_stark2022equibind,CH13_jumper2021alphafold,CH13_corso2022diffdock}
+for any rotation R and translation t. Here X denotes the set of atomic coordinates. Such architectures underlie many modern models including EquiBind, DiffDock’s score network, and AlphaFold2’s structure module, enabling more data-efficient learning and predictions consistent with the laws of physics.\cite{CH13_stark2022equibind,CH13_jumper2021alphafold,CH13_corso2022diffdock}
 
 \section{Deep Learning Scoring Functions for Binding Affinity}
 
-\subsection{From empirical to machine-learning-based scoring}
+\subsection{From empirical to machine learning-based scoring}
 
-Machine-learning-based scoring functions (MLSFs) replace the hand-crafted linear combination of descriptors in classical scoring functions by a flexible non-linear mapping learned from data.\cite{CH13_meli2022dlreview} Early MLSFs such as RF-Score used Random Forests on simple counts of protein–ligand atom-type pairs within distance cutoffs to predict binding affinity.\cite{CH13_meli2022dlreview,CH13_durant2025robustly} Later, deep learning approaches introduced 3D CNNs and GNNs operating directly on structural representations.
+Machine learning-based scoring functions (MLSFs) replace the manually fitted linear combination of descriptors in classical scoring functions by a flexible non-linear mapping learned from data.\cite{CH13_meli2022dlreview} Early MLSFs such as RF-Score used Random Forests on simple counts of protein–ligand atom-type pairs within distance cutoffs to predict binding affinity.\cite{CH13_meli2022dlreview,CH13_durant2025robustly} Later, deep learning approaches introduced 3D CNNs and GNNs operating directly on structural representations.
 
 A generic MLSF can be written as
 \[
 \hat{\Delta G} = f_{\theta}\big( \Phi(X) \big),
 \]
-where \(\Phi(X)\) encodes the protein–ligand complex into a feature tensor (e.g., a voxelized grid of atomic densities or a graph), and \(f_{\theta}\) is a deep network trained on experimental affinities. The loss is again typically MSE between predicted and experimental \(\Delta G\) or \(pK_d\).
+where $\Phi(X)$ encodes the protein–ligand complex into a feature tensor, like a voxelized grid of atomic densities or a graph, and $f_{\theta}$ is a deep network trained on experimental affinities. The loss is  typically MSE between predicted and experimental $\Delta G$ or $pK_d$.
 
-\subsection{3D CNN scoring: GNINA, KDEEP, Pafnucy}
+\subsection{3D CNN scoring}
 
-\paragraph{GNINA and CNN rescoring.} GNINA represents the protein–ligand complex as a 3D voxel grid with channels for atom types and densities, and trains an ensemble of CNNs to score poses.\cite{CH13_mcnutt2021gnina} In its default workflow, GNINA uses a Vina-like empirical scoring function during a Markov chain Monte Carlo (MCMC) search to sample poses, then applies the CNN ensemble to rescore and re-rank the generated poses. This hybrid strategy improves the percentage of targets for which the top-ranked pose lies within 2 Å RMSD of the crystal pose (Top1) compared to pure Vina scoring in both redocking and cross-docking benchmarks.\cite{CH13_mcnutt2021gnina}
+\begin{itemize}
+\item GNINA and CNN rescoring: GNINA represents the protein–ligand complex as a 3D voxel grid with channels for atom types and densities, and trains an ensemble of CNNs to score poses.\cite{CH13_mcnutt2021gnina} In its default workflow, GNINA uses a Vina-like empirical scoring function during a Markov chain Monte Carlo (MCMC) search to sample poses, then applies the CNN ensemble to rescore and re-rank the generated poses. This hybrid strategy improves the percentage of targets for which the top-ranked pose lies within 2 \r{A} RMSD of the crystallographic conformation compared to the Vina scoring alone in both redocking and cross-docking benchmarks.\cite{CH13_mcnutt2021gnina}
 
-\paragraph{KDEEP and Pafnucy.} Methods like KDEEP and Pafnucy similarly encode complexes in 3D grids and use deep CNNs to directly regress binding affinities on PDBBind-like datasets.\cite{CH13_meli2022dlreview,CH13_durant2025robustly} These models achieve high correlation between predicted and experimental affinities on curated benchmarks, though their real-world performance depends strongly on data curation and the similarity between training and application domains.\cite{CH13_meli2022dlreview,CH13_durant2025robustly}
+\item KDEEP and Pafnucy: Methods like KDEEP and Pafnucy similarly encode complexes in 3D grids and use deep CNNs to directly fit binding affinities on PDBBind-like datasets.\cite{CH13_meli2022dlreview,CH13_durant2025robustly} These models achieve high correlation between predicted and experimental affinities on curated benchmarks, though their real-world performance depends strongly on data curation and the similarity between training and application domains.\cite{CH13_meli2022dlreview,CH13_durant2025robustly}
+\end{itemize}
 
 \subsection{Graph- and distance-based scoring}
 
-An alternative is to build MLSFs on graph or distance-based representations that avoid discretization artifacts. RTMScore and related approaches, for example, learn residue–atom distance likelihood potentials using mixture density networks, providing a flexible scoring framework that can be tuned for multiple tasks (docking, ranking, screening).\cite{CH13_shen2023generalized} More recent reviews highlight the diversity of architectures, from CNNs to message-passing networks and transformers, and discuss issues of bias, overfitting, and evaluation protocols specific to MLSFs.\cite{CH13_meli2022dlreview,CH13_durant2025robustly}
+An alternative is to build MLSFs on graph or distance-based representations that avoid discretization artifacts. RTMScore and related approaches, for example, learn residue–atom distance likelihood potentials using mixture density networks, providing a flexible scoring framework that can be tuned for multiple tasks, such as docking, ranking, and screening.\cite{CH13_shen2023generalized} More recent reviews highlight the diversity of architectures, from CNNs to message-passing networks and transformers, and identify problems of bias, overfitting, and evaluation protocols specific to MLSFs.\cite{CH13_meli2022dlreview,CH13_durant2025robustly}
 
 \subsection{Caveats and robustness}
 
-Despite promising benchmarks, MLSFs can exhibit performance degradation under more realistic testing conditions, especially when decoy sets differ from training distributions or when physical constraints are not enforced.\cite{CH13_meli2022dlreview,CH13_durant2025robustly} Recent work emphasizes the need for robust evaluation frameworks and diagnostics that disentangle genuine learning of physics-relevant patterns from dataset artifacts, highlighting the importance of combining ML with physical priors and post hoc validation such as energy minimization or MD.\cite{CH13_posebusters2023,CH13_durant2025robustly}
+Despite promising benchmarks, MLSFs can exhibit performance degradation under more realistic testing conditions, especially when decoy sets differ from training distributions or when physics-based constraints are not enforced.\cite{CH13_meli2022dlreview,CH13_durant2025robustly} Recent work emphasizes the need for robust evaluation frameworks and diagnostics that simplify genuine learning of physics-based patterns from datasets, highlighting the importance of combining ML with physics-based constraints and post hoc validation such as energy minimization or MD.\cite{CH13_posebusters2023,CH13_durant2025robustly}
 
-\section{AI in Conformational Search and Pose Generation}
+\section{AI in Conformation and Pose Generation}
 
 \subsection{Direct-shot geometric models: EquiBind}
 
 EquiBind exemplifies a paradigm shift from sampling-based docking to direct-shot prediction of binding poses using geometric deep learning.\cite{CH13_stark2022equibind} Instead of generating and scoring thousands of poses, EquiBind builds SE(3)-equivariant graph representations of the protein and a random ligand conformer, then predicts:
 \begin{enumerate}
-  \item the likely binding region (``keypoints'') on the protein surface, and
+  \item the likely binding region, keypoints, on the protein surface, and
   \item a roto-translation that aligns ligand keypoints to protein keypoints.
 \end{enumerate}
-The network is trained to minimize the mean-squared error between predicted ligand coordinates and experimentally observed bound poses, along with auxiliary losses on torsion angles.\cite{CH13_stark2022equibind,CH13_equibindnews2023} Because it predicts the final pose in a single forward pass, EquiBind achieves speedups of two orders of magnitude over traditional docking while maintaining competitive RMSD accuracy on many benchmarks.\cite{CH13_stark2022equibind}
+The network is trained to minimize the mean-squared error between predicted ligand coordinates and experimentally observed poses, along with auxiliary losses on torsion angles.\cite{CH13_stark2022equibind,CH13_equibindnews2023} Because it predicts the final pose in a single forward pass, EquiBind achieves speedups of two orders of magnitude over traditional docking while maintaining competitive RMSD accuracy on many benchmarks.\cite{CH13_stark2022equibind}
 
 \subsection{Diffusion models for docking: DiffDock}
 
@@ -141,116 +123,111 @@ DiffDock frames docking as generative modeling over the manifold of ligand poses
 \[
 q\big(x_t \mid x_{t-1}\big) = \mathcal{N}\big(x_t; \sqrt{1 - \beta_t}\,x_{t-1}, \beta_t I\big),
 \]
-which gradually destroys structure, and trains a neural network \(s_{\theta}(x_t, t)\) to approximate the score function \(\nabla_{x_t} \log p_t(x_t)\). The reverse process iteratively denoises from a simple prior (e.g., Gaussian noise) back to realistic ligand poses.
+which gradually destroys structure, and trains a neural network $s_{\theta}(x_t, t)$ to approximate the score function $\nabla_{x_t} \log p_t(x_t)$. The reverse process iteratively denoises from Gaussian noise back to realistic ligand poses. 
 
-For docking, \(x_t\) encodes the ligand’s translation, rotation (e.g., unit quaternions), and torsion angles, while the protein is treated as a conditioning variable via an SE(3)-equivariant graph neural network.\cite{CH13_corso2022diffdock} Empirically, DiffDock achieves substantially higher Top1 success rates (RMSD \(< 2\) Å) on PDBBind than classical docking and earlier deep methods, and maintains notable performance even when docking to computationally predicted (AlphaFold-like) structures.\cite{CH13_corso2022diffdock,CH13_suriana2023enhancing} Its diffusion-based generative sampler implicitly explores diverse basins of the binding landscape, sidestepping some combinatorial challenges of explicit search.
+For docking, $x_t$ encodes the ligand’s translation, rotation, and torsion angles, while the protein is treated as a conditioning variable via an SE(3)-equivariant graph neural network.\cite{CH13_corso2022diffdock} Empirically, DiffDock achieves higher success rates (RMSD $<$2 \r{A}) on PDBBind than classical docking and earlier deep methods, and maintains notable performance even when docking to computationally predicted (AlphaFold-like) structures.\cite{CH13_corso2022diffdock, CH13_suriana2023enhancing} Its diffusion-based generative sampler implicitly explores diverse basins of the binding landscape, sidestepping some combinatorial challenges of explicit search.
 
 \subsection{Hybrid and quantum-inspired approaches}
 
-Several recent works combine deep generative models with classical or even quantum-inspired optimization schemes. For example, hybrid workflows use DiffDock or EquiBind to propose candidate poses, followed by local refinement with physics-based energy minimization or MD, trading a small cost increase for improved physical plausibility.\cite{CH13_posebusters2023,CH13_compassdock2024} Quantum-inspired methods have been proposed that encode docking as a combinatorial optimization problem solved by annealing-like schemes, with learned gradients guiding the search in a latent molecular space.\cite{CH13_quantuminspired2024} Early results suggest modest improvements over both traditional and purely deep learning-based docking in blind docking scenarios, though these approaches are still nascent.\cite{CH13_quantuminspired2024}
+Several recent work combine deep generative models with classical or even quantum-inspired optimization schemes. For example, hybrid workflows use DiffDock or EquiBind to predict candidate poses, followed by local refinement with physics-based energy minimization or MD, trading a small cost increase for improved plausibility.\cite{CH13_posebusters2023,CH13_compassdock2024} Quantum-inspired methods have been proposed that encode docking as a combinatorial optimization problem solved by annealing-like schemes, with learned gradients guiding the search in a latent molecular space.\cite{CH13_quantuminspired2024} Early results suggest modest improvements over both traditional and purely deep learning-based docking in blind docking scenarios, though these approaches are still nascent.\cite{CH13_quantuminspired2024}
 
-\section{Deep Learning for Pose Validation and Physical Plausibility}
+\section{Deep Learning for Pose Validation}
 
-One criticism of several AI-based docking methods is that they can produce geometrically plausible but physically invalid poses, e.g., with steric clashes or unrealistic ligand strain, especially when evaluated outside the training distribution.\cite{CH13_posebusters2023} PoseBusters systematically benchmarked multiple deep docking methods (DeepDock, DiffDock, EquiBind, TankBind, Uni-Mol) and traditional tools (AutoDock Vina, GOLD) using additional post-prediction filters for clash detection and force-field minimization.\cite{CH13_posebusters2023} Results highlighted that, while AI methods can attain competitive RMSD statistics, they often require explicit physical checks to ensure realistic geometries.
+One criticism of several AI-based docking methods is that they can produce geometrically plausible but physically invalid poses, e.g., with steric clashes or unrealistic ligand strain, especially when evaluated outside the training distribution.\cite{CH13_posebusters2023} PoseBusters systematically benchmarked multiple deep docking methods, like DeepDock, DiffDock, EquiBind, TankBind, and Uni-Mol, and traditional tools, such as AutoDock Vina, and GOLD, using additional post prediction filters for clash detection and force field minimization.\cite{CH13_posebusters2023} Results showed that, while AI methods can attain competitive RMSD statistics, they often require explicit physics-based information to ensure realistic geometries. To address this, tools like CompassDock\cite{CH13_compassdock2024} introduce auxiliary modules that estimate ligand strain, clash counts, and interaction quality, enabling post hoc reweighting or fine-tuning of generative models to favor physically and biologically plausible poses.
 
-To address this, tools like CompassDock introduce auxiliary modules that estimate ligand strain, clash counts, and interaction quality, enabling post hoc reweighting or fine-tuning of generative models to favor physically and biologically plausible poses.\cite{CH13_compassdock2024} This reflects a broader trend: coupling flexible, data-driven models with explicit physical criteria and domain-informed regularization.
 
 \section{Protein Structure Prediction as a Foundation for Docking}
 
-\subsection{AlphaFold2: end-to-end protein structure prediction}
+\subsection{AlphaFold}
 
-AlphaFold2 (AF2) represents a breakthrough in protein structure prediction, achieving near-experimental accuracy for many single-chain proteins.\cite{CH13_jumper2021alphafold} AF2 takes as input an amino acid sequence and derives multiple sequence alignments (MSAs) and template features, which feed into an ``Evoformer'' block that iteratively refines pairwise residue representations and per-residue embeddings.\cite{CH13_alphafoldreview2021} The structural module then predicts backbone frames and side-chain coordinates, optimizing an internal potential that incorporates geometric constraints such as distance distributions and torsion angle priors.\cite{CH13_jumper2021alphafold,CH13_alphafoldreview2021}
+AlphaFold (AF) represents a breakthrough in protein structure prediction, achieving near-experimental accuracy for many single chain proteins.\cite{CH13_jumper2021alphafold} Alphafold2 (AF2) takes as input an amino acid sequence and derives multiple sequence alignments (MSAs) and template features, which feed into an \emph{Evoformer} block that iteratively refines pairwise residue representations and per-residue embeddings. The structural module then predicts backbone frames and side-chain coordinates, optimizing an internal potential that incorporates geometric constraints such as distance distributions and torsion angle priors.\cite{CH13_jumper2021alphafold,CH13_alphafoldreview2021} While AF2 was trained primarily on monomeric and some complex structures, its success made high-quality models available for a large fraction of the proteome, greatly expanding the pool of docking-ready or near-ready protein structures.\cite{CH13_humanproteome2021,CH13_alphafoldimpact2022} Nevertheless, AF2 does not explicitly model small-molecule ligands and does not directly output binding affinities, so classical and ML-based docking remain essential for ligand prediction.
 
-While AF2 was trained primarily on monomeric and some complex structures, its success made high-quality models available for a large fraction of the proteome, greatly expanding the pool of docking-ready or near-ready protein structures.\cite{CH13_humanproteome2021,CH13_alphafoldimpact2022} Nevertheless, AF2 does not explicitly model small-molecule ligands and does not directly output binding affinities, so classical and ML-based docking remain essential for ligand prediction.
+AlphaFold3(AF3) \cite{CH13_abramson2024accurate} advances beyond AlphaFold2 by predicting the structure and interactions of all life's molecules—including DNA, RNA, and ligands, rather than just proteins, utilizing a diffusion-based architecture instead of AlphaFold2’s reliance on MSA-based templates. Key improvements include superior accuracy for complexes, superior antibody-antigen prediction, and faster, more versatile modeling of complex, non-protein assemblies. 
 
 \subsection{Complex and multi-state prediction}
 
-Several protocols extend AF2 to complexes (AlphaFold-Multimer and community workflows) and to alternative conformational states, e.g., active versus inactive GPCRs.\cite{CH13_multistategpcr2021,CH13_proteinpredictionuntilcasp15} These methods typically adjust MSAs and templates or modify training to encourage specific interaction patterns. For docking, AF2-derived complex or multi-state models can provide more realistic binding sites, though care is required: AF2 may over-stabilize certain conformations or misrepresent flexible or disordered regions crucial for allosteric binding.\cite{CH13_alphafoldimpact2022,CH13_alphafoldlimitations2023,CH13_deepallostery2024}
+Several protocols extend AF2 to complexes, such as AlphaFold-Multimer and community workflows, and to alternative conformational states, e.g., active versus inactive GPCRs.\cite{CH13_multistategpcr2021,CH13_proteinpredictionuntilcasp15} These methods typically adjust MSAs and templates or modify training to encourage specific interaction patterns. For docking, AF2-derived complex or multi-state models can provide more realistic binding sites. However, it is advised to practice caution as AF2 is known to over-stabilize certain conformations or misrepresent flexible or disordered regions crucial for allosteric binding.\cite{CH13_alphafoldimpact2022,CH13_alphafoldlimitations2023,CH13_deepallostery2024}
 
-\subsection{Using AlphaFold structures in docking workflows}
+\subsection{Using AF structures in docking workflows}
 
-Several studies have shown that AI-predicted protein structures can be used successfully in docking and virtual screening, often with performance comparable to crystal structures when binding sites are well-resolved.\cite{CH13_humanproteome2021,CH13_alphafoldimpact2022} However, limitations arise for:
+Several studies have shown that AI-predicted protein structures can be used successfully in docking and virtual screening, often with performance comparable to X-ray crystal structures when binding sites are well-resolved.\cite{CH13_humanproteome2021,CH13_alphafoldimpact2022} However, limitations arise for:
 \begin{itemize}
-  \item cryptic or allosteric pockets not visible in the AF2 model,
-  \item conformational selection or induced-fit where the bound state differs markedly from AF2’s prediction, and
-  \item cases where low pLDDT regions overlap functional sites.
+  \item Cryptic or allosteric pockets not visible in the AF model.
+  \item Conformational selection or induced-fit where the bound state differs markedly from AF’s prediction.
+  \item Cases where low pLDDT (predicted Local Distance Difference Test) regions overlap functional sites.
 \end{itemize}
-These challenges motivate next-generation models that natively co-model receptors and ligands.
+
 
 \section{Co-folding Models for Protein–Ligand Complexes}
 
 \subsection{From AlphaFold to all-atom interaction models}
 
-Recent models such as AlphaFold3 and various open-source alternatives extend the AF2 paradigm to jointly model proteins, nucleic acids, small molecules and other biomolecules in a unified all-atom representation.\cite{CH13_proteinpredictionuntilcasp15,CH13_alphafoldbeyond2025} These co-folding models take sequences (and/or graphs) for multiple chains and ligands, plus optional templates and constraints, and output full 3D complex structures. Internally, they use transformer-like architectures with attention over residues, atoms, and pairwise interactions, often augmented with SE(3)-equivariant geometric reasoning.
+Recent models such as AF3 and various open-source alternatives extend the AF2 paradigm to jointly model proteins, nucleic acids, small molecules and other biomolecules in a unified all-atom representation.\cite{CH13_abramson2024accurate,CH13_proteinpredictionuntilcasp15,CH13_alphafoldbeyond2025} These co-folding models take sequences and/or graphs for multiple chains and ligands, plus optional templates and constraints, and output full 3D complex structures. Internally, they use transformer-like architectures with attention over residues, atoms, and pairwise interactions, often augmented with SE(3)-equivariant geometric reasoning. Conceptually, co-folding replaces the traditional pipeline of \emph{predict receptor structure} $\to$ \emph{dock ligands} by a joint generative process that accounts for mutual structural adaptation. In principle, such models can capture induced fit and cryptic pocket opening provided relevant configurations are represented in the training data.
 
-Conceptually, co-folding replaces the traditional pipeline of ``predict receptor structure \(\to\) dock ligands'' by a joint generative process that accounts for mutual structural adaptation. In principle, such models can capture induced fit and cryptic pocket opening provided relevant configurations are represented in the training data.
+\subsection{Boltz-2}
 
-\subsection{Boltz-2: unified structure and affinity prediction}
-
-Boltz-2 is a recent open-source foundation model designed to co-predict complex 3D structures and binding affinities for diverse biomolecular interactions.\cite{CH13_passaro2025boltz2} Building on earlier models (including Boltz-1 and AlphaFold-like architectures), Boltz-2:
+Boltz-2\cite{CH13_passaro2025boltz2} is a recent open-source foundation model designed to co-predict complex 3D structures and binding affinities for diverse biomolecular interactions. Building on earlier models, including Boltz-1 and AF-like architectures, Boltz-2:
 \begin{itemize}
-  \item jointly encodes proteins, nucleic acids, and small molecules using multimodal transformers and equivariant geometric modules,
-  \item predicts 3D complex structures (co-folding) across these modalities, and
-  \item includes dedicated heads for continuous binding affinity and binder/decoy classification.
+  \item Jointly encodes proteins, nucleic acids, and small molecules using multimodal transformers and equivariant geometric modules.
+  \item Predicts 3D complex structures, co-folding, across these modalities.
+  \item Includes dedicated heads for continuous binding affinity and binder or decoy classification.
 \end{itemize}
-The training objective combines structural loss terms (e.g., frame-aligned point error between predicted and experimental coordinates) with affinity losses (e.g., MSE in \(pK\) or negative log-likelihood of experimental measurements), effectively learning a surrogate for the binding free energy landscape.\cite{CH13_passaro2025boltz2}
+The training objective combines structural loss terms, such as frame-aligned point error between predicted and experimental coordinates, with affinity losses, e.g., MSE in $pK$ or negative log-likelihood of experimental measurements, effectively learning a surrogate for the binding free energy landscape.
 
-Benchmarks suggest that Boltz-2 achieves strong correlation with experimental binding affinities and approaches FEP-level accuracy on several small-molecule benchmarks while being approximately three orders of magnitude faster.\cite{CH13_passaro2025boltz2,CH13_wan2026reliability} External evaluations indicate that Boltz-2 is particularly effective on relatively rigid targets and chemotypes well represented in its training set, whereas performance can degrade for highly flexible ligands or interaction motifs under-represented in training data.\cite{CH13_wan2026reliability}
+Benchmark studies\cite{CH13_passaro2025boltz2,CH13_wan2026reliability} suggest that Boltz-2 achieves strong correlation with experimental binding affinities and approaches FEP-level accuracy on several small-molecule benchmarks while being approximately three orders of magnitude faster. External evaluations indicate that Boltz-2 is particularly effective on relatively rigid targets and chemotypes well represented in its training set, whereas performance can degrade for highly flexible ligands or interaction motifs under-represented in training data.\cite{CH13_wan2026reliability}
 
 \subsection{Mechanistic perspective}
 
-From a physicochemical standpoint, co-folding models like Boltz-2 can be viewed as learning a parameterized approximation to the joint Boltzmann distribution
+From a physicochemical standpoint, co-folding models, like Boltz-2, can be viewed as learning a parameterized approximation to the joint Boltzmann distribution
 \[
 p_{\theta}(X, \Delta G \mid S) \approx \frac{1}{Z(S)} \exp\big( - \beta F_{\theta}(X, S) \big),
 \]
-where \(X\) denotes the complex coordinates, \(S\) the sequences and chemical graphs of the interacting species, \(\Delta G\) an effective binding free energy, and \(F_{\theta}\) a learned free-energy-like functional. During inference, the model outputs a mode or sample of this distribution (a predicted complex) and an estimate of \(\Delta G\), effectively mapping sequence and ligand structure to both pose and affinity. While \(F_{\theta}\) is not a true physical free energy, calibration against experimental data and comparison with FEP suggest that it captures substantial aspects of the underlying energy landscape.\cite{CH13_passaro2025boltz2}
+where X denotes the complex coordinates, S the sequences and chemical graphs of the interacting species, $\Delta G$ an effective binding free energy, and $F_{\theta}$ a learned free-energy-like functional. During inference, the model outputs a mode or sample of this distribution, a predicted complex, and an estimate of $\Delta G$, effectively mapping sequence and ligand structure to both pose and affinity. While $F_{\theta}$ is not a true physical free energy, calibration against experimental data and comparison with FEP suggest that it captures substantial aspects of the underlying energy landscape.\cite{CH13_passaro2025boltz2}
 
 \section{Binding Affinity Prediction with Deep Learning}
 
 \subsection{Supervised affinity regression}
 
-Classical MLSFs and newer foundation models alike treat binding affinity prediction as supervised regression, with the dataset comprising complexes \(X^{(n)}\) and associated experimental labels \(y^{(n)}\) (e.g., \(pK_i\), \(pIC_{50}\)). A typical loss is
+Classical MLSFs and new foundation models alike treat binding affinity prediction as supervised regression, with the dataset comprising complexes $X^{(n)}$ and associated experimental labels $y^{(n)}$, such as $pK_i$ or $pIC_{50}$. A typical loss is
 \[
 \mathcal{L}_{\text{aff}}(\theta) = \frac{1}{N} \sum_{n=1}^{N} \ell\big(f_{\theta}(X^{(n)}), y^{(n)}\big),
 \]
-where \(\ell\) may be MSE or Huber loss. Some models also incorporate uncertainty estimation, interpreting \(f_{\theta}\) as the mean of a conditional distribution with learned variance.
-
-An attractive interpretation connects predicted affinity to the Boltzmann distribution of bound versus unbound states. If one assumes
+where $\ell$ may be MSE or Huber loss. Some models also incorporate uncertainty estimation, interpreting $f_{\theta}$ as the mean of a conditional distribution with learned variance. An attractive interpretation connects predicted affinity to the Boltzmann distribution of bound v/s unbound states. If one assumes
 \[
 K_d \propto \exp\big(\beta \Delta G_{\text{bind}}\big),
 \]
-then learning \(\Delta G_{\text{bind}}\) is equivalent (up to constants) to learning \(\log K_d\), which is roughly linear in experimental \(pK_d\). Deep models like KDEEP, Pafnucy and subsequent variants effectively fit such a relationship over large, but imperfect, structural datasets.\cite{CH13_meli2022dlreview,CH13_durant2025robustly}
+then learning $\Delta G_{\text{bind}}$ is equivalent to learning $\log K_d$, which is roughly linear in experimental $pK_d$. Deep models like KDEEP, Pafnucy and their variants effectively fit such a relationship over large, but imperfect, structural datasets.\cite{CH13_meli2022dlreview,CH13_durant2025robustly}
 
 \subsection{Joint pose and affinity modeling}
 
-A key challenge is coupling pose prediction and affinity estimation in a physically sensible way. In classical pipelines, docking generates poses and a separate rescoring or free-energy method estimates affinities, often requiring careful manual curation of poses. Newer models attempt to couple these steps:
+A key challenge is coupling pose prediction and affinity estimation in a physically meaningfull manner. In classical pipelines, docking generates poses and a separate rescoring or free-energy method estimates affinities, often requiring careful manual curation of poses. New models attempt to couple these steps:
 \begin{itemize}
-  \item DiffDock learns a distribution over poses and provides confidence scores that correlate with RMSD, offering a proxy for pose quality and, indirectly, binding likelihood.\cite{CH13_corso2022diffdock}
-  \item Co-folding models like Boltz-2 directly predict the bound pose and a calibrated affinity from shared internal representations, tightening the link between geometric and thermodynamic aspects.\cite{CH13_passaro2025boltz2}
+  \item DiffDock learns a distribution over poses and provides confidence scores that correlate with RMSD, offering a proxy for pose quality and, indirectly, binding likelihood.
+  \item Co-folding models, like Boltz-2, directly predict the bound pose and a calibrated affinity from shared internal representations, improving the link between geometric and thermodynamic aspects.\cite{CH13_passaro2025boltz2}
   \item Hybrid ML/MM pipelines use ML-predicted poses as seeds for physics-based calculations (MM/GBSA, FEP), reducing sampling overhead while maintaining interpretability.
 \end{itemize}
 
-Designing loss functions and training curricula that maintain consistency between pose and affinity predictions is an active area of research, with approaches ranging from multi-task learning to contrastive or ranking-based objectives that enforce ordering consistency with experimental SAR data.\cite{CH13_shen2023generalized,CH13_durant2025robustly}
+Designing loss functions and training models that maintain consistency between pose and affinity predictions is an active area of research, with approaches ranging from multi-task learning to contrastive or ranking-based objectives that enforce ranking-ordering consistency with experimental SAR data.\cite{CH13_shen2023generalized,CH13_durant2025robustly}
 
-\section{How AlphaFold-like and Boltz-2-like Models Predict Complexes}
+\section{How AF-like and Boltz-2-like Models Predict Complexes}
 
-\subsection{Architecture sketch: attention plus geometry}
+\subsection{Architecture}
 
-Although implementation details vary, AlphaFold2, AlphaFold-like co-folding models, and Boltz-2 share several architectural motifs:\cite{CH13_jumper2021alphafold,CH13_alphafoldreview2021,CH13_proteinpredictionuntilcasp15,CH13_passaro2025boltz2}
+Although implementation details vary, AF2, AF-like co-folding models, and Boltz-2 share several architectural motifs:\cite{CH13_jumper2021alphafold,CH13_alphafoldreview2021,CH13_proteinpredictionuntilcasp15,CH13_passaro2025boltz2}
 \begin{enumerate}
-  \item \textbf{Sequence and pair representations.} Each residue or small-molecule fragment is encoded into a high-dimensional embedding using its sequence or graph features. Pairwise residue–residue (and residue–ligand) relationships are encoded into separate pair representations.
-  \item \textbf{Iterative refinement via attention.} Multi-head attention layers update both per-residue and pairwise features, allowing long-range communication within and across chains, analogous to message passing on a fully connected interaction graph.
-  \item \textbf{Geometric module.} An SE(3)-equivariant structural module converts refined features into 3D frames and atomic coordinates, iteratively adjusting them to satisfy learned geometric constraints (distance distributions, angle priors).
-  \item \textbf{Auxiliary heads.} Additional heads output per-residue confidence scores, predicted aligned error (PAE) maps, and—in Boltz-2—binding affinities and binder/decoy likelihoods.\cite{CH13_passaro2025boltz2}
+  \item Sequence and pair representations: Each residue or small molecule fragment is encoded into a high dimensional embedding using its sequence or graph features. Pairwise residue–residue, and residue–ligand relationships are encoded into separate pair representations.
+  \item Iterative refinement via attention: Multi-head attention layers update both per-residue and pairwise features, allowing long range communication within and across chains, analogous to message passing on a fully connected interaction graph.
+  \item Geometric module: An SE(3)-equivariant structural module converts refined features into 3D frames and atomic coordinates, iteratively adjusting them to satisfy learned geometric constraints.
+  \item Auxiliary heads: Additional heads output per-residue confidence scores, predicted aligned error (PAE) maps, and in Boltz-2 binding affinities and binder ordecoy likelihoods.\cite{CH13_passaro2025boltz2}
 \end{enumerate}
 
 \subsection{Training signals and objectives}
 
-For complex prediction, the main geometric loss compares predicted and experimental coordinates via frame-aligned point error or similar metrics:
+For complex prediction, the main geometric loss compares predicted and experimental coordinates via frame aligned point error or similar metrics:
 \[
 \mathcal{L}_{\text{geom}} = \sum_{i} \left\| \hat{\mathbf{r}}_i - \mathbf{r}_i \right\|^2,
 \]
-after optimal rigid alignment of local frames. Additional losses penalize deviations in inter-residue distances, dihedral angles, and clash counts, effectively teaching the model a differentiable surrogate of a physical potential.\cite{CH13_jumper2021alphafold,CH13_alphafoldreview2021,CH13_passaro2025boltz2}
+after optimal rigid alignment of local frames. Additional losses penalize deviations in inter-residue distances, dihedral angles, and clash counts, effectively teaching the model a differentiable surrogate of a physics-based potential.\cite{CH13_jumper2021alphafold,CH13_alphafoldreview2021,CH13_passaro2025boltz2}
 
 For affinity, Boltz-2 and related models add regression or ranking losses:
 \[
@@ -258,24 +235,21 @@ For affinity, Boltz-2 and related models add regression or ranking losses:
 \]
 optionally combined with contrastive terms that encourage correct ordering of affinities within SAR series. Joint training on both structural and affinity data encourages internal representations that are sensitive not only to geometry but also to subtle interaction features correlated with binding strength.\cite{CH13_passaro2025boltz2}
 
-\subsection{Inference: predicting complexes and affinities}
+\subsection{Inference}
 
-Given a protein sequence and a candidate ligand, an AlphaFold3- or Boltz-2-like pipeline proceeds broadly as follows:\cite{CH13_proteinpredictionuntilcasp15,CH13_passaro2025boltz2}
+Given a protein sequence and a candidate ligand, an AF3 or Boltz-2 like pipeline proceeds broadly as follows:\cite{CH13_proteinpredictionuntilcasp15,CH13_passaro2025boltz2}
 \begin{enumerate}
-  \item Build MSAs and template features for the protein; featurize the ligand (e.g., via molecular graph, SMILES, or 3D conformers).
-  \item Run the encoder (Evoformer-like block) to produce refined per-residue and cross-modality pair features.
-  \item Use the geometric head to generate a 3D complex structure (possibly multiple samples via different seeds).
+  \item Build MSAs and template features for the protein, featurize the ligand via molecular graph, SMILES, or 3D conformers.
+  \item Run the encoder, like Evoformer-like block, to produce refined per-residue and cross-modality pair features.
+  \item Use the geometric head to generate a 3D complex structure, possibly, multiple samples via different seeds.
   \item Use the affinity head to output a predicted binding affinity and associated confidence or uncertainty.
 \end{enumerate}
-Because structure and affinity predictions share the same backbone, updates that improve structural accuracy often improve affinity prediction and vice versa, though careful training and calibration are required to avoid overfitting and to handle dataset noise.\cite{CH13_passaro2025boltz2,CH13_wan2026reliability}
+Because structure and affinity predictions share the same backbone, updates that improve structural accuracy often improve affinity prediction and vice versa. Although careful training and calibration are required to avoid overfitting and to handle dataset noise.\cite{CH13_passaro2025boltz2,CH13_wan2026reliability}
 
 \section{Future Directions and Open Challenges}
 
-AI and deep learning have already delivered tangible improvements in docking accuracy, speed, and scope, but significant challenges remain. Data quality and representativeness in structural and affinity datasets (e.g., PDBBind) limit the ability of MLSFs and foundation models to generalize beyond well-studied chemotypes and targets.\cite{CH13_compassdock2024,CH13_meli2022dlreview} Methods like CompassDock, ToolBoxSF and PoseBusters highlight the need for rigorous, physics-informed validation and benchmarking to avoid over-claiming ``state-of-the-art'' performance.\cite{CH13_compassdock2024,CH13_durant2025robustly,CH13_posebusters2023}
-
-A particularly exciting direction is the integration of generative ligand design, co-folding structure prediction, and high-quality affinity estimation into closed-loop pipelines. Recent studies combining generative deep learning, docking and MD for pocket-aware inhibitor design illustrate the potential of such frameworks, but also underscore the importance of accurate binding models, especially for dynamic and allosteric sites.\cite{CH13_btkgen2025,CH13_deepallostery2024,CH13_robinson2022artificial} Finally, the emergence of quantum-inspired and hardware-accelerated docking (e.g., FPGA accelerators for DiffDock) suggests that algorithmic advances will be complemented by specialized computing stacks.\cite{CH13_quantuminspired2024,CH13_diffdockfpga2025}
-
-For computational chemists transitioning into AI-heavy workflows, a deep understanding of both the underlying physics and the capabilities and limitations of deep learning is crucial. The convergence of these disciplines promises richer, more realistic models of biomolecular recognition, but also demands careful, critical evaluation and close collaboration between method developers, structural biologists and medicinal chemists.
+AI and deep learning have already delivered tangible improvements in docking accuracy, speed, and scope, however, significant challenges remain. Data quality and representativeness in structural and affinity datasets limit the ability of MLSFs and foundation models to generalize beyond well studied chemotypes and targets. Methods like CompassDock\cite{CH13_compassdock2024}, ToolBoxSF\cite{CH13_durant2025robustly} and PoseBusters\cite{CH13_posebusters2023} highlight the need for rigorous, physics-informed validation and benchmarking to avoid over-optimistic claims of \emph{state-of-the-art} performance. A particularly exciting direction is the integration of generative ligand design, co-folding structure prediction, and high quality affinity estimation into closed-loop pipelines. Recent studies combining generative deep learning, docking and MD for pocket-aware inhibitor design illustrate the potential of such frameworks, but also underscore the importance of accurate binding models, especially for dynamic and allosteric sites.\cite{CH13_btkgen2025,CH13_deepallostery2024,CH13_robinson2022artificial} Finally, the emergence of quantum-inspired and hardware-accelerated docking, such as FPGA accelerators for DiffDock, suggests that algorithmic advances will be complemented by specialized computing stacks.\cite{CH13_quantuminspired2024,CH13_diffdockfpga2025} 
+For computational chemists transitioning into AI-heavy workflows, a deep understanding of both the underlying physics and the capabilities and limitations of deep learning is crucial. The convergence of these disciplines promises richer, more realistic models of biomolecular recognition. However, it demands careful, critical evaluation and close collaboration between developers, structural biologists and medicinal chemists.
 
 \bibliography{AI_docking}
 
