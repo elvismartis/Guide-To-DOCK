@@ -8,270 +8,161 @@
 
 
 \begin{document}
-\title{Extending Molecular Docking Beyond the One–Protein/One–Ligand Paradigm}
+\title{Special Topics in Molecular Docking}
 \author{Elvis Martis}
 \date{}
 \maketitle
 
 \section{Introduction}
 
-Classical small–molecule docking assumes a single, rigid (or modestly flexible) protein target and a single noncovalent ligand that occupies a well–defined binding pocket.  
-In practical drug discovery, however, many of the most interesting and pharmacologically powerful systems violate one or more of these assumptions: ligands form covalent bonds with their targets, two (or more) proteins and a bifunctional molecule must assemble into a ternary complex, or several ligands share a binding site and interact cooperatively or competitively.  
-This chapter surveys such “difficult” systems and shows how docking has been extended, both conceptually and algorithmically, to handle them.
+Classical small–molecule docking assumes a single, rigid, or modestly flexible, protein target and a single non-covalent ligand that occupies a well–defined binding pocket.  In practice, however, many of the most interesting and pharmacologically relavent systems violate one or more of these assumptions: ligands can form covalent bonds with their targets, two or more proteins and a bifunctional molecule can assemble into a ternary complex, or several ligands share a binding site and interact cooperatively or competitively.  Most of the these topics are outside the scope of the routine usage of molecular docking. Nevertherless, as these are increasingly gaining attention, we dedicate a separate chapter to discuss them. For the sake of this chapter, we label the systems and case studies as  \emph{difficult} systems and show how molecular docking has been extended, both conceptually and algorithmically, to handle them.
 
-We focus on three major classes: covalent docking, docking for PROTAC (proteolysis‐targeting chimera) design, and simultaneous docking of multiple ligands into a single protein binding site.  
-Each section introduces key theoretical ideas, practical protocols, and pitfalls, and is accompanied by a worked–through case study that can be used as a teaching example for graduate students with some exposure to standard docking workflows.  
-Along the way, we highlight methodological innovations—reactive scoring functions, constrained protein–protein docking, and multi–ligand search algorithms—that collectively extend the utility of docking far beyond the traditional one–protein/one–ligand use case.
+In this chapter, we focus on three major classes: covalent docking, docking for PROTAC (proteolysis‐targeting chimera) design, and simultaneous docking of multiple ligands into a single protein binding site.  Each section introduces key theoretical foundations, docking protocols, and pitfalls. We have tried to curate good set of case studies that can be used to showcase how these difficult systems are handled and how does the docking workflow looks like. Along the way, we highlight methodological innovations in reactive scoring functions, constrained protein–protein docking, and multi–ligand search algorithms, that collectively extend the utility of docking far beyond the traditional one–protein/one–ligand systems
 
-\section{From Noncovalent to Covalent Docking}
+\section{Covalent Docking}
 
-\subsection{Why covalent docking is different}
+In covalent inhibition, the ligand forms a chemical bond with a specific nucleophilic residue, typically a cysteine, serine, lysine, or catalytic threonine. The binding process is therefore at least two–step process: initial recognition step that is non-covalent binding, followed by a chemical reaction leading to a covalent adduct.  Classical docking treats the potential energy surface as a function of non-bonded terms, such as electrostatics, van der Waals, and solvation, and thus cannot directly represent bond formation or changes in connectivity.
 
-In covalent inhibition, the ligand forms a chemical bond with a specific nucleophilic residue, typically a cysteine, serine, lysine, or catalytic threonine.  
-The binding process is therefore at least two–step: initial recognition in a noncovalent encounter complex, followed by a chemical reaction leading to a covalent adduct.  
-Classical docking treats the potential energy surface as a function of nonbonded terms (electrostatics, van der Waals, solvation) and thus cannot directly represent bond formation or changes in connectivity.
+Modern covalent docking strategies encode the reaction in one of three broad ways.  In attachment or link–atom approaches, the covalent bond is pre–defined between the ligand warhead and the target residue, and docking explores only the post–reaction complex using modified topologies and tailored scoring terms.   In two-step or reactive approaches, the program samples pre–reaction binding modes that geometrically satisfy distance and angle criteria for nucleophilic attack, then converts those poses that pass into covalent complexes that are rescored with a covalent energy term.  Finally, hybrid quantum–mechanical/molecular–mechanical (QM/MM) procedures explicitly optimize the reaction coordinate in the binding site, albeit at much higher computational cost.
 
-Modern covalent docking strategies encode the reaction in one of three broad ways.  
-In “attachment” or “link–atom’’ approaches, the covalent bond is pre–defined between the ligand warhead and the target residue, and docking explores only the post–reaction complex using modified topologies and tailored scoring terms.  
-In “two–step’’ or “reactive’’ approaches, the program samples pre–reaction binding modes that geometrically satisfy distance and angle criteria for nucleophilic attack, then converts those that pass into covalent complexes that are rescored with a covalent energy term.  
-Finally, hybrid quantum–mechanical/molecular–mechanical (QM/MM) procedures explicitly optimize the reaction coordinate in the binding site, albeit at much higher computational cost.
+Comprehensive reviews of the mathematical framework, applications, and limitations of covalent docking are available\cite{CH14_CovalentDockingReview2015,CH14_CovalentToolSelection2019} and provide detailed discussion on existing programs and their assumptions.  These analyses emphasize that covalent docking is not simply non-covalent docking with constrained distances but requires explicit decisions about reaction types, protonation states, and how to balance non-covalent recognition v/s intrinsic warhead reactivity in the scoring function.
 
-Comprehensive reviews of the mathematical framework, applications, and limitations of covalent docking are available and provide detailed overviews of existing programs and their assumptions.\cite{CH14_CovalentDockingReview2015,CH14_CovalentToolSelection2019} 
-These analyses emphasize that covalent docking is not simply “noncovalent docking with constrained distances’’ but requires explicit decisions about reaction types, protonation states, and how to balance noncovalent recognition versus intrinsic warhead reactivity in the scoring function.
+\subsection{Algorithms and tools}
 
-\subsection{Algorithmic strategies and available tools}
+Several covalent docking methods show different trade–offs between speed, and accuracy.  Early covalent virtual screening protocols embedded a covalent linker into the ligand topology and used primarily classical force–fields with modified bonding terms to handle the covalent adduct. Later methods introduced explicit reactive sampling, in which the search first identifies orientations that satisfy geometric constraints for a pre-defined reaction type, for example, Michael addition to an acrylamide warhead, then builds the covalent complex and refines it.\cite{CH14_CovalentLargeLibraries2014} 
 
-Several families of covalent docking methods exemplify different trade–offs between speed, generality, and physical realism.  
-Early covalent virtual screening protocols embedded a covalent linker into the ligand topology and used primarily classical force–fields with modified bonding terms to handle the covalent adduct.\cite{CH14_CovalentLargeLibraries2014}  
-Later methods introduced explicit “reactive’’ sampling, in which the search first identifies orientations that satisfy geometric constraints for a predefined reaction type (for example, Michael addition to an acrylamide warhead), then builds the covalent complex and refines it locally.\cite{CH14_WIDOCK2021,CH14_HCovDock2023} 
+WIDOCK\cite{CH14_WIDOCK2021}, for instance, defines a library of reaction templates, uses a reactive docking engine to generate pre–reaction complexes, and then evaluates candidate poses using an empirical scoring function supplemented by penalty terms for poor reaction geometry. In benchmarks on cysteine targeted electrophiles, this reactive approach retrieved known covalent inhibitors with higher enrichment than a purely non-covalent variant of AutoDock, particularly, when diverse warheads were present in the screening library.  Similarly, HCovDock\cite{CH14_HCovDock2023} combines incremental ligand construction with a covalent bond aware scoring function and achieved redocking success rates above 70\% across more than two hundred diverse complexes, outperforming several widely used commercial covalent docking tools.
 
-WIDOCK, for instance, defines a library of reaction templates, uses a reactive docking engine to generate pre–reaction complexes, and then evaluates candidate poses using an empirical scoring function supplemented by penalty terms for poor reaction geometry. 
-In benchmarks on cysteine–targeted electrophiles, this reactive approach retrieved known covalent inhibitors with higher enrichment than a purely noncovalent variant of AutoDock, particularly when diverse warheads were present in the screening library.\cite{CH14_WIDOCK2021} 
-Similarly, HCovDock combines incremental ligand construction with a covalent–bond–aware scoring function and achieved top–1 redocking success rates above 70\% across more than two hundred diverse complexes, outperforming several widely used commercial covalent docking tools.\cite{CH14_HCovDock2023} 
+An orthogonal direction is to improve the description of the chemical step using the QM or semiempirical methods. Hybrid schemes such as CovCIFDock\cite{CH14_CovCIFDock2025} dock the pre–reaction complex with a flexible classical docking engine and then perform QM/MM minimization to form and refine the covalent bond. On large benchmarks containing covalent inhibitors of proteases, kinases, and nuclear export receptors, such workflows could reproduce crystallographic poses within $\sim$2 \r{A} while retaining accuracy comparable to leading commercial programs. More general hybrid quantum/classical docking workflows based on attracting cavities have demonstrated that inclusion of semiempirical or density functional theory (DFT) for the reactive center improves pose prediction on diverse covalent test sets, particularly for challenging systems with ambiguous electron densities.\cite{CH14_HybridQMClassDocking2025}
 
-An orthogonal direction is to improve the description of the chemical step via QM or semiempirical methods.  
-Hybrid schemes such as CovCIFDock dock the pre–reaction complex with a flexible classical docking engine and then perform QM/MM minimization to form and refine the covalent bond.
-On large benchmarks containing covalent inhibitors of proteases, kinases, and nuclear export receptors, such workflows can reproduce crystallographic poses within about \(2~\text{\AA}\) while retaining accuracy comparable to leading commercial programs.\cite{CH14_CovCIFDock2025} 
-More general hybrid quantum/classical docking frameworks based on Attracting Cavities have demonstrated that inclusion of semiempirical or density–functional levels for the reactive center improves pose prediction on diverse covalent test sets, particularly for challenging systems with ambiguous electron densities.\cite{CH14_HybridQMClassDocking2025}
-
-Covalent docking is no longer restricted to small molecules: recent work has begun to treat covalent peptide binders, which add the complexity of high ligand flexibility and context–dependent folding. 
-The central ideas—explicit warhead parameterization, reaction templates, and covalent scoring—remain the same but must be coupled to advanced sampling of peptide backbone and side–chain conformations, often using hierarchical or fragment–based approaches.\cite{CH14_Covpepdock}
+Covalent docking is no longer restricted to small molecules: there are published reports to covalently docking peptides, which add the complexity of high ligand flexibility and folding.  The central ideas such as explicit warhead parameterization, reaction templates, and covalent scoring, remain the same, however, must be coupled to advanced sampling of peptide backbone and side–chain conformations, often using hierarchical or fragment–based approaches.\cite{CH14_Covpepdock}
 
 \subsection{General covalent docking workflow}
 
 From a practical perspective, a robust covalent docking workflow typically proceeds through the following steps:
 
 \begin{enumerate}
-  \item \textbf{Define the reactive residue and mechanism.} Identify the nucleophilic residue (for example, Cys145 in SARS–CoV–2 3CL protease) and specify the reaction type (Michael addition, nucleophilic substitution, reversible boronate formation, and so forth).  
-  \item \textbf{Prepare the protein.} Build the side–chain in the appropriate protonation/tautomeric state and remove nonessential crystallographic waters unless they are known to participate directly in the reaction or binding.  
-  \item \textbf{Annotate warheads.} Label electrophilic atoms, specify their connectivity to the protein in the post–reaction state, and assign any special parameters (partial charges, bond orders) required by the docking engine.  
-  \item \textbf{Choose sampling mode.} For small warhead libraries, reactive (two–step) protocols are often preferred because they better enforce reaction geometry; for very large libraries, post–reaction docking with constrained bond vectors can be more efficient.  
-  \item \textbf{Score and filter.} Use a scoring function that combines noncovalent terms with penalties for strained reaction geometries or implausible protonation states; in many workflows, hits are further filtered by simple physicochemical rules or warhead reactivity heuristics.  
-  \item \textbf{Post–processing.} Promising poses are typically refined with local minimization and, where feasible, short molecular dynamics (MD) simulations to ensure the covalent adduct is sterically and dynamically stable.
+  \item Define the reactive residue and mechanism: Identify the nucleophilic residue, for example, Cys145 in SARS–CoV–2 3CL protease\cite{CH14_Gu3CL}, and specify the reaction type, such as Michael addition, nucleophilic substitution, or reversible boronate formation.  
+  \item Prepare the protein: Build the side–chain in the appropriate protonation/tautomeric state and remove non-essential crystallographic waters unless they are known to participate directly in the reaction or binding.  
+  \item Annotate warheads: Label electrophilic atoms, specify their connectivity to the protein in the post–reaction state, and assign any special parameters, like partial charges, and bond orders, required by the docking engine.  
+  \item Choose sampling mode: For small warhead libraries, reactive, two–step, protocols are often preferred because they enforce better reaction geometry. For very large libraries, post–reaction docking with constrained bond vectors is found to be more efficient.  
+  \item Score and filter: Use a scoring function that combines non-covalent terms with penalties for strained reaction geometries or physiologically irrelevent protonation states. In many workflows, hits are further filtered by simple physicochemical rules or warhead reactivity heuristics.  
+  \item Post–processing: Selected poses are refined with local minimization and, where feasible, short molecular dynamics (MD) simulations to ensure the covalent adduct is sterically and dynamically stable.
 \end{enumerate}
 
-An important conceptual lesson for students is that the “best’’ noncovalent pose is not necessarily the best covalent pose.  
-For example, the pre–reaction complex that maximizes hydrophobic contacts may place the warhead in a geometry that makes nucleophilic attack impossible, whereas a slightly less favorable noncovalent pose with near–ideal attack angle and distance is more likely to correspond to the productive pathway.  
-Covalent docking therefore forces one to think simultaneously about supramolecular recognition and chemical reactivity.
+It must be kept in the mind that the \emph{best} non-covalent pose may not necessarily translate to the best covalent pose.  For example, the pre–reaction complex that maximizes hydrophobic contacts may place the warhead in a geometry that makes nucleophilic attack difficult or nearly impossible. Whereas a slightly less favorable non-covalent pose with good attack angle and distance is more likely to translate favorable covalent bond formation. Covalent docking therefore forces one to think simultaneously about supramolecular recognition and chemical reactivity.
 
-\subsection{Case study 1: covalent fragments against a serine hydrolase}
+\subsection{Case study: covalent fragments against a serine hydrolase}
 
-A classic and pedagogically rich example is the use of covalent docking to discover electrophilic fragments targeting enzymes such as serine hydrolases or \(\beta\)–lactamases.  
-In one widely cited study, a library of several thousand electrophilic fragments was docked covalently into the active sites of AmpC \(\beta\)–lactamase and various kinases using a dedicated covalent virtual screening protocol, and hits were subsequently validated crystallographically as chemical probes.
-Because the fragments were small and weak in their noncovalent interactions, classical docking alone would have struggled to prioritize them, but inclusion of the covalent bond and appropriate geometry constraints allowed the virtual screen to recover low–affinity electrophiles that nonetheless formed stable covalent complexes.\cite{CH14_CovalentLargeLibraries2014}
+A classic example is the use of covalent docking to discover electrophilic fragments targeting enzymes such as serine hydrolases or $\beta$–lactamases. A library of several thousand electrophilic fragments was docked covalently into the active sites of AmpC $\beta$–lactamase and various kinases using a dedicated covalent virtual screening protocol, and hits were subsequently validated crystallographically as chemical probes. As these fragments were small and weak in their non-covalent interactions, classical docking alone would have failed to identify them as potential binders. However inclusion of the covalent bond and appropriate geometry constraints allowed the virtual screen to recover low–affinity electrophiles that nonetheless formed stable covalent complexes.\cite{CH14_CovalentLargeLibraries2014}
 
-A simplified teaching version of this protocol, suitable for student projects, could proceed as follows:
+A simplified version of the protocol is shownas follows:
 
 \begin{enumerate}
-  \item \textbf{System choice.} Select a serine hydrolase with a high–resolution structure containing a covalent inhibitor (for example, a \(\beta\)–lactam or fluorophosphonate) to serve as a template for covalent geometry.  
-  \item \textbf{Template extraction.} Remove the covalent ligand and record the bond vector and angles between the active–site serine oxygen and the scissile carbon atom.  
-  \item \textbf{Fragment library.} Assemble a small library (hundreds to low thousands) of electrophilic fragments (for example, acrylamides, chloroacetamides, sulfonyl fluorides) with diverse scaffolds but shared warheads.  
-  \item \textbf{Covalent docking.} Use a covalent docking engine (or a noncovalent engine equipped with a covalent plug–in) to generate covalent adducts between each fragment and the catalytic serine, enforcing approximate template–based reaction geometry.  
-  \item \textbf{Scoring and triage.} Rank poses by covalent score; manually inspect the top few dozen for reasonable complementarity to the oxyanion hole, absence of severe steric clashes, and plausible interactions with conserved active–site residues.  
-  \item \textbf{Experimental follow–up.} Select a subset of fragments for synthesis or purchase; assess covalent labeling using mass spectrometry or activity–based profiling.
+  \item Choice of the system: Select a serine hydrolase with a high–resolution structure containing a covalent inhibitor, for example, a $\beta$–lactam or fluorophosphonate, to serve as a template for covalent geometry.  
+  \item Template extraction: Remove the covalent ligand and record the bond vector and angles between the active–site serine oxygen and the scissile carbon atom.  
+  \item Fragment library: Curate a small library, perhaps hundreds to thousands, of electrophilic fragments, for example, acrylamides, chloroacetamides, and sulfonyl fluorides, with diverse scaffolds with shared warheads.  
+  \item Covalent docking: Use a covalent docking program, or a non-covalent program equipped with a covalent plug–in, to generate covalent adducts between each fragment and the catalytic serine, enforcing approximate template–based reaction geometry.  
+  \item Scoring and triage: Rank-order poses by covalent score. Visually inspect the top few poses for reasonable complementarity to the oxyanion hole, absence of severe steric clashes, and plausible interactions with conserved active–site residues.  
+  \item Experimental follow–up: Select a subset of fragments for synthesis or purchase. Assess covalent labeling using mass spectrometry or activity–based profiling.
 \end{enumerate}
 
-Students can be guided to compare noncovalent docking scores (where the serine is treated as a neutral nucleophile and the warhead is nonreactive) with covalent scores for the same fragments.  
-Typically, many fragments rank poorly in purely noncovalent mode but become favorable when the covalent bond is enforced, illustrating that standard scoring functions implicitly penalize polar, low–affinity fragments that nonetheless make good covalent probes once the reaction step is considered.\cite{CH14_CovalentLargeLibraries2014,CH14_CovalentDockingReview2015} 
-
-For more advanced projects, one can extend this exercise by introducing reactive docking algorithms such as WIDOCK or HCovDock, which explicitly sample the pre–reaction complex before forming the bond.\cite{CH14_WIDOCK2021,CH14_HCovDock2023}
-Students can then analyze how well pre–reaction encounter complexes predict productive covalent adducts and explore the sensitivity of results to changes in warhead chemistry, attack angles, or protonation patterns.
 
 \section{Docking for PROTAC Design}
 
-\subsection{Conceptual challenges of PROTAC docking}
-
-PROTACs are heterobifunctional molecules that recruit an E3 ligase to a target protein, triggering ubiquitination and proteasomal degradation.  
-Structurally, a PROTAC contains a warhead that binds the target, a ligand for an E3 ligase (such as VHL or cereblon), and a linker that connects the two moieties.  
+PROTACs are heterobifunctional molecules that recruit an E3 ligase to a target protein, triggering ubiquitination and proteasomal degradation.  Structurally, a PROTAC contains a scaffold that binds the target, a ligand for an E3 ligase, such as VHL or cereblon, and a linker that connects the two moieties.  
 The pharmacologically relevant species is a ternary complex comprising the target protein, the E3 ligase, and the PROTAC; the stability and geometry of this assembly strongly influence degradation efficiency.
 
-Docking for PROTACs is intrinsically more complex than conventional docking for several reasons.  
-First, one must consider protein–protein interactions between target and ligase, which may be weak or absent in the absence of the PROTAC.  
-Second, the PROTAC must adopt a conformation that simultaneously satisfies the binding requirements of both pockets and accommodates the protein–protein interface.  
-Third, the space of linker conformations and protein orientations is very high–dimensional, so naive sampling is computationally prohibitive.  
-These issues mean that simple sequential docking of the two monovalent ligands into their respective binding sites, with a generic linker built afterwards, often fails to reproduce crystallographic ternary complexes or to correlate with observed degradation efficiencies.\cite{CH14_Drummond2020,CH14_PRosettaC2020}
+Docking for PROTACs is intrinsically more complex than conventional docking for several reasons.  First, one must consider protein–protein interactions between target and ligase, which may be weak or absent in the absence of the PROTAC. Second, the PROTAC must adopt a conformation that simultaneously satisfies the binding requirements of both pockets and accommodates the protein–protein interface. Third, the space of linker conformations and protein orientations is very high–dimensional, so classical sampling is computationally prohibitive. These issues mean that simple sequential docking of the two monovalent ligands into their respective binding sites, with a generic linker built afterwards, often fails to reproduce crystallographic ternary complexes or to correlate with observed degradation efficiencies.\cite{CH14_Drummond2020,CH14_PRosettaC2020} To address these challenges, a number of structure–based modeling strategies have been developed that combine constrained protein–protein docking, PROTAC aware small molecule docking, and MD simulation.\cite{CH14_flt3protac2025,CH14_megaprotac2025} These approaches differ in technical details but share a common philosophy: first generate ensembles of plausible protein–protein complex that can, in principle, be bridged by the PROTAC. Then explicitly model the PROTAC within those arrangements and rank resulting ternary complexes using a combination of interface and small–molecule scores.
 
-To address these challenges, a number of structure–based modeling strategies have been developed that combine constrained protein–protein docking, PROTAC–aware small–molecule docking, and MD simulation.\cite{CH14_Drummond2020,CH14_PRosettaC2020,CH14_flt3protac2025,CH14_megaprotac2025}   
-These approaches differ in technical details but share a common philosophy: first generate ensembles of plausible protein–protein arrangements that can, in principle, be bridged by the PROTAC, then explicitly model the PROTAC within those arrangements and rank resulting ternary complexes using a combination of interface and small–molecule scores.
+\subsection{Representative computational Workflow}
 
-\subsection{Representative computational pipelines}
+One family of approaches, adopted by PRosettaC\cite{CH14_PRosettaC2020}, begins from two binary complexes: target-ligand and E3–ligand. Global protein–protein docking is then performed under distance constraints derived from the known attachment points of the linker, generating multiple coarse grained orientations of the target relative to the E3 ligase.  Next, Rosetta–based local docking refines the protein–protein interface and builds candidate PROTAC conformations that satisfy both binding pockets and linker geometry. These models are clustered and ranked to identify ternary complexes that resemble experimentally solved structures.\cite{CH14_PRosettaC2020,CH14_Drummond2020}
 
-One family of approaches, exemplified by PRosettaC, begins from two binary complexes: target–warhead and E3–ligand.\cite{CH14_PRosettaC2020}
-Global protein–protein docking is then performed under distance constraints derived from the known attachment points of the linker, generating multiple coarse–grained arrangements of the target relative to the E3 ligase.  
-Next, Rosetta–based local docking refines the protein–protein interface and builds candidate PROTAC conformations that satisfy both binding pockets and linker geometry; these models are clustered and ranked to identify ternary complexes that resemble experimentally solved structures or that are predicted to be productive.\cite{CH14_PRosettaC2020,CH14_Drummond2020}
+In another strategy, the workflow integrated static ternary complex modeling, induced–fit docking, and MD simulations to design VHL–mediated PROTACs targeting the kinase FLT3. Here, the initial ternary templates were generated by protein–protein docking with MOE, followed by induced–fit docking of PROTACs into each template. Subsequently, MD simulations were employed to check the stability of the ternary complexes and to analyze interface contacts that correlate with degradation potency. Importantly, the results showed that models built in this way could qualitatively reproduce experimental degradation trends across a small series of PROTACs with varying linkers and ligands.\cite{CH14_flt3protac2025}
 
-In a complementary strategy, a recent method integrated static ternary complex modeling, induced–fit docking, and MD simulations to design VHL–mediated PROTACs targeting the kinase FLT3.
-Here, the initial ternary templates were generated by protein–protein docking with MOE, followed by induced–fit docking of PROTACs into each template; subsequent MD simulations were used to check the stability of the ternary complexes and to analyze interface contacts that correlate with degradation potency.  
-Importantly, the authors showed that models built in this way could qualitatively reproduce experimental degradation trends across a small series of PROTACs with varying linkers and warheads.\cite{CH14_flt3protac2025}
+More recently, high–throughput pipelines such as MEGA PROTAC\cite{CH14_megaprotac2025}  have been reported to systematically sample many possible protein–protein complexes and PROTAC poses using fast FFT–based docking engines.  In MEGA PROTAC, large numbers of protein–protein docking solutions are generated with MEGADOCK, filtered using sequential criteria and rank aggregation, and finally combined with exhaustive PROTAC docking into the selected protein–protein complexes. This type of approach aims to support virtual screening of large PROTAC libraries against structurally characterized target–ligase pairs.
 
-More recently, high–throughput pipelines such as MEGA PROTAC have been proposed to systematically sample many possible protein–protein complexes and PROTAC poses using fast FFT–based docking engines.  
-In MEGA PROTAC, large numbers of protein–protein docking solutions are generated with MEGADOCK, filtered using sequential criteria and rank aggregation, and finally combined with exhaustive PROTAC docking into the selected protein–protein complexes.\cite{CH14_megaprotac2025} 
-This type of approach aims to support virtual screening of large PROTAC libraries against structurally characterized target–ligase pairs.
-
-Benchmarks comparing different methods have shown that specialized docking pipelines such as PRosettaC can outperform more generic structure prediction tools (including recent deep learning–based models) when evaluated on their ability to reproduce ternary complex geometries and interface quality metrics.\cite{CH14_PRosettaCAf3_2025}
+Benchmarks comparing different methods have shown that specialized docking pipelines such as PRosettaC can outperform more generic structure prediction tools, including recent deep learning–based models, when evaluated on their ability to reproduce ternary complex geometries and interface quality metrics.\cite{CH14_PRosettaCAf3_2025}
 
 \subsection{General PROTAC docking workflow}
 
-A pedagogically useful PROTAC docking workflow can be described in modular steps that mirror a typical research–grade protocol:
+A PROTAC docking workflow can be described in the following steps:
 
 \begin{enumerate}
-  \item \textbf{Collect structural data.} Obtain high–resolution structures of the target protein bound to a suitable warhead (or close analog) and of the E3 ligase bound to its recruiter ligand (for example, VHL–ligand complexes).  
-  \item \textbf{Define attachment points.} Identify the atoms on the warhead and ligase ligand that will be connected by the linker; measure approximate distances between these positions by superimposing the binary complexes in various orientations.  
-  \item \textbf{Protein–protein docking under distance constraints.} Use a protein–protein docking tool to generate candidate orientations of the target relative to the ligase, enforcing soft or hard constraints on the linker attachment points (for example, distances within a tolerance compatible with the planned linker length).  
-  \item \textbf{Build PROTAC conformations.} For each promising protein–protein arrangement, construct PROTAC conformers that bridge the two pockets, either by explicit linker sampling or by using a small–molecule docking engine that can handle long, flexible ligands.  
-  \item \textbf{Local refinement and scoring.} Refine the ternary complex using local docking or energy minimization; score models using a combination of protein–protein interface energy, ligand strain, and satisfaction of key pharmacophoric contacts in both subpockets.  
-  \item \textbf{MD–based validation.} For top–ranked ternary complexes, perform short MD simulations to assess the stability of the interface and PROTAC conformation over time.  
-  \item \textbf{Relating models to degradation data.} Where experimental degradation assays are available, correlate computed metrics (for example, interface area, number of PROTAC–mediated contacts, or residence time of the ternary complex) with observed degradation efficiencies.
+  \item Collect structural data: Obtain high–resolution structures of the target protein bound to a suitable ligand or close analog, and of the E3 ligase bound to its recruiter ligand, for example, VHL–ligand complexes.  
+  \item Define attachment points: Identify the atoms on the ligand and ligase ligand that will be connected by aa linker. Measure approximate distances between these positions by superimposing the binary complexes in various orientations.  
+  \item Protein–protein docking under distance constraints: Use a protein–protein docking to generate plausible orientations of the target relative to the ligase, enforcing soft or hard constraints on the linker attachment points, for example, distances within a tolerance compatible with the planned linker length.  
+  \item Build PROTAC conformations: For each promising protein–protein orientation, construct PROTAC conformers that bridge the two pockets, either by explicit linker sampling or by a small molecule docking method that can handle long, flexible ligands.  
+  \item Local refinement and scoring: Refine the ternary complex using local docking or energy minimization. Score models using a combination of protein–protein interface energy, ligand strain, and poses that satisfy key pharmacophoric contacts in both subpockets.  
+  \item MD–based validation: For top–ranked ternary complexes, perform short MD simulations to assess the stability of the interface and PROTAC conformations.  
+  \item Relating models to degradation data: Where experimental degradation assays are available, correlate computed metrics, for example, interface area, number of PROTAC–mediated contacts, or residence time of the ternary complex, with observed degradation efficiencies.
 \end{enumerate}
 
-Students should appreciate that many of these steps reuse familiar tools (protein–protein docking, small–molecule docking, MD) but in a more tightly integrated fashion.  
-For example, a simple homework exercise might ask students to superimpose a target–warhead complex and a VHL–ligand complex, estimate feasible linker lengths, and discuss how changing linker composition (rigid versus flexible, polar versus hydrophobic) might alter the accessible protein–protein orientations.
 
-\subsection{Case study 2: designing VHL‐mediated PROTACs against FLT3}
+\subsection{Case study: designing VHL‐mediated PROTACs against FLT3}
 
-As a concrete case study, consider recent work on designing VHL–mediated PROTACs targeting the kinase FLT3, a clinically relevant target in acute myeloid leukemia. 
-The goal was to model ternary complexes comprising FLT3, VHL, and a series of PROTACs sharing the same ligands but differing in linker composition, and to rationalize why some PROTACs showed superior degradation properties experimentally.\cite{CH14_flt3protac2025} 
+This study attempts to design VHL–mediated PROTACs targeting the kinase FLT3, a clinically relevant target in acute myeloid leukemia. The objective was to model ternary complexes comprising FLT3, VHL, and a series of PROTACs sharing the same ligands but differing in linker composition, and to rationalize why some PROTACs showed superior degradation properties experimentally.\cite{CH14_flt3protac2025} 
 
-The computational protocol can be outlined in student–friendly terms:
+The computational protocol can be outlined as follows:
 
 \begin{enumerate}
-  \item \textbf{Binary templates.} Start from X–ray structures of FLT3 bound to a small–molecule inhibitor and VHL bound to its recruiter ligand; align these structures in several plausible ways to bring linker attachment points into approximate proximity.  
-  \item \textbf{Static ternary models.} Use a protein–protein docking engine (for example, MOE’s docking module) to systematically explore FLT3–VHL orientations, retaining only those in which the distance between attachment atoms falls within ranges compatible with the planned linker length.  
-  \item \textbf{Induced–fit docking of PROTACs.} For each static protein–protein arrangement, perform induced–fit docking of the full PROTAC, allowing side–chain flexibility near the binding pockets to accommodate linker conformations and to optimize interactions in both subpockets.  
-  \item \textbf{MD simulations.} Run MD simulations (tens to hundreds of nanoseconds) on selected ternary complexes to assess whether the PROTAC and interface remain stable, monitoring metrics such as root–mean–square deviation (RMSD), number of inter–protein hydrogen bonds, and PROTAC contact maps.  
-  \item \textbf{Analysis and interpretation.} Compare structural features between PROTACs: high–efficacy degraders often stabilize larger, well–packed protein–protein interfaces and show linkers that avoid steric clashes with flexible loops, whereas less efficient degraders may induce strained linker conformations or weak interfaces.
+  \item Binary templates: X–ray structures of FLT3 bound to a small molecule inhibitor and VHL bound to its recruiter ligand were used to align structures in several plausible ways to bring linker attachment points into approximate proximity.  
+  \item Static ternary models:  Using MOE for protein–protein docking, various FLT3–VHL orientations were systematically explore. The distance between attachment atoms within ranges compatible with the planned linker length was used a filter to discard orientations warranting linkers beyond this range. 
+  \item Induced–fit docking of PROTACs: For each static protein–protein orientation, an induced–fit docking of the full PROTAC was performed, allowing side–chain flexibility near the binding pockets to accommodate linker conformations and to optimize interactions in both subpockets.  
+  \item MD simulations: Tens to hundreds of nanoseconds MD simulations were performed on the selected ternary complexes to assess whether the PROTAC and interface remain stable, monitoring metrics such as root–mean–square deviation (RMSD), number of inter–protein hydrogen bonds, and PROTAC contact maps.  
+  \item Analysis and interpretation: Structural features between high–efficacy degraders and designed PROTACs were performed to rationalise the design.  Linkers that show large steric classhes were identified filtered out.
 \end{enumerate}
 
-In the classroom, students could reproduce a scaled–down version of this protocol focusing on a subset of ternary models and a reduced MD simulation time.  
-Even short simulations can reveal qualitative differences in stability between candidate complexes, providing an intuitive sense of how docking and dynamics together inform PROTAC design.
 
 \section{Simultaneous Docking of Multiple Ligands}
 
-\subsection{Motivation and basic ideas}
+Many protein binding events involve more than one small molecule, including cases where a substrate and cofactor bind simultaneously. Multiple fragments occupy adjacent subpockets or two drugs bind to a site and interact cooperatively or competitively.  Conventional docking workflows, which consider one ligand at a time, cannot capture energetic coupling between ligands or predict how the presence of one ligand reshapes the binding site for another.  To address this, multiple ligand simultaneous docking (MLSD) strategies have been developed that treat several ligands as part of a single, coupled search problem.\cite{CH14_MLSD2010} In MLSD, the energy function is a sum of protein–ligand interaction terms for each ligand plus ligand–ligand interaction terms that capture steric repulsion, hydrogen bonding, and  favorable $\pi$–stacking or electrostatic complementarity between ligands.  The search explores translational, rotational, and torsional degrees of freedom for all ligands together, subject to constraints that prevent severe overlap and maintain reasonable protein–ligand contacts.\cite{CH14_MLSD2010} This coupled optimization problem is more challenging than single ligand docking, however, it can reveal binding modes that are inaccessible when ligands are docked independently.
 
-Many protein binding events involve more than one small molecule, including cases where a substrate and cofactor bind simultaneously, multiple fragments occupy adjacent subpockets, or two drugs co–bind to a site and interact cooperatively or competitively.  
-Traditional docking workflows, which consider one ligand at a time, cannot capture energetic coupling between ligands or predict how the presence of one ligand reshapes the binding site for another.  
-To address this, “multiple ligand simultaneous docking’’ (MLSD) strategies have been developed that treat several ligands as part of a single, coupled search problem.\cite{CH14_MLSD2010}
+The original MLSD work tested this idea on systems such as \emph{E. coli} purine nucleoside phosphorylase (PNP) with two substrates, a SH2 domain with two peptides, and Bcl–x\textsubscript{L} with fragments corresponding to different parts of a larger inhibitor. In PNP, the method not only reproduced known binding modes but also captured plausible intermediates along the catalytic pathway, consistent with the enzyme mechanism. In cases where conventional single ligand docking failed due to strong energetic coupling between ligands, MLSD succeeded in recovering the correct poses.\cite{CH14_MLSD2010}
 
-In MLSD, the energy function is typically a sum of protein–ligand interaction terms for each ligand plus ligand–ligand interaction terms that capture steric repulsion, hydrogen bonding, and sometimes favorable \(\pi\)–stacking or electrostatic complementarity between ligands.  
-The search explores translational, rotational, and torsional degrees of freedom for all ligands together, subject to constraints that prevent severe overlap and maintain reasonable protein–ligand contacts.\cite{CH14_MLSD2010} 
-This coupled optimization problem is more challenging than single–ligand docking but can reveal binding modes that are inaccessible when ligands are docked independently.
-
-The original MLSD work tested this idea on systems such as \emph{E.~coli} purine nucleoside phosphorylase (PNP) with two substrates, a SH2 domain with two peptides, and Bcl–x\textsubscript{L} with fragments corresponding to different parts of a larger inhibitor. 
-In PNP, the method not only reproduced known binding modes but also captured plausible intermediates along the catalytic pathway, consistent with the enzyme mechanism; in cases where conventional single–ligand docking failed due to strong energetic coupling between ligands, MLSD succeeded in recovering the correct poses.\cite{CH14_MLSD2010}
-
-\subsection{Modern MLSD implementations}
-
-Since the original MLSD concept, several algorithms and software implementations have extended multi–ligand docking capabilities.  
-For example, Moldina (“Multiple–Ligand Molecular Docking over AutoDock Vina’’) builds on AutoDock Vina’s scoring function and search algorithm to allow simultaneous docking of several ligands or fragments.\cite{CH14_Moldina2025} 
-Benchmarking indicated that, for two simultaneously docked ligands, acceptable ligand RMSDs can be somewhat larger than typical single–ligand thresholds (on the order of \(5~\text{\AA}\)), reflecting the additional complexity of fitting two molecules without severe steric clashes.
-Interestingly, in many test cases Moldina recovered more realistic fragment binding modes than sequential docking, suggesting potential utility in fragment–based design and in reconstructing larger ligands from multiple fragments.\cite{CH14_Moldina2025} 
-
-More recent applications have used MLSD to explore drug combinations or phytochemical pairs binding simultaneously to cancer–related proteins.  
-For instance, one study applied MLSD with AutoDock Vina to pairs of lapatinib analogs and 5–fluorouracil (5–FU) on the ErbB4 kinase, analyzing how different ligand combinations perturb activation loop conformations and stability through docking followed by MD.\cite{CH14_ErbB4MLSD2024} %[web:24]  
-Another example evaluated multi–ligand docking of plant–derived compounds, such as carpaine and rutin from \emph{Carica papaya} leaves, to investigate whether simultaneous binding could enhance anticancer effects.\cite{CH14_PapayaMultiLigand2025}
-
-These studies underscore that MLSD is not only a methodological curiosity but a practical tool in contexts ranging from mechanistic enzymology and fragment linking to rationalizing drug–drug interactions and synergistic natural product combinations.
+Since the original MLSD concept, several algorithms and software implementations have extended multi–ligand docking capabilities.  For example, Multiple–Ligand Molecular Docking over AutoDock Vina (Moldina)\cite{CH14_Moldina2025} builds on AutoDock Vina’s scoring function and search algorithm to allow simultaneous docking of several ligands or fragments. Benchmarking studies indicate that, for two simultaneously docked ligands, acceptable ligand RMSDs can be somewhat larger than typical single ligand thresholds, on the order of $\sim$5 \r{A}, reflecting the additional complexity of fitting two molecules without severe steric clashes. Interestingly, in many test cases Moldina recovered more realistic fragment binding modes than sequential docking, showcasing its potential utility in fragment–based design and in reconstructing larger ligands from multiple fragments.\cite{CH14_Moldina2025}  More recent applications have used MLSD to explore drug combinations or phytochemical pairs binding simultaneously to cancer–related proteins. For instance, one study applied MLSD with AutoDock Vina to pairs of lapatinib analogs and 5–fluorouracil (5–FU) on the ErbB4 kinase\cite{CH14_ErbB4MLSD2024}, analyzing how different ligand combinations perturb activation loop conformations and stability through docking followed by MD.
+Another example evaluated multi–ligand docking of plant–derived compounds\cite{CH14_PapayaMultiLigand2025}, such as carpaine and rutin from \emph{Carica papaya} leaves, to investigate whether simultaneous binding could enhance anticancer effects. 
 
 \subsection{General MLSD workflow}
 
-From a teaching perspective, MLSD offers a nice conceptual bridge between conventional docking and more complex multi–component assemblies such as PROTAC ternary complexes.  
 A general MLSD workflow might look like this:
 
 \begin{enumerate}
-  \item \textbf{System definition.} Choose a protein system where either cofactor–substrate binding, fragment co–occupancy, or drug–drug interactions are known or hypothesized.  
-  \item \textbf{Ligand set selection.} Define two or more ligands to be docked simultaneously (for example, an ATP–competitive inhibitor and a small fragment thought to bind in a neighboring allosteric site).  
-  \item \textbf{Search space specification.} Define a search box that encompasses all relevant subpockets, possibly extending beyond the canonical active site to capture ligand–induced pockets or cryptic sites.  
-  \item \textbf{Simultaneous docking.} Use an MLSD–capable tool (or a scripting wrapper around a standard docking engine) to perform joint optimization of ligand poses, including ligand–ligand steric and electrostatic terms in the score.  
-  \item \textbf{Pose analysis.} Cluster multi–ligand poses by protein–ligand and ligand–ligand contacts; visualize representative solutions to check for physically plausible arrangements and to identify potential cooperative interactions.  
-  \item \textbf{Dynamic validation.} Where resources permit, follow up with MD simulations of selected multi–ligand complexes to assess stability and to analyze how co–binding affects key protein regions such as activation loops or gating helices.
+  \item System definition: Choose a protein system where either cofactor–substrate binding, fragment co–occupancy, or drug–drug interactions are known.  
+  \item Ligand set selection: Define two or more ligands to be docked simultaneously, for example, an ATP–competitive inhibitor and a small fragment thought to bind in a neighboring allosteric site.  
+  \item Search space specification: Define a search box that encompasses all relevant subpockets, possibly extending beyond the canonical active site to capture ligand–induced pockets or cryptic pockets.  
+  \item Simultaneous docking: Use an MLSD enabled tool, or a scripting wrapper around a standard docking engine, to perform joint optimization of ligand poses, including ligand–ligand steric and electrostatic terms in the score.  
+  \item Pose analysis: Cluster multi–ligand poses by protein–ligand and ligand–ligand contacts; visualize representative solutions to check for physically plausible orientations, and to identify potential cooperative interactions.  
+  \item MD simulations: Where resources permit, follow up with MD simulations of selected multi–ligand complexes to assess stability and to analyze how simultaneous binding affects key protein regions such as activation loops or gating helices.
 \end{enumerate}
 
-An instructive contrast for students is to compare MLSD results with those from sequential docking (dock ligand A, then freeze it and dock ligand B) or independent docking (dock A and B separately and manually superimpose them).  
-In many systems, sequential docking can lead to artificially constrained poses for the second ligand or to unrealistic steric clashes that would have been avoided had both ligands been allowed to move together during the search.\cite{CH14_MLSD2010,CH14_Moldina2025}
 
-\subsection{Case study 3: co–docking lapatinib analogs and 5–FU to ErbB4}
+\subsection{Case study: Simultaneous docking of lapatinib analogs and 5–FU to ErbB4}
 
-A recent application of MLSD explored simultaneous binding of lapatinib derivatives (denoted FMM compounds) and 5–FU to the ErbB4 receptor tyrosine kinase, motivated by combination therapy strategies in cancer. 
-The authors performed both single–ligand and multi–ligand docking, followed by MD simulations, to investigate how the presence of two ligands affected activation loop dynamics and binding stability.\cite{CH14_ErbB4MLSD2024}
+A recent study using MLSD explored simultaneous binding of lapatinib derivatives (FMM compounds) and 5–FU to the ErbB4 receptor tyrosine kinase\cite{CH14_ErbB4MLSD2024}, motivated by combination therapy strategies in cancer.  The study explored both single-ligand and multi–ligand docking, followed by MD simulations, to investigate how the presence of two ligands affected activation loop dynamics and binding stability.
 
-In simplified form, the protocol can be described to students as follows:
+The protocol can be described as follows:
 
 \begin{enumerate}
-  \item \textbf{Single–ligand baseline.} Dock FMM analogs and 5–FU individually into the ErbB4 ATP binding site, using standard docking settings; identify typical binding poses and interaction patterns (for example, hinge hydrogen bonds for FMM, polar contacts for 5–FU).  
-  \item \textbf{Simultaneous docking.} Perform MLSD runs where FMM and 5–FU are docked together, or where two FMM analogs are co–docked, using an MLSD–capable engine such as AutoDock Vina extended for multiple ligands.
-  \item \textbf{Pose comparison.} Analyze how co–binding changes the orientation and location of each ligand compared to single–ligand docking: for example, FMM may occupy the activation loop region, while 5–FU is displaced toward solvent or toward an auxiliary subpocket. 
-  \item \textbf{MD and flexibility analysis.} Run MD simulations on selected multi–ligand complexes; monitor RMS fluctuations of activation loop residues and other structural elements to understand how co–binding modulates protein flexibility and stability.  
-  \item \textbf{Interpretation.} Discuss how altered binding orientations and dynamic behavior in the multi–ligand case could relate to synergy or antagonism in combination therapy.
+  \item Single–ligand docking: Dock FMM analogs and 5–FU individually into the ErbB4 ATP binding site, using standard docking protocol.  Identify typical binding poses and interaction patterns, for example, hinge hydrogen bonds for FMM, polar contacts for 5–FU.  
+  \item Multi-ligand docking: Perform MLSD runs where FMM and 5–FU are docked together, or where two FMM analogs are co–docked, using an MLSD–capable engine such as AutoDock Vina extended for multiple ligands.
+  \item Pose comparison: Analyze how simultaneous binding changes the orientation and location of each ligand compared to single–ligand docking.  For example, FMM may occupy the activation loop region, while 5–FU is displaced toward solvent or toward an auxiliary subpocket. 
+  \item MD and flexibility analysis: Perform MD simulations on selected multi–ligand complexes. Monitor RMS fluctuations of activation loop residues and other structural elements to understand how simultaneous binding modulates protein flexibility and stability.  
 \end{enumerate}
 
-This case study illustrates several important pedagogical points.  
-First, it shows that docking can be used not only to predict static poses but also to generate initial structures for MD–based mechanistic investigations.  
-Second, it highlights that the presence of a second ligand can substantially alter the binding mode of the first, underscoring the need for simultaneous, rather than sequential, docking in such systems.\cite{CH14_ErbB4MLSD2024,CH14_Moldina2025}
 
 \section{Emerging Directions Extending Docking Concepts}
 
-\subsection{Machine learning–assisted docking}
-
-The rapid growth of machine learning (ML) in structure–based drug design has begun to influence docking workflows.  
-Datasets such as Smiles2Dock aggregate large collections of protein–ligand pairs with docked poses and scores, enabling the training and benchmarking of ML–based docking surrogates that can approximate traditional docking engines at much lower computational cost.
-Such models are particularly attractive when screening ultra–large libraries or when exploring multi–ligand and multi–protein configurations that would be prohibitive with purely physics–based methods.\cite{CH14_Smiles2Dock2024}
-
-Beyond simple pose prediction, more sophisticated ML architectures explicitly model groups of ligands or exploit relational information between different ligands binding to the same target.  
-For example, GroupBind introduces interaction layers and triangle attention modules to jointly embed protein–ligand and ligand–ligand relationships, improving docking accuracy on benchmarks such as PDBBind by leveraging the observation that ligands for the same protein often share similar binding modes.\cite{CH14_GroupBind2025}
-Although these methods are still emerging, they suggest future workflows where classical covalent, PROTAC, or multi–ligand docking is augmented or accelerated by learned priors over plausible binding configurations.
-
 \subsection{Hybrid quantum/classical methods and covalent peptides}
 
-As discussed earlier, hybrid QM/MM docking strategies using frameworks such as Attracting Cavities and CovCIFDock represent a promising direction for chemically challenging systems, particularly those involving covalent bond formation, metal coordination, or atypical electronic structures.\cite{CH14_HybridQMClassDocking2025,CH14_CovCIFDock2025}
-By combining classical sampling in the pre–reaction state with QM–based refinement of the reactive center, these methods aim to achieve a practical compromise between accuracy and throughput.
+As discussed earlier, hybrid QM/MM docking strategies using frameworks such as attracting cavities\cite{CH14_HybridQMClassDocking2025} and CovCIFDock\cite{CH14_CovCIFDock2025} represent a promising direction for chemically challenging systems, particularly those involving covalent bond formation, metal coordination, or atypical electronic structures. By combining classical sampling in the pre–reaction state with QM–based refinement of the reactive center, these methods aim to achieve a practical compromise between accuracy and throughput. Another area is covalent docking of peptides, where the ligand itself is flexible and capable of folding or forming secondary structure in the bound state.  
+Recent reviews highlight challenges specific to covalent peptide–protein docking, such as choosing optimal peptide sequences, incorporating electrophilic warheads at appropriate positions, and dealing with the large conformational space, and suggest strategies that combine fragment–based sampling, template–based modeling, and reactive docking.\cite{CH14_Covpepdock}  These methods can be seen as natural extensions of the ideas already discussed: treating the peptide warhead analogously to a small molecule electrophile while focusing additional sampling effort to the peptide backbone and side–chains.
 
-Another frontier is covalent docking of peptides, where the ligand itself is flexible and capable of folding or forming secondary structure in the bound state.  
-Recent reviews highlight challenges specific to covalent peptide–protein docking—such as choosing optimal peptide sequences, incorporating electrophilic warheads at appropriate positions, and dealing with the large conformational space—and propose strategies that combine fragment–based sampling, template–based modeling, and reactive docking.\cite{CH14_Covpepdock} 
-These methods can be seen as natural extensions of the ideas already discussed: treating the peptide warhead analogously to a small–molecule electrophile while devoting additional sampling effort to the peptide backbone and side–chains.
 
-\section{Practical Recommendations}
+\section{Summart}
 
- These advanced docking topics offer excellent opportunities for.....
-
-\begin{itemize}
-  \item \textbf{Start from known structures.} For covalent docking, PROTACs, or MLSD, anchor projects around systems with available X–ray or cryo–EM structures so that students can quantitatively assess docking accuracy (for example, RMSD to crystallographic ligands or interfaces).  
-  \item \textbf{Emphasize reaction and mechanism.} In covalent docking exercises, require students to draw the reaction mechanism, identify nucleophiles and electrophiles, and reason about protonation states before launching computations; this reinforces the link between chemical intuition and docking parameters.  
-  \item \textbf{Use staged complexity.} Begin with relatively simple covalent systems (single cysteine, single electrophile) and then progress to more complex cases such as covalent fragments, covalent peptides, or covalent PROTAC warheads.  
-  \item \textbf{Integrate MD where possible.} Short MD simulations seeded from docked complexes can reveal instabilities or artifacts that are not obvious from static scores, and connect docking to broader molecular simulation concepts.  
-  \item \textbf{Encourage critical thinking.} Have students compare different docking strategies (for example, noncovalent versus covalent, sequential versus simultaneous, unconstrained versus constrained protein–protein docking) and reflect on where each approach succeeds or fails.
-\end{itemize}
-
-By framing covalent docking, PROTAC modeling, and multi–ligand docking as extensions rather than replacements of classical docking, students can see how familiar concepts—search space, scoring, flexibility, solvation—are adapted to increasingly realistic and therapeutically relevant scenarios.
-
-\section{Future Directions}
-
-Looking ahead, several trends are likely to further expand the scope of docking applications.  
-First, continued methodological work on covalent docking—such as more system–independent reaction templates, better treatment of reversible covalent interactions, and improved integration with quantum methods—will make it easier to apply covalent docking in routine virtual screening campaigns.\cite{CH14_CovalentDockingReview2015,CH14_CovalentToolSelection2019,CH14_HCovDock2023,CH14_CovCIFDock2025} 
-Second, as PROTACs and other heterobifunctional modalities (for example, molecular glues) proliferate, there will be increasing demand for docking workflows that can treat ternary and higher–order complexes with both accuracy and throughput.\cite{CH14_Drummond2020,CH14_PRosettaC2020,CH14_flt3protac2025,CH14_megaprotac2025,CH14_PRosettaCAf3_2025} 
-
-Third, multi–ligand and group–aware docking frameworks will likely become more important for modeling cooperative effects in polypharmacology, fragment merging, and combination therapies, building on early successes of MLSD, Moldina, and related methods.\cite{CH14_MLSD2010,CH14_Moldina2025,CH14_ErbB4MLSD2024,CH14_PapayaMultiLigand2025} 
-Finally, the integration of physics–based docking with machine learning—through learned scoring functions, generative models, and data–driven priors over multi–component assemblies—promises to further extend docking from a primarily pose–prediction tool into a central engine for navigating large, complex chemical–biological design spaces.\cite{CH14_Smiles2Dock2024,CH14_GroupBind2025} 
+To be written
 
 \bibliography{special_topics}
 
