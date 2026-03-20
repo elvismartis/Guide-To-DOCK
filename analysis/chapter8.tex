@@ -1,0 +1,333 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{natbib}
+\bibliographystyle{plain}
+
+\title{Analysing Results from Molecular Docking}
+\author{Elvis Martis}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+Molecular docking is now a routine component of structure-based drug discovery pipelines, used at scales ranging from hypothesis-driven pose analysis of a handful of ligands to ultra–large virtual screens of hundreds of millions of compounds. Despite this apparent maturity, the interpretation and validation of docking results remain nontrivial, and are often the weakest link in otherwise sophisticated workflows. Numerous benchmarking studies have shown that while many docking programs can often recover crystallographic binding modes with reasonable accuracy, their ability to rank ligands by affinity or to drive robust hit discovery is far more limited and system-dependent.\cite{CH8_Warren2006,CH8_Kitchen2004,CH8_Cheng2009}
+
+This chapter focuses on practical aspects of analyzing and validating docking results. We emphasize not only the good practice that experienced practitioners follow, but also the common failure and negative examples that one encounters in the literature and in early–stage projects. The goal is to provide a realistic view of what docking can and cannot do, and how to design and interpret calculations so that they inform, rather than mislead.
+
+\section{Docking Outputs}
+
+A typical small-molecule docking calculation produces one or more putative binding modes, also called poses, for each ligand in a defined binding site. This is accompanied by a numerical score that is intended to correlate to binding affinity.  More realistically, the score must rank ligands in a relative sense.\cite{CH8_Kitchen2004,CH8_Huang2011} Many modern workflows also provide additional data such as:
+
+\begin{itemize}
+  \item  Decomposition of interaction in to van der Waals, Coulombic, desolvation, ionic, and hydrogen bonding,
+  \item interaction fingerprints encoding the residue interaction patterns
+  \item pose clusters based on ligand heavy-atom RMSD,
+  \item warnings about steric clashes or strained conformations.
+\end{itemize}
+
+The  main challenge is that none of these quantities are experimentally observable. They are proxies for the thermodynamic and kinetic processes that determine drug binding. The main objective of any docking method relies on the ability of the search algorithm to find biologically reasonable poses. And the ability of the scoring function to rank those poses and ligands in a way that correlates with experimental affinity data.\cite{CH8_wang2005,CH8_Cheng2009}
+
+\section{Qualitative Analysis of Docking Poses}
+
+\subsection{Visual Inspection}
+
+Despite extensive automation, visual inspection of docking poses remains indispensable. Most workflows almost always subject top-ranked poses to manual or semi-automated review by an experienced computational before making design or screening decisions.\cite{CH8_Kitchen2004,CH8_Charting2015}
+
+Visual inspection should aim to assess:
+
+\begin{itemize}
+  \item Geometric feasibility: Does the ligand sit sensibly in the pocket without severe steric clashes or burial of polar atoms in apolar environments without compensation?
+  \item Key pharmacophoric interactions: Are canonical interactions, such as hinge hydrogen bonds in kinases, catalytic residues in proteases, metal-chelating motifs, satisfied?
+  \item Internal strain: Are torsions in high energy conformations relative to known low energy conformers or crystallographic analogues?
+  \item Water molecules: Are key waters displaced or retained in a manner consistent with known structures and thermodynamic expectations?
+\end{itemize}
+
+\subsection{Negative Examples}
+
+Despite knowing what to expect while analysing docking outcomes, it is seldom discussed on what not accept while visualising docking poses. The following points are non-exhaustive recommendations:
+
+\begin{itemize}
+  \item Buried, unsatisfied charges: Poses in which a formal charge, such as those from a protonated amine or deprotonated carboxylate group, is completely buried in a hydrophobic pocket without forming salt bridges or strong hydrogen bonds are artefactes, even if highly scored.
+  \item Severe steric clashes: Ligand atoms overlapping protein atoms, or gross van der Waals clashes between rings and side chains, indicate a failure in the search algorithm or scoring functions. These poses should be discarded or the protocol re-examined.
+  \item Unrealistic ligand contortions: Highly twisted ring systems or torsions that deviate dramatically from known crystallographic or QM-optimized conformations, without clear compensating interactions, suggest overfitting to the scoring function.
+  \item Unphysical metal coordination: Poses that ignore established coordination geometries and preferred donor atoms for metal ions, like Zn$^{2+}$, Mg$^{2+}$, should be treated with great suspicion unless supported by strong experimental evidence.
+\end{itemize}
+
+\section{Quantitative Analysis}
+
+Docking scores are often reported in units of binding free energy like kcal/mol or kj/mol, however, they are rarely parameterised to yield quantitatively accurate $\Delta G$ values. Comparative assessments show that simple linear fitting between scores and experimental affinities are usually target-specific and often display large residuals.\cite{CH8_Warren2006,CH8_Cheng2009} Therefore:
+
+\begin{itemize}
+  \item treat scores as relative ranking tools within a given target and protocol,
+  \item avoid comparing scores across different targets, protein conformations, or docking algorithms,
+  \item be skeptical of fine distinctions in score, differences $< 1$--$2$ kcal/mol between ligands may well be within the error region of the scoring function, and not true difference in binding affinity.
+\end{itemize}
+
+\subsection{Score Distributions and Rank-Based Analysis}
+
+Rather than focusing on individual scores, it is more robust to analyze:
+
+\begin{itemize}
+  \item Score distributions: Histograms of scores for all docked ligands often reveal whether a few ligands are clear outliers or whether the distribution is narrow and undifferentiated.
+  \item Rank-based enrichment: When known actives are present, one can compute enrichment factors (EF), receiver operating characteristic (ROC) curves, and early enrichment metrics such as BEDROC to evaluate how well the scoring function prioritizes actives near the top.
+  \item Score vs. physicochemical properties: Plots of score versus molecular weight, cLogP, polar surface area, or charge can reveal systematic biases, such as those in the scoring functions that simply favor larger or more hydrophobic compounds.
+\end{itemize}
+
+\subsection{Negative Examples}
+
+Problematic practices include:
+
+\begin{enumerate}
+  \item Using raw scores as binding free energies: Statements such as the docking score of $-11$ kcal/mol indicates nanomolar affinity are not supported by benchmarking data and should be avoided.\cite{CH8_Warren2006}
+  \item Hard score cutoffs without context: Applying an arbitrary score threshold, such as keep only ligands with score $<-8$~kcal/mol, without prior validation can remove true actives or retain large numbers of false positives.
+  \item Cross target score comparison: Comparing scores of the same ligand docked to two different proteins, and inferring selectivity directly from the difference is unjustified unless the scoring function has been carefully validated for that purpose.
+\end{enumerate}
+
+\section{Internal Validation of Docking Protocols}
+
+\subsection{Redocking: Reproducing Known Binding Modes}
+
+Redocking tests use crystallographic complexes with known bound ligands. The ligand is removed, re-docked into the binding site, and the resulting poses are compared to the experimental binding mode, usually via RMSD. A typical acceptance criterion is that at least one of the top-ranked poses has heavy-atom RMSD $< 2.0$~\AA\ from the crystal pose.\cite{CH8_Warren2006,CH8_Kitchen2004,CH8_Cheng2009}
+
+Best practices for redocking include:
+
+\begin{itemize}
+  \item using multiple co-crystal structures if available, to probe robustness across conformational states,
+  \item evaluating both pose \emph{reproduction} (RMSD) and \emph{ranking} (whether the near-native pose is ranked among the top poses),
+  \item ensuring that protein and ligand preparation protocols used in redocking match those planned for virtual screening.
+\end{itemize}
+
+A negative example is to report only the best RMSD achievable by any pose, while ignoring that the near-native pose was ranked very low; such protocols often fail in screening contexts.
+
+\subsection{Cross-Docking and Induced Fit Considerations}
+
+Cross-docking, in which ligands are docked into non-cognate protein conformations, assesses sensitivity to receptor flexibility and pocket variability. This is particularly relevant for highly flexible targets such as kinases, nuclear receptors, or GPCRs.\cite{CH8_Huang2011,CH8_PandFutureDocking2020}
+
+Key recommendations:
+
+\begin{itemize}
+  \item include representative open and closed conformations when available,
+  \item quantify success rates across multiple structures, not just a single ``best'' receptor,
+  \item consider ensemble docking or induced-fit protocols when single-structure performance is poor.
+\end{itemize}
+
+A common mistake is to perform cross-docking on highly different conformational states (e.g., apo vs. holo with large loop movements) without adjusting the protocol or interpreting failures in light of structural differences.
+
+\subsection{Enrichment-Based Validation with Actives and Decoys}
+
+When a set of known actives is available, along with an appropriate set of inactive or decoy compounds, virtual screening-style validation can be performed.\cite{CH8_Verdonk2004,CH8_DUD-E2012}
+
+Best practices for enrichment-based validation include:
+
+\begin{itemize}
+  \item Property-matched decoys: Use decoy sets that match simple physicochemical properties (e.g., molecular weight, cLogP, HBD/HBA counts) but differ in topology from actives; the DUD-E resource is a widely adopted standard.\cite{CH8_DUD-E2012}
+  \item Early recognition metrics: Compute enrichment factors at low percentages of the ranked list (e.g., EF$_{1\%}$, EF$_{2\%}$), ROC-AUC, and early recognition metrics such as BEDROC.\cite{CH8_Truchon2007}
+  \item Multiple random splits: When decoys are custom-generated, use multiple random subsets to avoid overfitting to a single decoy realization.
+\end{itemize}
+
+Negative examples include:
+
+\begin{enumerate}
+  \item using random ``drug-like'' compounds as decoys without property matching, leading to artificially inflated enrichment,
+  \item reporting only ROC-AUC without considering that high AUC can coexist with poor early enrichment, which is more relevant for experimental follow-up,\cite{CH8_Truchon2007}
+  \item validating on the same dataset used for method development, leading to optimistic performance estimates.
+\end{enumerate}
+
+\section{Retrospective and Prospective Benchmarks}
+
+\subsection{Large-Scale Comparative Studies}
+
+Several large-scale comparative studies have systematically assessed docking programs and scoring functions across diverse targets, highlighting that:
+
+\begin{itemize}
+  \item pose prediction is usually more reliable than affinity ranking,
+  \item no single docking program or scoring function is universally superior,
+  \item performance varies strongly by target class and binding site features.\cite{CH8_Warren2006,CH8_Cheng2009,CH8_wang2005}
+\end{itemize}
+
+These studies motivate target-specific validation and, in many cases, the use of consensus strategies or post-docking rescoring.
+
+\subsection{Public Benchmark Sets}
+
+Public benchmarks such as DUD-E, DEKOIS, and others provide standardized actives and decoys across many targets, facilitating method comparison and protocol optimization.\cite{CH8_DUD-E2012} However, users should be aware that benchmarks can still exhibit biases (e.g., analogue bias, decoy selection biases) and may not capture all nuances of a specific industrial target class.
+
+\section{Rescoring Strategies}
+
+\subsection{Consensus Scoring}
+
+Consensus scoring combines outputs from multiple docking programs or scoring functions, typically by averaging scores, aggregating ranks, or using more sophisticated schemes such as weighted or exponential rank combinations.\cite{CH8_Cheng2009,CH8_ConsensusDocking2022}
+
+Pros:
+
+\begin{itemize}
+  \item can reduce method-specific noise and systematic biases,
+  \item often improves enrichment in retrospective virtual screens,
+  \item straightforward to apply when multiple methods are already in use.
+\end{itemize}
+
+Cons and pitfalls:
+
+\begin{itemize}
+  \item requires careful standardization of input scores (e.g., sign conventions, scales),
+  \item can be dominated by one poor-performing method if naive averaging is used,
+  \item increases computational cost if additional docking runs are needed.
+\end{itemize}
+
+A negative example is to simply average raw, non-normalized scores from heterogeneous scoring functions without assessing their individual behavior, then claiming improvement based on a single test case.
+
+\subsection{Empirical and Knowledge-Based Rescoring Functions}
+
+Several stand-alone scoring functions (e.g., X-Score, DrugScore, PLP variants) were designed explicitly for rescoring of docked poses, often calibrated on curated protein–ligand complexes.\cite{CH8_Cheng2009} These can be applied to poses generated by any docking engine, decoupling pose generation from scoring.
+
+Best practices:
+
+\begin{itemize}
+  \item ensure that the parameterization domain of the rescoring function (e.g., target types, ligand chemotypes) overlaps with the intended application,
+  \item validate rescoring performance using redocking and enrichment tests on relevant systems,
+  \item examine correlation between original and rescored ranks to understand how much reordering occurs.
+\end{itemize}
+
+\subsection{Physics-Based Rescoring: MM/PBSA and MM/GBSA}
+
+Physics-based post-processing methods such as MM/PBSA and MM/GBSA approximate binding free energies by combining molecular mechanics energies with continuum solvation models, often using snapshots from molecular dynamics (MD) simulations.\cite{CH8_Hou2011,CH8_MMGBSApose2011,CH8_MMGBSAreview2015} Multiple studies have shown that, when carefully applied, MM/GBSA can outperform standard docking scores in ranking congeneric ligands and in discriminating near-native from decoy poses.\cite{CH8_Hou2011,CH8_MMGBSApose2011,CH8_MMGBSAffinity2016,CH8_Xu2013}
+
+Key considerations for MM/PBSA and MM/GBSA rescoring include:
+
+\begin{itemize}
+  \item Sampling: Adequate conformational sampling is essential; short MD trajectories (1–5~ns) can suffice for many systems but may be inadequate for highly flexible binding sites.\cite{CH8_Hou2011,CH8_Xu2013}
+  \item Force field and charge models: Choice of protein force field and ligand charge model (e.g., RESP vs. AM1-BCC) has a substantial impact on predictive performance, and best choices can be system-dependent.\cite{CH8_Xu2013,CH8_MMGBSAreview2015}
+  \item Entropy: Entropic contributions are often approximated or neglected; relative ranking within congeneric series can still be meaningful even without explicit entropy treatment, but absolute binding free energies may be less reliable.
+\end{itemize}
+
+Negative examples in MM/GBSA usage include:
+
+\begin{enumerate}
+  \item reporting MM/GBSA values with four significant figures and interpreting them as precise $\Delta G$ values,
+  \item neglecting to specify key parameters (dielectric constants, GB model, number of snapshots, simulation length),
+  \item using MM/GBSA on single, unminimized docking poses without any relaxation, which can amplify artefacts from docking.
+\end{enumerate}
+
+\subsection{MD-Based Refinement}
+
+MD simulations can be used to relax docking poses and explore local conformational space, followed by rescoring with MM/GBSA or related schemes. Additionally, MD can reveal the stability of key hydrogen bonds, hydrophobic contacts, and water networks that are only crudely approximated in docking.\cite{CH8_meng2011,CH8_MMGBSApose2011}
+
+Practical tips:
+
+\begin{itemize}
+  \item focus MD refinement on a manageable subset of promising ligands (e.g., tens to low hundreds),
+  \item monitor RMSD of ligand and nearby residues to ensure that the complex remains physically reasonable,
+  \item analyze occupancy of key waters, especially in cases where ``displaceable'' vs.\ ``conserved'' waters may influence potency.
+\end{itemize}
+
+\section{Best-Practice Workflow in Industrial Docking Campaigns}
+
+\subsection{Protein and Ligand Preparation}
+
+Robust protein and ligand preparation is foundational. Recommended steps include:
+
+\begin{itemize}
+  \item choose high-quality experimental structures (resolution, B-factors, completeness), preferably in complex with ligands similar to the intended chemotypes;
+  \item assign protonation states and tautomers for ionizable residues and ligands at relevant pH using established tools; consider alternative states for borderline cases;
+  \item model missing loops and side chains where necessary, but avoid over-modelling when structural uncertainty is high;
+  \item retain or remove crystallographic waters based on well-defined criteria (e.g., buried, conserved waters vs.\ bulk-like, weakly bound waters).
+\end{itemize}
+
+Negative examples:
+
+\begin{enumerate}
+  \item using an apo structure with a collapsed binding pocket for docking without any attempt to open or relax it,
+  \item ignoring biologically relevant cofactors or metal ions (e.g., Mg$^{2+}$ in kinases, Zn$^{2+}$ in metalloproteases),
+  \item assuming all titratable groups are in their default protonation state at pH 7, regardless of microenvironment.
+\end{enumerate}
+
+\subsection{Docking Protocol Design}
+
+A typical industrial docking campaign might proceed as follows:
+
+\begin{enumerate}
+  \item Protocol calibration: Perform redocking and enrichment-based tests on representative co-crystal ligands and in-house actives, adjusting parameters (grid size, sampling exhaustiveness, constraints) to achieve acceptable pose recovery and enrichment.
+  \item Primary screen: Dock a large library with high-throughput settings, using a validated scoring function and retaining multiple poses per ligand.
+  \item Post-processing: Apply property and substructure filters (e.g., removal of PAINS and undesirable reactive groups), cluster by chemotype, and perform qualitative pose inspection of top-ranked chemotypes.
+  \item Secondary scoring: Apply consensus scoring and/or MM/GBSA rescoring to a reduced set, followed by deeper visual curation.
+  \item Selection for synthesis or purchase: Prioritize compounds based on a combination of score, pose quality, novelty, synthetic tractability, and alignment with project hypotheses.
+\end{enumerate}
+
+
+\section{Common Pitfalls and Negative Examples}
+
+\subsection{Score Worship and Over-Interpretation}
+
+One of the most pervasive errors is to treat docking scores as if they were experimentally measured affinities. Examples include:
+
+\begin{itemize}
+  \item ranking analogues solely based on small score differences and proposing SAR trends without any validation,
+  \item inferring potency categories (e.g., micromolar vs.\ nanomolar) directly from score ranges,
+  \item claiming that a ligand ``binds more strongly'' than a reference compound purely because its docking score is more negative by 0.5--1.0 units.
+\end{itemize}
+
+Such claims are not supported by benchmarking data and often contradict observed uncertainties in scoring functions.\cite{CH8_Warren2006,CH8_Cheng2009}
+
+\subsection{Ignoring Protonation, Tautomerism, and Stereochemistry}
+
+Another frequent failure mode is to dock a single arbitrary protonation state, tautomer, or stereoisomer of a ligand and then over-interpret the resulting pose and score. Negative examples include:
+
+\begin{enumerate}
+  \item docking a ligand with multiple basic centers in a fully protonated form in a hydrophobic pocket,
+  \item ignoring alternative tautomers that would better complement the hydrogen bond pattern of the pocket,
+  \item neglecting to consider all stereoisomers when chirality is not experimentally defined.
+\end{enumerate}
+
+Best practice is to enumerate chemically reasonable protonation states, tautomers, and stereoisomers, filter them based on pH and prior knowledge, and dock the relevant set, assessing whether the binding mode is robust across plausible states.
+
+\subsection{Cherry-Picking Poses and Ligands}
+
+Docking generates many poses and ligands; it is tempting to select only those that fit a desired hypothesis or structural narrative. Problematic behaviors include:
+
+\begin{itemize}
+  \item highlighting a pose that matches a preconceived pharmacophore while ignoring that it is ranked very low or exhibits clashes,
+  \item presenting only a few highly favorable scores while omitting the broader distribution and the presence of close analogues with poor scores,
+  \item modifying the protein structure or protonation states post hoc to accommodate a particular ligand without systematically revalidating the protocol.
+\end{itemize}
+
+These practices bias interpretation and undermine the predictive value of the calculations.
+
+\subsection{Treating Docking as Proof of Binding}
+
+Docking is a hypothesis-generation tool, not proof of binding or mechanism. Negative examples include:
+
+\begin{enumerate}
+  \item asserting that docking ``confirms'' experimental binding or mechanism solely because a plausible pose can be found,
+  \item using docking alone to claim that a compound is selective for one target over another,
+  \item drawing mechanistic conclusions (e.g., about covalent bond formation or proton transfer) from docked structures that do not include the necessary quantum-chemical detail.
+\end{enumerate}
+
+A more appropriate stance is to treat docking as \emph{supporting} evidence, to be weighed alongside experimental data and other computational methods.
+
+\subsection{Misuse of Decoy Sets and Benchmarks}
+
+Finally, validation itself can be misused. Examples include:
+
+\begin{itemize}
+  \item tuning a scoring function or protocol on a benchmark set (e.g., DUD-E) and then claiming superior performance based on the same set, without external validation,\cite{CH8_DUD-E2012}
+  \item constructing decoy sets that are trivially separable from actives (e.g., by size or polarity), thereby inflating enrichment metrics,
+  \item comparing methods using different decoy sets or evaluation metrics, leading to incommensurate results.
+\end{itemize}
+
+Best practice is to use independent training and test sets, employ property-matched decoys, and report multiple, complementary performance metrics.
+
+\section{Conclusions}
+
+To be written
+
+
+
+
+\bibliography{Analysing_Results_from_Molecular_Docking}
+
+\end{document}

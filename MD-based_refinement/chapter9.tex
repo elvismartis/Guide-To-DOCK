@@ -1,0 +1,407 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{natbib}
+\bibliographystyle{plain}
+
+\title{Molecular Dynamics for postprocessing docking results}
+\author{Elvis Martis}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+ Despite tremendous progress, conventional docking remains limited by three main approximations: (i) a oversimplified treatment of receptor flexibility, (ii) approximate, empirical scoring functions, and (iii) incomplete treatment of solvent and entropic effects.\cite{CH9_Warren2006,CH9_Chen2014} As a consequence, docking often generates multiple plausible poses with scores with negligible difference. This leads to binding affinity predictions that show only modest correlation with experimental binding affinity.
+
+Molecular dynamics (MD) simulations complement docking by explicitly treating protein--ligand flexibility in explicit solvent systems, which leads to more physiologically relavant statistical ensemble.\cite{CH9_McCammon1977,CH9_FrenkelSmit2023,CH9_Hollingsworth2018} MD, thus, allows one to analyze the time-averaged stability of docked poses as well as conformational rearrangements that are difficult to capture in docking calculations. In the context of docking, MD can be used as a post-processing tool to (i) refine binding poses, (ii) rescore docking hits based on dynamical stability metrics, and (iii) compute more rigorous binding free energies using equilibrium or non-equilibrium methods. However, conventional MD is limited to nanosecond--microsecond time scales for typical biomolecular systems. This leads to poor sampling of rare events such as ligand binding or unbinding or large-scale induced-fit movements. Enhanced sampling methods address this limitation by modifying the dynamics or biasing sampling along collective variables (CVs) to efficiently cross free energy barriers inaccessible to classical MD simulations.\cite{CH9_Tiwary2015} In the context of protein--ligand systems, enhanced sampling techniques such as umbrella sampling, metadynamics, and accelerated MD (aMD) have shown tremendous potential to improve ligand sampling, refine binding pathways and poses, and compute potentials of mean force (PMFs) along meaningfull coordinates.
+
+In this chapter provides we aim to discuss classical MD simulations as a post-processing method to refine poses from molecular docking. We first lay the theoretical foundations and limitations of MD for biomolecular systems. Then we move to discuss various enhanced sampling methods that have shown promising results to overcome the limitations of classical MD simulations. 
+
+\section{Classical Molecular Dynamics}
+
+\subsection{Equations of motion and statistical ensembles}
+
+In classical MD, the motion of a system of N atoms with positions $\{\mathbf{r}_i\}$ and momenta $\{\mathbf{p}_i\}$ is described by Newton's equations of motion derived from a classical Hamiltonian
+\[
+H(\mathbf{r}^N,\mathbf{p}^N) = K(\mathbf{p}^N) + U(\mathbf{r}^N),
+\]
+where the kinetic energy is
+\[
+K(\mathbf{p}^N) = \sum_{i=1}^{N} \frac{\mathbf{p}_i^2}{2m_i},
+\]
+and $U(\mathbf{r}^N)$ is the potential energy defined by the force field.\cite{CH9_FrenkelSmit2023,CH9_AllenTildesley2017}
+
+The equations of motion for atom i are
+
+\begin{align}
+\frac{d\mathbf{r}_i}{dt} &= \frac{\partial H}{\partial \mathbf{p}_i} = \frac{\mathbf{p}_i}{m_i}, \\
+\frac{d\mathbf{p}_i}{dt} &= -\frac{\partial H}{\partial \mathbf{r}_i} = -\nabla_{\mathbf{r}_i} U(\mathbf{r}^N) \equiv \mathbf{F}_i.
+\end{align}
+
+Equivalently, one can write the familiar second-order equation
+\[
+m_i \frac{d^2 \mathbf{r}_i}{dt^2} = \mathbf{F}_i(\mathbf{r}^N).
+\]
+
+In the absence of any coupling to a thermostat or barostat, the equations of motion generate a trajectory in the microcanonical (NVE) ensemble, where the number of particles (N), volume (V), and total energy (E) are conserved. For biomolecular simulations, it is usually more appropriate to sample the canonical (NVT) or isothermal--isobaric (NPT) ensembles, which are achieved by integrating the equations of motion by the coupling the system to thermostats, and barostats (see \textbf{Table \ref{tab:thermostats_barostats}}).\cite{CH9_Martyna1992,CH9_ParrinelloRahman1981,CH9_bussi2007canonical}
+
+
+\begin{table}
+\centering
+\caption{ Thermostats and barostats used in molecular dynamics simulations}
+\label{tab:thermostats_barostats}
+\begin{tabular}{ll}
+\hline
+\textbf{Name} & \textbf{Class} \\
+\hline
+\\
+\textbf{Thermostats} \\
+\\
+Andersen thermostat  & Stochastic collision \\
+Berendsen thermostat & Weak-coupling / velocity rescaling \\
+Simple velocity rescaling & Deterministic rescaling \\
+Nos\'e thermostat & Deterministic extended-ensemble \\
+Nos\'e--Hoover thermostat & Deterministic extended-ensemble \\
+Nos\'e--Hoover chain thermostat & Deterministic extended-ensemble \\
+Langevin thermostat & Stochastic (friction) \\
+DPD (dissipative particle dynamics) thermostat & Pairwise stochastic \\
+\hline
+\hline
+\\
+\textbf{Barostats}\\
+\\
+Berendsen barostat & Weak-coupling volume rescaling \\
+Andersen barostat & Deterministic extended-ensemble \\
+Parrinello--Rahman barostat & Anisotropic extended-ensemble,  \\
+Nos\'e--Hoover (MTTK) barostat & deterministic extended-ensemble,  \\
+Langevin piston barostat & Stochastic extended-ensemble \\
+Berendsen anisotropic barostat & Anisotropic weak-coupling \\
+Stochastic velocity-rescaling barostat & Stochastic global (SVR). \\
+Monte Carlo (MC) barostat & Monte Carlo volume moves \\
+\hline
+\end{tabular}
+\end{table}
+
+
+\subsection{Numerical integration}
+
+The continuous equations of motion are discretized in time using a small time step $\Delta t$ (typically 1--4 fs for biomolecular systems). Symplectic, time-reversible integrators such as the Verlet family are preferred because they conserve energy well over long times.\cite{CH9_FrenkelSmit2023}
+
+The velocity Verlet algorithm updates positions $\mathbf{r}_i$, velocities $\mathbf{v}_i$, and forces $\mathbf{F}_i$ according to
+\begin{align}
+\mathbf{r}_i(t+\Delta t) &= \mathbf{r}_i(t) + \mathbf{v}_i(t)\,\Delta t + \frac{\mathbf{F}_i(t)}{2m_i}\,\Delta t^2, \\
+\mathbf{v}_i(t+\tfrac{1}{2}\Delta t) &= \mathbf{v}_i(t) + \frac{\mathbf{F}_i(t)}{2m_i}\,\Delta t, \\
+\mathbf{F}_i(t+\Delta t) &= -\nabla_{\mathbf{r}_i} U(\mathbf{r}^N(t+\Delta t)), \\
+\mathbf{v}_i(t+\Delta t) &= \mathbf{v}_i(t+\tfrac{1}{2}\Delta t) + \frac{\mathbf{F}_i(t+\Delta t)}{2m_i}\,\Delta t.
+\end{align}
+This integrator requires only one force evaluation per time step and exhibits good long-time stability properties.
+
+\subsection{Molecular mechanics force fields}
+
+In classical biomolecular MD, the potential energy $U(\mathbf{r}^N)$ is described by an empirical force field that decomposes the interactions into bonded and non-bonded terms.\cite{CH9_Cornell1995,CH9_MacKerell1998} 
+A typical functional form is
+\begin{align}
+U(\mathbf{r}^N) &= \sum_{\text{bonds}} k_b (b - b_0)^2
++ \sum_{\text{angles}} k_\theta (\theta - \theta_0)^2 \nonumber \\
+&\quad + \sum_{\text{dihedrals}} \sum_n \frac{V_n}{2} \left[1 + \cos(n\phi - \gamma_n)\right] \nonumber\\
+&\quad + \sum_{i<j} \left[4\varepsilon_{ij} \left( \left(\frac{\sigma_{ij}}{r_{ij}}\right)^{12} - \left(\frac{\sigma_{ij}}{r_{ij}}\right)^6 \right)
++ \frac{q_i q_j}{4\pi\varepsilon_0 r_{ij}} \right],
+\end{align}
+where bond stretching, angle bending, and torsional rotations are treated harmonically or with periodic functions, while non-bonded interactions are represented by Lennard--Jones and Coulomb terms. Force field parameters ($k_b, b_0, k_\theta, \theta_0, V_n, \gamma_n, \varepsilon_{ij}, \sigma_{ij}, q_i$) are derived from quantum chemistry calculations and experimental data.
+
+Force fields such as AMBER, CHARMM, OPLS-AA, and GROMOS provide parameter sets for proteins, nucleic acids, lipids, and small molecules, and are implemented in widely used MD codes (AMBER, GROMACS, NAMD, CHARMM, etc.).\cite{CH9_salomon2013overview,CH9_Abraham2015,CH9_Phillips2020}. %check if I can link other Force field sections to this section.
+
+\section{MD as Post-Processing for Docking}
+
+\subsection{Limitations of docking}
+
+Docking algorithms approximate the protein as rigid or semi-flexible, treat solvent implicitly, and approximate the binding free energy with relatively simple scoring functions that balance speed and accuracy.\cite{CH9_Kitchen2004,CH9_Pagadala2017} These approximations lead to:
+
+\begin{itemize}
+\item Inaccurate treatment of induced fit: side-chain and backbone rearrangements upon ligand binding may not be fully captured, especially for buried or allosteric sites.
+\item Limited sampling of alternative binding poses or subpockets, when large conformational changes are required.
+\item Approximate treatment of entropic and desolvation effects, which are important for ranking ligands with similar chemical scaffolds.
+\end{itemize}
+
+MD simulation addresses many of these limitations by simulating the time evolution behaviour of the protein--ligand complexs in an environment that can closely mimic the phyiological system. 
+When employed as post-docking refinement, MD can:
+
+\begin{itemize}
+\item Relax steric clashes and unrealistic geometries introduced by docking.
+\item Allow side chains, loops, and even secondary structure elements to adapt to the ligand (induced fit).
+\item Reveal unstable poses that quickly drift away from the binding site.
+\item Provide physiologically relavant observables, such as RMSD, hydrogen-bond, and water/solvent networks, that correlate with binding affinity or pose stability.
+\item Serve as a basis for more rigorous free energy calculations (e.g., MM-PBSA/GBSA, alchemical methods, PMFs).
+\end{itemize}
+
+\subsection{A general workflow: from docking to MD}
+
+A typical post-docking MD workflow for a protein--ligand complex proceeds as follows:
+
+\begin{enumerate}
+\item Pose selection: Select a set of docked poses for each ligand, for example the top N poses by docking score or selecting cluster representatives with distinct binding modes.
+
+\item System preparation: Build an explicit solvent model (e.g., TIP3P, OPC, SPC or SPC/e water models), add counterions and maintain physiological salt concentration, assign protonation states, generate ligand parameters compatible with the chosen force field, and define the simulation box.
+
+\item Energy minimization: Perform restrained minimization to remove bad contacts while keeping the protein and ligand close to the docked geometry, followed by unrestrained minimization.
+
+\item Equilibration: Gradually heat the system to the target temperature (e.g., 300 K) under position restraints, equilibrate at constant pressure to stabilize the density, and slowly release restraints on the protein and ligand.
+
+\item Production MD: Run nanosecond--microsecond scale MD simulations under NVT or NPT ensemble for each pose. For high-throughput rescoring, trajectories of 5--50 ns per pose often provide useful information on pose stability.
+
+\item Analysis and rescoring: Rank poses based on dynamical criteria (e.g., ligand RMSD relative to the initial pose or reference structure, distance to key residues, hydrogen-bond occupancies, fraction of simulation time in which the ligand remains within the binding pocket). Furthermore, compute end-point free energy estimates (MM-PBSA or MM-GBSA) or construct PMFs for ligand unbinding.
+\end{enumerate}
+
+Large-scale studies have demonstrated that such workflows can significantly improve the accuracy to differentiate actives from decoy ligands. This enables to improve the binding mode predictions when compared to docking scores alone.\cite{CH9_Cournia2017,CH9_guterres2020}
+
+\section{Enhanced Sampling for Ligand Sampling}
+
+Classical molecular dynamics (MD) simulations are constrained in their ability to sample rare events such as ligand binding and unbinding, primarily due to an extreme mismatch between the microscopic timestep and the macroscopic timescales of interest.  To resolve fast bond vibrations, MD requires timesteps on the order of 1--2 femtoseconds, so even a state-of-the-art microsecond trajectory entails around $10^9$ integration steps. This is already computationally demanding for realistic protein--ligand systems. 
+
+Pharmacologically relevant ligand residence times frequently lie in the millisecond-to-hours time-scale. This amounts to $10^{12}$--$10^{15}$ steps that would be needed for direct unbiased observation of multiple binding and unbinding events\cite{CH9_miao2020ligand,CH9_ahmad2022enhanced}. Owing to current computational resource available, this far beyond routine all-atom MD for most researchers. Moreover, ligand association and dissociation proceed via complex pathways with large free-energy barriers arising from desolvation, side-chain and loop rearrangements. Since the transition rates scale approximately as $\exp(-\Delta G^{\ddagger}/k_{\mathrm{B}}T)$, these barriers for binding/unbinding events are exponentially rare on the nanosecond--microsecond windows explored by classical MD. Therefore, trajectories tend to remain trapped in a single metastable basin. Ligand kinetics are influenced by slow, collective protein motions such as loop dynamics, gating mechanims, domain motions, allosteric network rearrangements, that themselves relax on microsecond--millisecond timescales. Therefore, capturing statistically meaningful ensembles of transition paths would require MD sampling not just of the ligand coordinate but of the entire high-dimensional conformational landscape, further complicating the sampling problem. These limitations mean that classical MD rarely provides sufficient spontaneous binding or unbinding events to estimate association ($k_{\textrm{on}}$) and dissociation ($k_{\textrm{off}}$).  motivating the adoption of enhanced sampling. Enhanced sampling methods address such challenges by biasing the dynamics along carefully chosen collective variables (CVs) that describe slow degrees of freedom (e.g., ligand--protein distance, orientation, path variables), or by modifying the potential energy surface to lower barriers.\cite{CH9_LaioParrinello2002,CH9_Barducci2008,CH9_Hamelberg2004} In this section we focus on three classes of methods widely used for ligand sampling: umbrella sampling, metadynamics, and accelerated MD.
+
+\subsection{Umbrella sampling}
+
+Umbrella sampling (US), first introduced by Torrie and Valleau\cite{CH9_TorrieValleau1977}, is a biased sampling technique that facilitates the exploration of high free energy regions by adding static bias potentials along a reaction coordinate or collective variable $s(\mathbf{r}^N)$. For protein--ligand systems, an appropriate choice of CV is the distance between the ligand center of mass and a reference point in the binding site, or a path CV interpolating between bound and unbound states.
+
+\subsubsection{Umbrella potential and biased distribution}
+
+In umbrella sampling, one performs a series of independent simulations (windows), each with a harmonic bias potential centered at a specific CV value $s_0$:
+\[
+V_{\text{umb}}(s) = \frac{1}{2}k\,[s(\mathbf{r}^N) - s_0]^2,
+\]
+where k is the force constant.\cite{CH9_Kastner2011} The biased probability distribution in each window is
+\[
+P_{\text{umb}}(s) \propto \exp\left[-\beta\,(F(s) + V_{\text{umb}}(s))\right],
+\]
+where F(s) is the underlying (unbiased) free energy profile and $\beta = 1/(k_{\mathrm{B}}T)$.
+
+The unbiased free energy up to an additive constant can be recovered as
+\[
+\tilde{F}(s) = -\frac{1}{\beta}\ln N(s) - V_{\text{umb}}(s) + C,
+\]
+where N(s) is the histogram of sampled CV values in the biased simulation and C is an arbitrary constant.\cite{CH9_Kastner2011}
+
+\subsubsection{Combining windows: WHAM and related methods}
+
+To obtain a continuous free energy profile across the full range of s, one combines histograms from all umbrella windows using the weighted histogram analysis method (WHAM) or related maximum-likelihood estimators.\cite{CH9_Kumar1992,CH9_Roux1995} In WHAM, the unbiased probability distribution P(s) is obtained from a set of coupled equations:
+\begin{align}
+P(s) &= \frac{\sum_{k=1}^{M} N_k^{-1} n_k(s)}{\sum_{k=1}^{M} N_k^{-1} \exp\left[-\beta \left(F_k + V_{\text{umb},k}(s)\right)\right]}, \\
+\exp(-\beta F_k) &= \sum_{s} P(s)\,\exp\left[-\beta V_{\text{umb},k}(s)\right],
+\end{align}
+where M is the number of windows, $n_k(s)$ is the histogram count in bin s for window k, $N_k$ is the total number of samples in window $k$, and $F_k$ are free energy offsets solved iteratively.
+
+Finally, the PMF along $s$ is
+\[
+F(s) = -\frac{1}{\beta}\ln P(s) + C'.
+\]
+
+\subsubsection{Umbrella sampling for ligand binding}
+
+For protein--ligand systems, umbrella sampling is often used to compute the PMF associated with ligand unbinding along a path from the binding site to the bulk solvent.\cite{CH9_TorrieValleau1977,CH9_Roux1995,CH9_Kastner2011} A practical approach would be as follows:
+
+\begin{enumerate}
+\item Generate an initial unbinding path by steered MD (pulling the ligand along a chosen direction) or by following a docking-generated exit route.
+\item Select a set of CV values $\{s_0^{(k)}\}$ along this path (e.g., equally spaced in distance) and set up umbrella windows with appropriate force constants.
+\item Run biased MD simulations in each window, ensuring sufficient overlap of sampled s distributions between neighboring windows.
+\item Combine histograms using WHAM or MBAR to obtain the PMF, from which binding free energies and kinetic barriers can be estimated.
+\end{enumerate}
+
+Umbrella sampling PMFs provide insights into binding pathways, intermediate metastable states, and the role of water and side-chain rearrangements. They can be used to refine docking-based hypotheses and to quantify the relative stability of alternative binding modes.
+
+\subsection{Metadynamics}
+
+Metadynamics is an adaptive biasing technique in which a history-dependent bias potential is constructed in the space of a few CVs $\mathbf{s}(\mathbf{r}^N) = (s_1,\dots,s_d)$ to accelerate the exploration of conformational space and reconstruct free energy surfaces.\cite{CH9_LaioParrinello2002,CH9_Barducci2008} For ligand sampling, suitable CVs may include ligand--protein distance, orientation angles, coordination numbers with key residues, or path CVs.
+
+\subsubsection{Standard metadynamics}
+
+In standard metadynamics, the bias potential is built as a sum of Gaussian kernels deposited along the CV trajectory:
+\[
+V(\mathbf{s}, t) = \sum_{k\tau < t} W \exp\left[-\sum_{i=1}^{d} \frac{\left(s_i - s_i(\mathbf{r}(k\tau))\right)^2}{2\sigma_i^2}\right],
+\]
+where W is the Gaussian height, $\sigma_i$ is the width for CV i, and $\tau$ is the deposition stride.\cite{CH9_LaioParrinello2002} The time-dependent bias discourages revisiting previously explored regions, effectively flattening the free energy wells, while driving the system to explore new basins.
+
+In the long-time limit (under suitable conditions), the bias converges to the negative of the underlying free energy surface:
+\[
+V(\mathbf{s},t\to\infty) = -F(\mathbf{s}) + C,
+\]
+so that an estimate of the free energy is given by $-V(\mathbf{s},t)$ up to a constant.
+
+\subsubsection{Well-tempered metadynamics}
+
+Standard metadynamics can overshoot (\textbf{check this statement}) and lead to large oscillations in the reconstructed free energy. Well-tempered metadynamics introduces a tempering mechanism by gradually reducing the Gaussian height as a function of the accumulated bias:\cite{CH9_Barducci2008}
+\[
+W(k\tau) = W_0 \exp\left[-\frac{V(\mathbf{s}(\mathbf{r}(k\tau)),k\tau)}{k_{\mathrm{B}}\Delta T}\right],
+\]
+where $W_0$ is the initial Gaussian height and $\Delta T$ is a parameter with dimensions of temperature. In the long-time limit, the bias converges to
+\[
+V(\mathbf{s}, t\to\infty) = -\frac{\Delta T}{T + \Delta T} F(\mathbf{s}) + C,
+\]
+so that the CVs sample an effective temperature $T + \Delta T$. The free energy can be recovered from the bias by simple rescaling.
+
+\subsubsection{Metadynamics for docking refinement and binding pathways}
+
+Metadynamics has been successfully used to refine docking poses and to explore ligand binding pathways:
+
+\begin{itemize}
+\item Pose refinement and rescoring: Starting from multiple docking poses, metadynamics simulations with CVs designed to monitor ligand stability (e.g., pose RMSD, key distances). This can be used to discriminate near-native poses, which remain trapped in low free energy basins, from decoy poses, which escape quickly under the bias.\cite{CH9_clark2016}
+\item Binding and unbinding pathways: By biasing CVs that measure ligand--protein distance or contact numbers, metadynamics can sample ligand entry and exit pathways, reveal metastable intermediate states, and provide binding free energy estimates in good agreement with experiments.\cite{CH9_Tiwary2015,CH9_Callea2021}
+\item Cryptic and allosteric sites: When combined with appropriate CVs (e.g., path CVs or coordinates capturing pocket opening), metadynamics can uncover cryptic pockets and/or alternative binding modes that are difficult to detect by docking alone.
+\end{itemize}
+
+\subsection{Accelerated Molecular Dynamics (aMD)}
+
+Accelerated MD (aMD) is a potential biasing method that enhances sampling by adding a smooth boost potential to flatten energy wells below a specified threshold, thereby increasing transition rates between metastable states.\cite{CH9_Hamelberg2004,CH9_Markwick2011} Unlike umbrella sampling and metadynamics, aMD does not require predefined CVs, making it attractive for complex ligand--protein systems where relevant slow coordinates are not known a priori.
+
+\subsubsection{Boost potential and modified potential energy surface}
+
+In the original aMD formulation, when the system potential energy $V(\mathbf{r}^N)$ is below a reference energy $E$, a non-negative boost potential $\Delta V(\mathbf{r}^N)$ is added:
+\[
+V'(\mathbf{r}^N) =
+\begin{cases}
+V(\mathbf{r}^N) + \Delta V(\mathbf{r}^N), & V(\mathbf{r}^N) < E, \\
+V(\mathbf{r}^N), & V(\mathbf{r}^N) \geq E,
+\end{cases}
+\]
+with
+\[
+\Delta V(\mathbf{r}^N) = \frac{\left(E - V(\mathbf{r}^N)\right)^2}{\alpha + E - V(\mathbf{r}^N)},
+\]
+where $\alpha$ is an acceleration parameter controlling the shape and magnitude of the boost.\cite{CH9_Hamelberg2004} This functional form smoothly raises low-energy basins, thus reducing energy barriers while preserving the identity of minima. Variants of aMD can apply the boost to specific components of the potential energy (e.g., dihedral terms or total potential) or in a dual-boost manner, which has been particularly useful for biomolecules.\cite{CH9_Markwick2011}
+
+\subsubsection{Reweighting and free energy recovery}
+
+Because aMD modifies the underlying potential energy surface, observables measured along an aMD trajectory must be reweighted to recover canonical ensemble averages. For a configuration with boost $\Delta V$, the corresponding weight factor is
+\[
+w = \exp\left[\beta \Delta V(\mathbf{r}^N)\right].
+\]
+In practice, direct application of this weight can lead to numerical instability due to large fluctuations in $\Delta V$, and various approximate schemes (e.g., cumulant expansions or Gaussian aMD) have been developed to facilitate free energy estimation.\cite{CH9_Miao2015}
+
+\subsubsection{aMD for ligand sampling}
+
+For protein--ligand systems, aMD and Gaussian accelerated MD (GaMD) have been used to:
+
+\begin{itemize}
+\item Accelerate ligand binding and unbinding events, enabling the reconstruction of binding pathways and identification of multiple binding sites.
+\item Enhance sampling of side-chain and loop conformations that control access to buried or allosteric pockets.
+\item Provide free energy surfaces for ligand binding without explicit CV definition, by post-processing trajectories with suitable reaction coordinates.\cite{CH9_Miao2015,CH9_Markwick2011}
+\end{itemize}
+
+A practical strategy is to perform conventional docking, then run aMD or GaMD simulations starting from the best-scoring poses and/or from the \textit{apo} protein to explore possible binding modes, followed by reweighting and more focused enhanced sampling (e.g., umbrella sampling or metadynamics) along identified pathways.
+
+\section{Combining Docking and Molecular Dynamics}
+
+\subsection{Short unbiased MD for pose validation and rescoring}
+
+A widely used strategy is to perform short unbiased MD simulations (5--50 ns) for each selected docked pose and to rank poses based on their dynamical stability:
+
+\begin{itemize}
+\item Ligand RMSD relative to the initial pose or to an experimental reference structure.
+\item Distance between ligand and key binding-site residues or motifs.
+\item Persistence of hydrogen bonds, hydrophobic contacts, salt bridges, and \(\pi\)–\(\pi\) or cation–\(\pi\) interactions.
+\item Residence time within a defined binding site volume.
+\end{itemize}
+
+Poses that rapidly drift away from the binding pocket or exhibit unstable interactions are likely decoys, whereas near-native poses are more stable and retain key interactions. This approach has been applied in large-scale studies integrating docking and MD to improve virtual screening performance, as discussed in the examples below.
+
+\subsection{Enhanced sampling for pose refinement and alternative binding modes}
+
+When multiple plausible binding modes exist or induced fit effects are significant, enhanced sampling methods can be used on top of docking to better explore ligand conformational space and receptor flexibility:
+
+\begin{itemize}
+\item Umbrella sampling: Starting from docked poses, one can construct PMFs along coordinates that distinguish binding modes (e.g., dihedral angles, orientation angles, distance to subpockets) to quantify their relative stability and transitions.
+\item Metadynamics: CVs capturing pose RMSD or specific contact patterns can be biased to drive the system between different binding modes, allowing one to map the free energy landscape of poses originally proposed by docking.
+\item aMD/GaMD: Global acceleration of conformational sampling can reveal alternative binding routes or cryptic pockets; docked poses can be used as initial seeds in such simulations.
+\end{itemize}
+
+These strategies are particularly useful for ligands binding to flexible or allosteric sites, where docking alone often fails to capture the relevant conformational ensemble.
+
+\subsection{Pathway-focused workflows}
+
+A number of workflows combine docking and MD in a pathway-focused manner:
+
+\begin{enumerate}
+\item Use docking to identify plausible binding sites and initial binding poses for a ligand.
+\item Apply steered MD or metadynamics to map unbinding pathways and identify reaction coordinates or path CVs.
+\item Set up umbrella sampling or path-metadynamics simulations along the identified pathways to obtain quantitative PMFs and to refine binding affinities.
+\item Use alchemical free energy calculations (e.g., FEP, TI) starting from docked and MD-refined poses for relative binding free energies across series of ligands.
+\end{enumerate}
+
+\section{Examples Where MD Post-Processing Improves Docking}
+
+In this section we briefly summarize several representative studies where molecular dynamics and enhanced sampling have been used after docking to significantly improve pose prediction or virtual screening performance.
+
+\subsection{High-throughput MD rescoring of docking poses}
+
+Guterres and Im developed a high-throughput protocol in which MD simulations were used to rescore docking poses produced by AutoDock Vina across 56 protein targets and 560 ligands (280 actives, 280 decoys).\cite{CH9_guterres2020} The workflow can be summarized as:
+
+\begin{itemize}
+\item Perform docking with AutoDock Vina and retain the top-scoring pose for each ligand.
+\item Set up and run MD simulations (100 ns) for each protein--ligand complex in explicit solvent.
+\item Analyze ligand stability via RMSD and other metrics over the trajectory.
+\item Use these dynamical stability measures as new scores to discriminate actives from decoys.
+\end{itemize}
+
+The authors reported that using MD-derived stability metrics improved the area under the ROC curve (AUC) from approximately 0.68 (Vina score alone) to about 0.83 across protein classes, demonstrating a substantial gain in virtual screening accuracy.\cite{CH9_guterres2020} Additionally, in many cases the MD simulations relaxed and slightly improved binding modes compared to the initial docked geometries, especially for near-native poses.
+
+\subsection{Metadynamics rescoring of induced-fit docking poses}
+
+A protocol combining induced-fit docking (IFD) with metadynamics has been proposed to improve pose prediction accuracy for flexible protein targets.\cite{CH9_clark2016} In this approach:
+
+\begin{itemize}
+\item IFD generates multiple candidate binding modes while explicitly allowing side-chain and backbone flexibility.
+\item For each candidate pose, short metadynamics simulations are run with CVs designed to monitor ligand detachment or pose distortion (e.g., pose RMSD, key distances).
+\item Metadynamics bias accelerates escape from high-energy, unstable poses, while near-native poses remain trapped for longer times.
+\end{itemize}
+
+By ranking poses according to their resistance to metadynamics-induced escape (e.g., length of time spent in a given basin), the protocol was able to reliably identify the correct, lowest free energy binding mode for several protein--ligand complexes where IFD scoring alone was ambiguous.\cite{CH9_clark2016} This clearly illustrates how enhanced sampling can disentangle close-score docking poses and improve pose ranking.
+
+\subsection{Reconnaissance metadynamics for locating binding poses}
+
+Reconnaissance metadynamics is a variant of metadynamics that employs self-learning CVs to efficiently escape kinetic traps without predefining detailed reaction coordinates.\cite{CH9_soderhjelm2012} The method has been applied to the trypsin--benzamidine system, a classic benchmark for binding pose prediction:
+
+\begin{itemize}
+\item EADock blind docking was first used to identify a set of plausible binding poses on the protein surface.
+\item Reconnaissance metadynamics was then employed to rapidly explore the ligand's conformational and positional space around the protein.
+\item The algorithm was able to re-find all poses obtained by docking and to identify the native binding mode as a deep free energy basin.
+\end{itemize}
+
+The exploration of phase space with this approach was reported to be approximately six to eight times faster than unbiased MD, and the resulting trajectories could be clustered and used to define regions of interest for more accurate free energy calculations.\cite{CH9_soderhjelm2012} This example demonstrates how metadynamics-based approaches can complement docking both in pose discovery and in subsequent free energy analyses.
+
+\subsection{Metadynamics-based modeling of ligand binding pathways}
+
+Callea et al.\ applied a protocol combining steered MD and metadynamics with path collective variables to study the binding of inhibitors to hypoxia-inducible factor 2$\alpha$ (HIF-2$\alpha$), which features a buried binding cavity.\cite{CH9_Callea2021} Their workflow included:
+
+\begin{itemize}
+\item Docking to obtain initial bound poses for known ligands.
+\item Steered MD to explore possible unbinding pathways and to identify candidate reaction pathways.
+\item Path-metadynamics with two CVs describing progress along the binding/unbinding path and deviation from it, enabling enhanced sampling of the binding process.
+\end{itemize}
+
+The resulting free energy surfaces captured bound and intermediate states, identified preferred entrance pathways for each ligand, and produced relative binding affinities in reasonable agreement with experimental data.\cite{CH9_Callea2021}
+
+\subsection{Improving binding free energy estimation by combining docking and MD}
+
+A number of studies and methodological reviews have emphasized that accurate binding free energy estimation often requires combining fast docking with more rigorous MD-based free energy methods.\cite{CH9_Cournia2017,CH9_alonso2006} A typical workflow is:
+
+\begin{enumerate}
+\item Use docking to rapidly screen large libraries and generate initial poses.
+\item Apply short MD simulations and possibly enhanced sampling to refine poses and assess their stability.
+\item Select a subset of ligands and poses for more expensive alchemical free energy calculations (e.g., free energy perturbation, thermodynamic integration) or PMF calculations along binding coordinates.
+\end{enumerate}
+
+Such multiscale workflows leverage the speed of docking and the physical accuracy of MD, leading to improved hit identification and optimization in drug discovery campaigns (\textbf{The chapter on Free energy estimation will discuss more in detail- link to chapter}).
+
+\section{Conclusions}
+
+\textbf{To be written}
+
+
+\bibliography{Molecular_dynamics_simulations}
+
+\end{document}
