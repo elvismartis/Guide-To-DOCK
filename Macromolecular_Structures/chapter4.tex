@@ -1,13 +1,13 @@
-\documentclass[12pt,a4paper]{article}
-\usepackage{amsmath}
-\usepackage{siunitx}
+\documentclass[12pt]{article}
 \usepackage{graphicx}
 \usepackage{hyperref}
-\usepackage{natbib}
-\bibliographystyle{plain}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{siunitx}
+\usepackage[numbers, square, sort&compress]{natbib}
 
 
-\title{Handling Biomacromolecular Structures for Molecular Docking}
+\title{Chapter 4: Handling Biomacromolecular Structures for Molecular Docking}
 \author{Elvis Martis}
 \date{}
 
@@ -16,12 +16,11 @@
 \maketitle
 
 \section{Introduction}
-The questions we ask here are, Why structure and its quality matters? How to check and validate its quality and correctness? And what are consistent and reliable metrics to depend on?  In many computational pipelines structural models and their quality dictate the final outcome and its accuracy If the structure is wrong, poorly validated, or misinterpreted (wrong oligomeric state, mis-modelled ligand, missing loops), the entire downstream workflow can be driven by artefacts rather than biology. Macromolecular structures in public archives such as the Protein Data Bank (PDB) are not direct experimental observables; they are models constrained by experimental data and by prior knowledge of chemistry and physics.\cite{CH4_Berman2000_PDB,CH4_wwpdb2019protein,CH4_karplus2012linking} X-ray crystallography, single-particle cryo-electron microscopy (cryo-EM), and nuclear magnetic resonance (NMR) spectroscopy each provide different types and resolutions of structural information.\cite{CH4_Evans2013_data_quality,CH4_Wang2015_structure_quality,CH4_Ulrich2008_BMRB} Ofcourse, each methodology presents its own sets of advantages and disadvantages. Somw of which are resolved using modern day computational software packages, while other warrant new experiments. More recently, deep learning-based methods such as AlphaFold have produced highly quality predicted models for large portions of many proteomes. However, these too have noticeable limitations.\cite{CH4_Jumper2021_AlphaFold,CH4_Varadi2022_AlphaFoldDB}, in addition to caveats of the large language models, such as hallucination of structural features or secondary structural elements that may not be true. 
+The questions we ask here are, why does the structure and its quality matter? How to check and validate its quality and correctness? And what are consistent and reliable metrics to depend on?  In many computational pipelines, structural models and their quality dictate the outcome and its accuracy. If the structure is wrong, poorly validated, or misinterpreted (wrong oligomeric state, mis-modelled ligand, missing loops), the entire downstream workflow can be driven by artefacts rather than biology. Macromolecular structures in public archives, such as the Protein Data Bank (PDB), are not direct experimental observables; they are models constrained by experimental data and prior knowledge of chemistry and physics.\cite{CH4_Berman2000_PDB,CH4_wwpdb2019protein,CH4_karplus2012linking} X-ray crystallography, single-particle cryo-electron microscopy (cryo-EM), and nuclear magnetic resonance (NMR) spectroscopy each provide different types and resolutions of structural information\cite{CH4_Evans2013_data_quality,CH4_Wang2015_structure_quality,CH4_Ulrich2008_BMRB}. Of course, each methodology has its own advantages and disadvantages. Some are resolved using modern computational software packages, while others warrant new experiments. Recently, deep learning-based methods such as AlphaFold have produced highly quality predicted models for large portions of many proteomes. However, these too have noticeable limitations.\cite{CH4_Jumper2021_AlphaFold,CH4_Varadi2022_AlphaFoldDB}, in addition to caveats of the large language models, such as hallucination of structural features or secondary structural elements that may not be true. 
 
-In this chapter, we attempe to introduce the reader nuances of biomacromolecular models: how they are determined, how to retrieve them from the appropriate databases, how to read their validation metrics, and how to identify and correct issues that matter for docking. We assume no prior experience in crystallography, cryo-EM, or NMR. Mathematical details of structure determination and refinement are largely omitted in favour of conceptual understanding directly relevant to docking and SBDD.
+In this chapter, we aim to introduce the nuances of biomacromolecular models: how they are determined, how to retrieve them from appropriate databases, how to interpret their validation metrics, and how to identify and correct issues relevant to docking. We assume no prior experience in crystallography, cryo-EM, or NMR. Mathematical details of structure determination and refinement are largely omitted in favour of conceptual understanding directly relevant to docking and SBDD.
 
 The focus is on practical questions, such as:
-
 \begin{itemize}
   \item Which resolution and crystallographic quality metrics should be checked, and how should they be interpreted?
   \item How should missing residues and loops be identified and handled?
@@ -39,8 +38,7 @@ The focus is on practical questions, such as:
 \section{Experimental Methods for Determining Biomacromolecular Structures}
 
 \subsection{X-ray Crystallography}
-
-Macromolecular X-ray crystallography infers atomic models of biomolecules from diffraction patterns of X-rays scattered by crystals.\cite{CH4_Evans2013_data_quality,CH4_Wang2015_structure_quality} A crystal is an ordered array of unit cells, each containing one or more copies of the macromolecule arranged by crystallographic symmetry. The measured diffraction intensities are related using a Fourier transform, to the electron density in the unit cell; from this density, atomic coordinates are built and refined. X-ray crystallography still accounts for the majority of entries in the PDB.\cite{CH4_Berman2000_PDB,CH4_wwpdb2019protein}
+Macromolecular X-ray crystallography infers atomic models of biomolecules from X-ray diffraction patterns scattered by crystals.\cite{CH4_Evans2013_data_quality,CH4_Wang2015_structure_quality} A crystal is an ordered array of unit cells, each containing one or more copies of the macromolecule arranged by crystallographic symmetry. The measured diffraction intensities are related to the electron density in the unit cell via  Fourier transform; from this density, atomic coordinates are built and refined. X-ray crystallography still accounts for the majority of entries in the PDB.\cite{CH4_Berman2000_PDB,CH4_wwpdb2019protein}
 
 The primary outputs relevant to docking are:
 
@@ -68,7 +66,7 @@ For SBDD, the caveats mean that the investigator must examine not only global me
 Several crystallography specific factors affect how reliable a structure is as a docking template:
 
 \begin{itemize}
-  \item Crystal packing: Lattice contacts may stabilise conformations (e.g. of loops or termini) that are weakly populated or absent in solution.\cite{CH4_Joosten2009_PDB_related_databanks,CH4_Krissinel2007_PISA}
+  \item Crystal packing:crystallography-specificabilise conformations (e.g. of loops or termini) that are weakly populated or absent in solution.\cite{CH4_Joosten2009_PDB_related_databanks,CH4_Krissinel2007_PISA}
   \item Cryogenic conditions: Most crystals are measured at cryogenic temperatures to avoid structural damage due to electron bombardment. Therefore, freezing is likely to induce artefacts that can slightly distort structures or redistribute conformational populations.
   \item Partial occupancy and disorder: Flexible loops and ligands may be modelled with high B-factors, partial occupancy, alternate conformations, or omitted altogether.
   \item Non-physiological components: Crystallisation buffers, salts, precipitants, and additives (e.g. polyethylene glycols, organic solvents) can bind to the protein and stabilise non-native conformations or oligomeric states.
@@ -78,7 +76,7 @@ Several crystallography specific factors affect how reliable a structure is as a
 
 \subsection{Single Particle Cryo-Electron Microscopy}
 
-Single particle cryo-EM reconstructs 3D maps of the Coulomb potential from 2D projection images of vitrified biomolecular particles.\cite{CH4_wwpdb2024emdb} Individual particle images are aligned and classified, and a 3D reconstruction is computed. Atomic models are then fitted and refined into these maps.
+Single particle cryo-EM reconstructs 3D maps of the Coulomb potential from 2D projection images of vitrified biomolecular particles.\cite{CH4_wwpdb2024emdb} Individual particle images are aligned and classified, and a 3D reconstruction is compu, polyetheneodels are then fitted and refined into these maps.
 
 The Electron Microscopy Data Bank (EMDB) is the global archive of 3D CryoEM maps, which are often linked to atomic models deposited in the PDB.\cite{CH4_wwpdb2024emdb} For docking, the relevant outputs are:
 
@@ -878,7 +876,8 @@ Computed structure models accessible through the PDB ecosystem represent a major
 
 At the same time, working effectively with CSMs requires an appreciation of their confidence metrics, their systematic limitations, and their relationship to experimental data. PDB portals and associated tools make it increasingly easy to navigate between computed and experimental structures, compare them, and incorporate both into a coherent structural model of the system under study. When used judiciously and validated against experiment, computed structure models are powerful additions to the structural biologist's toolkit, accelerating discovery while preserving the critical distinction between prediction and measurement.
 
-\bibliography{Macromolecular_Structures_as_Receptors}
+\bibliographystyle{unsrtnat}
+\bibliography{chapter4}
 
 \end{document}
 
