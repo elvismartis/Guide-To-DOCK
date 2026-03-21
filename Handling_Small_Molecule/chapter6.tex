@@ -91,24 +91,26 @@ Standardisation libraries (e.g., RDKit's \verb|rdMolStandardize| and commercial 
 \subsection{Protonation equilibria and the Henderson--Hasselbalch equation}
 
 The protonation state of ionizable groups (e.g., carboxylic acids, amines) is governed by acid--base equilibria. For a monoprotic acid HA,
-\[
+\begin{equation}
 \mathrm{HA} \rightleftharpoons \mathrm{A}^- + \mathrm{H}^+,
-\]
+\end{equation}
 The Henderson gives the ratio of deprotonated to protonated species at equilibrium--the Hasselbalch equation:
-\[
+\begin{equation}
 \mathrm{pH} = \mathrm{p}K_a + \log_{10} \frac{[\mathrm{A}^-]}{[\mathrm{HA}]}. 
-\]
+\end{equation}
 Rearranging,
-\[
+\begin{equation}
 \frac{[\mathrm{A}^-]}{[\mathrm{HA}]} = 10^{\mathrm{pH} - \mathrm{p}K_a}.
-\]
+\end{equation}
 
 For a given pH and known p$K_a$, this allows the computation of the fractional populations of each protonation microstate. For multiple ionizable centres, microstate populations can be computed from a micro-$K_a$ or micro-$pK_a$ model; in practice, software such as Epik, ChemAxon p$K_a$ predictors, or Dimorphite-DL (used within Gypsum-DL) implement empirical or semi-empirical models to enumerate and score protonation microstates.\cite{CH6_Ropp2019,CH6_Sastry2013}
 
 In docking, it is rarely sufficient to consider a single protonation state; instead, all states within a reasonable free energy window (often a few kcal/mol at the working pH) should be generated. The Boltzmann weight of each state i is
-\[
+
+\begin{equation}
 p_i = \frac{e^{-\beta G_i}}{\sum_j e^{-\beta G_j}}, \quad \beta = \frac{1}{k_B T},
-\]
+\end{equation}
+
 where $G_i$ is the free energy of microstate i. At a typical screening pH, states whose populations are below 1--5\% may be neglected, but borderline cases (e.g., histidines, anilines) can strongly influence binding modes.
 
 \subsection{Tautomerism}
@@ -162,9 +164,11 @@ OMEGA (OpenEye) is a widely used systematic conformer generator for small molecu
 \end{enumerate}
 
 A simple measure of structural similarity between two conformers is the heavy-atom root-mean-square deviation (RMSD),
-\[
+
+\begin{equation}
 \mathrm{RMSD} = \sqrt{\frac{1}{N} \sum_{i=1}^{N} \left\lVert \mathbf{r}_i^{(\mathrm{ref})} - \mathbf{r}_i^{(\mathrm{fit})} \right\rVert^2},
-\]
+\end{equation}
+
 where N is the number of matched atoms, and $\mathbf{r}_i^{(\mathrm{ref})}$ and $\mathbf{r}_i^{(\mathrm{fit})}$ are their coordinates after optimal superposition.
 
 OMEGA has been extensively validated against high-quality crystal structures from the PDB and Cambridge Structural Database, demonstrating high success rates in reproducing experimental ligand conformations within low RMSD thresholds.\cite{CH6_Hawkins2010}
@@ -184,9 +188,11 @@ The ETKDG (Experimental-Torsion Knowledge Distance Geometry) method extends basi
 \subsection{Energy minimisation and strain filtering}
 
 Conformers produced by OMEGA, ETKDG, or other methods are often subjected to a brief energy minimisation using a molecular mechanics force field such as MMFF94, UFF, or GAFF. The typical nonbonded energy expression consists of Lennard-Jones and Coulomb terms:
-\[
+
+\begin{equation}
 E = \sum_{i<j} \left[ 4 \varepsilon_{ij} \left( \left( \frac{\sigma_{ij}}{r_{ij}} \right)^{12} - \left( \frac{\sigma_{ij}}{r_{ij}} \right)^{6} \right) + \frac{q_i q_j}{4 \pi \varepsilon_0 \varepsilon_r r_{ij}} \right],
-\]
+\end{equation}
+
 where $r_{ij}$ is the interatomic distance, $\varepsilon_{ij}$ and $\sigma_{ij}$ are Lennard--Jones parameters, and $q_i$ are partial charges.
 
 Strain energy thresholds are applied to filter out highly strained conformers that would be unlikely in solution and could bias docking scores. In practice, these thresholds are empirical, typically 10--15 kcal/mol above the global minimum for a small molecule. However, they should be chosen carefully: overzealous filtering might weed out conformers relevant for binding, especially in tight or distorted pockets.
@@ -272,9 +278,11 @@ Bond lengths and angles should be within reasonable ranges for the corresponding
 \subsubsection{Ring conformations and planarity}
 
 For aromatic and conjugated rings (e.g., benzene, heteroaromatics, amides), planarity is a useful quality criterion. Deviations from planarity can be quantified by measuring the root-mean-square deviation of ring atoms from the best-fit plane:
-\[
+
+\begin{equation}
 \mathrm{RMSD}_{\mathrm{plane}} = \sqrt{\frac{1}{N} \sum_{i=1}^{N} d_i^2},
-\]
+\end{equation}
+
 where $d_i$ is the perpendicular distance of atom i from the best-fit plane, large deviations (e.g., $>$ 0.1--0.2 \r{A} for benzene) suggest geometric artefacts.
 
 Macrocycles and flexible rings may legitimately adopt non-planar conformations, but small aromatic rings and amide linkages should be close to planar in starting conformers.
@@ -284,9 +292,11 @@ Macrocycles and flexible rings may legitimately adopt non-planar conformations, 
 Excessive internal strain, such as extremely close non-bonded contacts, twisted amides, and eclipsed torsions, may artificially stabilise or destabilise certain docking poses when combined with the receptor. Minimisation with a suitable force field mitigates many such issues; however, energy-based filters can be more systematic.
 
 If an approximate relative strain energy $E_i$ of conformer i can be computed (e.g., MMFF94), a Boltzmann-like weight can be used to filter:
-\[
+
+\begin{equation}
 w_i = \frac{e^{-\beta E_i}}{\sum_j e^{-\beta E_j}}.
-\]
+\end{equation}
+
 Conformers whose weights fall below a threshold may be discarded from the docking ensemble.
 
 \subsection{Comparison of prepared ligands to experimental structures}
