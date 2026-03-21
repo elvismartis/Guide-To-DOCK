@@ -18,19 +18,19 @@
 
 \section{Introduction}
 
-The identification of binding sites on protein structures is a central problem in structural biology, enzymology, and structure-based drug design. Binding sites constitute spatially localized regions on the protein surface or in the protein interior, where small molecules, peptides, nucleic acids, lipids, or proteins, form specific and energetically favorable interactions with selected amino acid residues. Correctly locating these regions is a prerequisite for molecular docking, virtual screening, fragment-based design, and rational engineering of protein function. 
+The identification of binding sites on protein structures is a central problem in structural biology, enzymology, and structure-based drug design. Binding sites are spatially localised regions on the protein surface or within the protein interior where small molecules, peptides, nucleic acids, lipids, or proteins form specific, energetically favourable interactions with selected amino acid residues. Correctly locating these regions is a prerequisite for molecular docking, virtual screening, fragment-based design, and rational engineering of protein function. 
 
-Binding sites have been associated with surface clefts or cavities such catalytic site in enzymes. Often times such sites were deeply buried in the protein structures that made it difficult to locate merely by visual inspection. Before we delve in the methods to identify binding sites on proteins, we first mention, albeit briefly, the different types of binding sites: 
+Binding sites have been associated with surface clefts or cavities, such as the catalytic site in enzymes. Oftentimes, such sites were deeply buried within protein structures, making them difficult to locate by visual inspection alone. Before we delve into the methods to identify binding sites on proteins, we first mention, albeit briefly, the different types of binding sites: 
 \begin{itemize}
-    \item \textit{Orthosteric}: A site where endogenous ligands bind. For example a substrate binds to the catalytic center of an enzyme, here the catalytic site is an orthosteric site. 
+    \item \textit{Orthosteric}: A site where endogenous ligands bind. For example, a substrate binds to the catalytic centre of an enzyme; here, the catalytic site is orthosteric. 
     \item \textit{Allosteric}: A site located distal from the orthosteric site, however, is coupled to function via conformational networks.
     \item \textit{Protein--protein interfaces}: A site, often shallow and extended patches, that is formed when at least two proteins interact. 
-    \item \textit{Cryptic pockets}: Binding cavities that are not apparent in the apo structures, however, their formation is linked ligand-induced conformational changes.
-    \item \textit{Transient pockets}: Binding cavities that appear and disappear on short timescales along the equilibrium dynamics of the protein, these may or may not be ligand-induced. 
+    \item \textit{Cryptic pockets}: Binding cavities that are not apparent in the apo structures; however, their formation is linked to ligand-induced conformational changes.
+    \item \textit{Transient pockets}: Binding cavities that appear and disappear on short timescales along the equilibrium dynamics of the protein; these may or may not be ligand-induced. 
 \end{itemize}
-It remains challenging to locate such sites with experimental techniques alone. In practice, a unusual affinity value or structure-active data warrants deeper exploration with the help of computational methods. Over the last three decades, more than fifty distinct computational methods have been developed for protein--ligand binding site prediction, with a clear evolution from purely geometry-based approaches to modern deep-learning models that integrate sequence, structure, and dynamics information.\cite{CH5_ghersi2011beyond,CH5_zhao2020exploring,CH5_LeGuilloux2009}
+It remains challenging to locate such sites solely through experimental techniques. In practice, an unusual affinity value or structure-active data warrants deeper exploration with the help of computational methods. Over the last three decades, more than fifty distinct computational methods have been developed for protein--ligand binding site prediction, with a clear evolution from purely geometry-based approaches to modern deep-learning models that integrate sequence, structure, and dynamics information.\cite{CH5_ghersi2011beyond,CH5_zhao2020exploring,CH5_LeGuilloux2009}
 
-This chapter provides a detailed overview of methods to identify binding sites on proteins, focusing on conceptual and theoretical foundations of binding pockets, sequence-based and static structure-based approaches, machine-learning and deep-learning methods, and molecular dynamics-based methods that are instrumental in locating hard to find cryptic and transient pockets. We attempt to provide a clear practical methodology for validating such predicted sites, especially the elusive cryptic or transient pockets.
+This chapter provides a detailed overview of methods for identifying binding sites on proteins, focusing on the conceptual and theoretical foundations of binding pockets, sequence-based and static-structure-based approaches, machine-learning and deep-learning methods, and molecular dynamics-based methods that are instrumental for locating hard-to-find cryptic and transient pockets. We aim to provide a clear, practical methodology for validating predicted sites, especially elusive cryptic or transient pockets.
 
 
 \section{Definitions}
@@ -47,10 +47,10 @@ Since computational methods rely on quantitative descriptors of a pocket, one mi
     \item Volume V and surface area A.
     \item Depth and exposure, computed as fraction of buried v/s solvent-exposed surface.
     \item Shape descriptors such as sphericity, elongation, roughness.
-    \item Physico-chemical composition such hydrophobic/hydrophilic balance, hydrogen-bond donors/acceptors, charge distribution.
+    \item Physico-chemical composition, such as hydrophobic/hydrophilic balance, hydrogen-bond donors/acceptors, charge distribution.
 \end{itemize}
 
-Once a potential site is identified, the next challenge one must overcome is to differentiate pockets that are amenable to smalll molecule binding and modulation of the protein's activity. This leads us to the concept of druggability. Druggability scores typically combine descriptors of size, shape, and physico-chemical complementarity into an empirical function validated against known drug-binding pockets.\cite{CH5_Halgren2009,CH5_LeGuilloux2009} For example, many tools adopt a linear model of the form
+Once a potential site is identified, the next challenge is to differentiate pockets that are amenable to small-molecule binding and modulation of the protein's activity. This leads us to the concept of druggability. Druggability scores typically combine descriptors of size, shape, and physico-chemical complementarity into an empirical function validated against known drug-binding pockets.\cite{CH5_Halgren2009,CH5_LeGuilloux2009}. For example, many tools adopt a linear model of the form
 \begin{equation}
 D = w_V V + w_A A_{\mathrm{hyd}} + w_P P_{\mathrm{pol}} + w_H H_{\mathrm{bd}} + b,
 \label{eq:druggability}
@@ -59,38 +59,38 @@ where V is pocket volume, $A_{\mathrm{hyd}}$ hydrophobic surface area, $P_{\math
 
 \section{Thermodynamic aspects of binding sites}
 
-Protein--ligand binding is governed by the standard free energy of binding,
+Protein--the standard free energy of binding governs ligand binding,
 \begin{equation}
 \Delta G_{\mathrm{bind}} = -k_{\mathrm{B}} T \ln K_{\mathrm{a}} = k_{\mathrm{B}} T \ln K_{\mathrm{d}},
 \label{eq:dg_bind}
 \end{equation}
-where $K_{\mathrm{a}}$ and $(K_{\mathrm{d}}$ are the association and dissociation constants, respectively, $k_{\mathrm{B}}$ is Boltzmann's constant, and T is the absolute temperature. A favorable binding site is one for which specific protein--ligand interactions yield a large negative $\Delta G_{\mathrm{bind}}$, arising from enthalpic, and entropic contributions. (See the chapter on scoring function for more detailed discussion (\textbf{link to scoring function chapter}))
+where $K_{\mathrm{a}}$ and $(K_{\mathrm{d}}$ are the association and dissociation constants, respectively, $k_{\mathrm{B}}$ is Boltzmann's constant, and T is the absolute temperature. A favourable binding site is one for which specific protein--ligand interactions yield a large negative $\Delta G_{\mathrm{bind}}$, arising from enthalpic and entropic contributions. (See the chapter on scoring function for more detailed discussion (\textbf{link to scoring function chapter}))
 
 At the microscopic level, a classical force-field description approximates the non-bonded interaction energy between a protein atom i and a ligand atom j as
 \begin{equation}
 E_{ij} = 4\epsilon_{ij} \left[ \left(\frac{\sigma_{ij}}{r_{ij}} \right)^{12} - \left( \frac{\sigma_{ij}}{r_{ij}} \right)^6 \right] + \frac{q_i q_j}{4\pi \varepsilon_0 \varepsilon_r r_{ij}},
 \label{eq:lj_coulomb}
 \end{equation}
-where $\epsilon_{ij}$ and Z$\sigma_{ij}$ are Lennard--Jones parameters, $r_{ij}$ is the interatomic distance, $q_i$ and $q_j$ partial charges, and $\varepsilon_r$ is the effective dielectric constant. Energy-based pocket identification methods exploit such functional forms using molecular probes or small fragments around the protein and computing favorable regions in terms of interaction energy or approximate binding free energy.\cite{CH5_Ngan2012,CH5_Halgren2009}
+where $\epsilon_{ij}$ and Z$\sigma_{ij}$ are Lennard--Jones parameters, $r_{ij}$ is the interatomic distance, $q_i$ and $q_j$ partial charges, and $\varepsilon_r$ is the effective dielectric constant. Energy-based pocket identification methods exploit such functional forms using molecular probes or small fragments around the protein and computing favourable regions in terms of interaction energy or approximate binding free energy.\cite{CH5_Ngan2012,CH5_Halgren2009}
 
 \subsection{Static v/s dynamic view of the binding sites}
 
-A binding site prediction focused on static structures, typically X-ray crystal structures of the apo protein or a homolog. However, we know that proteins are inherently dynamic, sampling comformational ensembles in accordance with the Boltzmann distribution,
+A binding site prediction focused on static structures, typically X-ray crystal structures of the apo protein or a homolog. However, we know that proteins are inherently dynamic, sampling conformational ensembles in accordance with the Boltzmann distribution,
 \begin{equation}
 p(\mathbf{R}) = \frac{1}{Z} \exp \left[ - \beta U(\mathbf{R}) \right], \quad \beta = \frac{1}{k_{\mathrm{B}} T},
 \label{eq:boltzmann_ensemble}
 \end{equation}
-where $\mathbf{R}$ denotes the set of atomic coordinates, $U(\mathbf{R})$ the potential energy, and $Z$ the partition function. Cryptic and transient pockets emerge as low population members of this ensemble: they may not be visible in any single experimental structure. However, they can be captured by sufficiently extensive molecular dynamics simulations with the help of enhanced samppling algorithms.\cite{CH5_Kuzmanic2020,CH5_Gasparikova2025}
+where $\mathbf{R}$ denotes the set of atomic coordinates, $U(\mathbf{R})$ the potential energy, and $Z$ the partition function. Cryptic and transient pockets emerge as low population members of this ensemble: they may not be visible in any single experimental structure. However, they can be captured through sufficiently extensive molecular dynamics simulations using enhanced sampling algorithms\cite{CH5_Kuzmanic2020,CH5_Gasparikova2025}.
 
-Two schools of thought explain the mechanistic possibilities. One states that the protein transiently samples an open conformation that is favorable for ligand to enter and bind. While the other states that the ligand induces a conformational change in the protein structure while approaching the proteins. This new conformation is stabilised by the ligand binding.  In practice, both mechanisms likely coexist, and many computational methods are implicitly tuned to detect pockets that are populated in one or both regimes.
+Two schools of thought explain the mechanistic possibilities. One states that the protein transiently samples an open conformation that is favourable for the ligand to enter and bind. While the other states that the ligand induces a conformational change in the protein structure as it approaches the protein. The ligand binding stabilises this new conformation. In practice, both mechanisms likely coexist, and many computational methods are implicitly tuned to detect pockets that are populated in either regime.
 
 \section{Sequence-Based binding site prediction}
 
-When only the amino acid sequence is available, or when structural models are uncertain, sequence-based methods provide an efficient approach to binding site prediction. These methods are important in the context of large scale proteome annotation and for targets that lack high resolution structures.
+When only the amino acid sequence is available, or when structural models are uncertain, sequence-based methods provide an efficient approach to binding site prediction. These methods are important for large-scale proteome annotation and for targets lacking high-resolution structures.
 
 \subsection{Conservation and motif-based approaches}
 
-Functionally important residues, including those forming binding sites, often exhibit higher evolutionary conservation than the surrounding surface. Given a multiple sequence alignment (MSA) of homologous sequences, positional conservation can be quantified using the Shannon entropy,
+Functionally important residues, including those that form binding sites, often exhibit greater evolutionary conservation than the surrounding surface. Given a multiple sequence alignment (MSA) of homologous sequences, positional conservation can be quantified using the Shannon entropy,
 \begin{equation}
 H(i) = - \sum_{a} p_i(a) \log p_i(a),
 \label{eq:shannon_entropy}
@@ -114,9 +114,9 @@ For instance, a logistic regression model uses
 P(y_i = 1 \mid \mathbf{x}_i) = \sigma(\mathbf{w}^\top \mathbf{x}_i + b) = \frac{1}{1 + \exp(-\mathbf{w}^\top \mathbf{x}_i - b)},
 \label{eq:logistic_regression}
 \end{equation}
-where $y_i \in \{0,1\}$ indicates non-binding or binding residue, $\mathbf{w}$ and b are model parameters, and $\sigma$ is the logistic function. More powerful models employ random forests, gradient-boosted trees, or deep neural networks trained to minimize cross entropy loss over labeled residues.
+where $y_i \in \{0,1\}$ indicates non-binding or binding residue, $\mathbf{w}$ and b are model parameters, and $\sigma$ is the logistic function. More powerful models employ random forests, gradient-boosted trees, or deep neural networks trained to minimise cross-entropy loss over labelled residues.
 
-Sequence-based methods are attractive due to their speed and ability to generalize across distant homologs. However, they are unable to directly capture 3D pocket geometry or subtle differences between alternative conformational states.\cite{CH5_ghersi2011beyond,CH5_zhao2020exploring}
+Sequence-based methods are attractive due to their speed and ability to generalise across distant homologs. However, they cannot directly capture 3D pocket geometry or subtle differences between alternative conformational states.\cite{CH5_ghersi2011beyond,CH5_zhao2020exploring}
 
 \section{Static Structure-based methods}
 
@@ -132,7 +132,7 @@ Structure-based binding site identification assumes that a 3D structure of the t
 
 \subsubsection{Surface and Grid Representations}
 
-The most common starting point is the solvent-excluded surface (SES) or Connolly surface, obtained by rolling a probe sphere, typically radius 1.4 \r{A} over the van der Waals surface of the protein. Cavities and pockets correspond to concave regions of this surface. Alternatively, methods discretize space into a 3D grid, and classify grid points according to whether they lie inside the protein, in solvent, or in putative cavities.\cite{CH5_LeGuilloux2009,CH5_zhao2020exploring}
+The most common starting point is the solvent-excluded surface (SES) or Connolly surface, obtained by rolling a probe sphere, typically radius 1.4 \r{A} over the van der Waals surface of the protein. Cavities and pockets correspond to concave regions of this surface. Alternatively, methods discretise space into a 3D grid and classify grid points as lying inside the protein, in solvent, or in putative cavities.\cite{CH5_LeGuilloux2009,CH5_zhao2020exploring}
 
 A simple grid-based method represents the protein by a binary occupancy function $O(\mathbf{r})$ defined on the grid points $\mathbf{r}_k$,
 \begin{equation}
@@ -143,14 +143,14 @@ O(\mathbf{r}_k) =
 \end{cases}
 \label{eq:grid_occupancy}
 \end{equation}
-where $\mathbf{R}_j$ and $r_{\mathrm{vdW},j}$ are the coordinates and van der Waals radius of atom j. Pocket points are identified as solvent exposed grid points adjacent to protein, however, enclosed from the bulk solvent.\cite{CH5_Brylinski2008FINDSITE}
+where $\mathbf{R}_j$ and $r_{\mathrm{vdW},j}$ are the coordinates and van der Waals radius of atom j. Pocket points are identified as solvent-exposed grid points adjacent to the protein, but enclosed from the bulk solvent.\cite{CH5_Brylinski2008FINDSITE}
 
 \subsubsection{Alpha Shapes, Voronoi Diagrams, and Fpocket}
 
 More sophisticated geometric approaches employ alpha shapes and Voronoi diagrams. In brief, Voronoi tessellation partitions the space into cells around each atom; the dual graph is the Delaunay triangulation. An \emph{alpha complex} is then constructed by retaining only simplices (vertices, edges, tetrahedra) with circumspheres of radius less than a chosen parameter $\alpha$. Cavities correspond to voids in this alpha complex.\cite{CH5_LeGuilloux2009}
 
-Fpocket is another widely used geometry-based method that detects pockets by clustering so-called \emph{alpha spheres}. The spheres that are tangent to four protein atoms, and contain no other atomic centers.\cite{CH5_LeGuilloux2009} 
-Fpocket search begins with computing an initial set of alpha spheres from a Voronoi tessellation. Followed by filtering the alpha spheres based on radius to select those likely to represent pocket-like voids. Next, it generates clusters of nearby alpha spheres into pockets using distance-based clustering method. Lastly, it calculates pocket descriptors,such as volume, polarity, hydrophobicity, and assigns a druggability score using a linear model reminiscent of Equation~\ref{eq:druggability}.
+FPocket is another widely used geometry-based method that detects pockets by clustering so-called \emph{alpha spheres}. The spheres that are tangent to four protein atoms, and contain no other atomic centers.\cite{CH5_LeGuilloux2009} 
+FPocket search begins with computing an initial set of alpha spheres from a Voronoi tessellation. Followed by filtering the alpha spheres based on radius to select those likely to represent pocket-like voids. Next, it generates clusters of nearby alpha spheres into pockets using a distance-based clustering method. Lastly, it calculates pocket descriptors, such as volume, polarity, and hydrophobicity, and assigns a druggability score using a linear model reminiscent of Equation~\ref{eq:druggability}.
 
 
 \subsubsection{Scale Space and Difference of Gaussians (DoGSite)}
@@ -164,18 +164,18 @@ where $G$ is a Gaussian kernel of width $\sigma$ and * denotes convolution, high
 
 \subsection{Energy-based and Probe mapping methods}
 
-Geometry alone does not guarantee druggability; some pockets may be geometrically prominent yet energetically unfavorable for ligand binding, e.g., highly polar, fully solvent exposed grooves. Energy-based approaches address this by mapping interaction energies of small probe molecules onto the protein surface.
+Geometry alone does not guarantee druggability; some pockets may be geometrically prominent yet energetically unfavourable for ligand binding, e.g., highly polar, fully solvent-exposed grooves. Energy-based approaches address this by mapping interaction energies of small probe molecules onto the protein surface.
 
 \subsubsection{FTSite and FTMap}
 
-FTSite is an energy-based binding site identification method built on the FTMap fragment mapping algorithm.\cite{CH5_Ngan2012} The basic steps are:
+FTSite is an energy-based binding-site identification method built on the FTMap fragment-mapping algorithm.\cite{CH5_Ngan2012} The basic steps are:
 \begin{enumerate}
     \item A set of diverse small organic probe molecules, representing different chemotypes, is docked or sampled exhaustively over the protein surface, using a rigid-body search and fast Fourier transform (FFT) score.
-    \item For each probe type, low energy poses are clustered to identify \emph{consensus sites}.
+    \item For each probe type, low-energy poses are clustered to identify \emph{consensus sites}.
     \item Consensus clusters across different probe types are combined to yield binding hot spots. These clusters of hot spots define putative ligand binding sites.
 \end{enumerate}
 
-In essence, FTSite approximates the probability density of finding favorable protein--ligand interactions as
+In essence, FTSite approximates the probability density of finding favourable protein-ligand interactions as
 \begin{equation}
 p(\mathbf{r}) \propto \sum_{m} \sum_{k \in \mathcal{C}_m} \exp \left[ - \beta E_{mk} \right] \delta(\mathbf{r} - \mathbf{r}_{mk}),
 \label{eq:ftsite_density}
@@ -184,11 +184,11 @@ where $m$ indexes probe types, $k$ configurations within cluster $\mathcal{C}_m$
 
 \subsubsection{Grid-based interaction fields}
 
-An alternative is to compute grid-based interaction fields (IFPs or $\Delta G$ grids) with one or more probe types, such as hydrophobic carbon, hydrogen-bond donor/acceptor, cation, anion. At each grid point $\mathbf{r}_k$, one evaluates an approximate interaction free energy $\Delta G_t(\mathbf{r}_k)$ for probe type t. Sites with multiple grid points where $\Delta G_t$ is strongly favorable across complementary probe types are identified as binding hot spots. Such approaches underlie commercial tools like SiteMap.\cite{CH5_Halgren2009}
+An alternative is to compute grid-based interaction fields (IFPs or $\Delta G$ grids) with one or more probe types, such as hydrophobic carbon, hydrogen-bond donor/acceptor, cation, or anion. At each grid point $\mathbf{r}_k$, one evaluates an approximate interaction free energy $\Delta G_t(\mathbf{r}_k)$ for probe type t. Sites with multiple grid points where $\Delta G_t$ is strongly favourable across complementary probe types are identified as binding hot spots. Such approaches underlie commercial tools like SiteMap.\cite{CH5_Halgren2009}
 
 \subsection{Template- and Motif-Based Structural Methods}
 
-Template-based methods exploit the observation that binding sites tend to be more conserved in the structure than overall folds. Given a query protein, these algorithms:
+Template-based methods exploit the observation that binding sites tend to be more conserved within a structure than across overall folds. Given a query protein, these algorithms:
 \begin{enumerate}
     \item Maintain a library of known binding sites described as local structural motifs, e.g., sets of residues with specific geometric and chemical patterns.
     \item Superpose these motifs onto the query structure using local or global alignment of backbone or side-chain atoms.
@@ -197,19 +197,19 @@ Template-based methods exploit the observation that binding sites tend to be mor
 
 FINDSITE, for example, uses threading to identify distant homologs in the PDB and then transfers binding site information based on conserved ligand-binding residues across structurally aligned templates.\cite{CH5_Brylinski2008FINDSITE} SiteMotif uses graph-based pattern recognition to derive recurrent structural motifs of ligand binding sites and then searches for their occurrences in target proteins.\cite{CH5_SiteMotif2022}
 
-Template-based approaches can detect subtle pockets that would be difficult to identify by geometry alone, particularly, for cofactors or metal-binding sites. Their limitations include dependence on the coverage and diversity of template libraries, and potential bias toward well-studied folds.\cite{CH5_ghersi2011beyond}
+Template-based approaches can detect subtle pockets that would be difficult to identify solely from geometry, particularly for cofactors or metal-binding sites. Their limitations include dependence on the coverage and diversity of template libraries and potential bias toward well-studied folds.\cite{CH5_ghersi2011beyond}
 
 \section{Machine Learning and Deep Learning for Binding Site Prediction}
 
 \subsection{Machine Learning on Geometric Cavities}
 
-A natural progression from purely geometric methods is to combine geometric cavity detection with supervised learning that distinguishes true ligand binding pockets from other surface concavities. Methods such as P2Rank and related tools follow this paradigm.\cite{CH5_Krivak2018,CH5_zhao2020exploring}
+A natural progression from purely geometric methods is to combine geometric cavity detection with supervised learning to distinguish true ligand-binding pockets from other surface concavities. Methods such as P2Rank and related tools follow this paradigm.\cite{CH5_Krivak2018,CH5_zhao2020exploring}
 
-A typical workflow comprises of:
+A typical workflow comprises:
 \begin{enumerate}
     \item Detect all candidate cavities using a geometric method, e.g., Fpocket, DoGSite, custom grid-based algorithms.
     \item Compute cavity level descriptors: volume, depth, hydrophobicity, electrostatics, residue composition, backbone rigidity, secondary structure, and conservation scores.
-    \item Train a classifier on labeled data of binding v/s non-binding cavities to predict a probability of being a ligand-binding site.
+    \item Train a classifier on labelled data of binding v/s non-binding cavities to predict a probability of being a ligand-binding site.
 \end{enumerate}
 
 
@@ -228,11 +228,11 @@ y_{c'}(\mathbf{r}) = \sigma \left( \sum_{c} \sum_{\boldsymbol{\delta}} W_{c',c}(
 \end{equation}
 where $x_c$ and $y_{c'}$ are input and output feature maps,$W_{c',c}$ is a learnable 3D kernel, $\boldsymbol{\delta}$ indexes positions within the kernel, and $\sigma$ is a non-linear activation. Stacks of such layers capture increasingly global spatial patterns, and the network is trained to output voxel-level probabilities of being inside a binding site.\cite{CH5_mou2025deep}
 
-Methods like DeepSite and Kalasanty employ this strategy, yielding high resolution pocket segmentation and druggability estimates.\cite{CH5_zhao2020exploring,CH5_mou2025deep}
+Methods like DeepSite and Kalasanty employ this strategy, yielding high-resolution pocket segmentation and druggability estimates.\cite{CH5_zhao2020exploring,CH5_mou2025deep}
 
 \subsubsection{Surface and Point-Cloud Networks}
 
-Protein surfaces can be represented as point clouds or meshes with associated features, for example, curvature, electrostatic potential, residue identity. Graph-based or point-based networks, like PointNet, DGCNN variants, can operate directly on these representations. For instance, point-based architectures convert atoms into a point cloud and apply U-Net-like structures with sparse 3D convolutions to segment binding regions on protein or protein–-protein interfaces.\cite{CH5_mou2025deep}
+Protein surfaces can be represented as point clouds or meshes, each with associated features such as curvature, electrostatic potential, and residue identity. Graph-based or point-based networks, such as PointNet and DGCNN variants, can operate directly on these representations. For instance, point-based architectures convert atoms into a point cloud and apply U-Net-like architectures with sparse 3D convolutions to segment binding regions on protein–protein interfaces.\cite{CH5_mou2025deep}
 
 \subsection{Graph Neural Networks and Geometric Deep Learning}
 
@@ -247,7 +247,7 @@ GNNs are particularly appealing for cryptic and allosteric site prediction when 
 
 \subsection{Deep Learning on Sequences and Structures}
 
-Advances in protein language models, such as ESM, ProtBert, and structure prediction methods like AlphaFold, and RoseTTAFold have enabled hybrid models that combine sequence embeddings and structural features.\cite{CH5_mou2025deep} A typical architecture might:
+Advances in protein language models, such as ESM and ProtBert, and in structure prediction methods like AlphaFold and RoseTTAFold have enabled hybrid models that combine sequence embeddings and structural features.\cite{CH5_mou2025deep} A typical architecture might:
 \begin{itemize}
     \item Encode the sequence using a transformer-based language model to obtain residue embeddings $\mathbf{s}_i$.
     \item Encode the 3D structure or predicted distance maps into structural embeddings $\mathbf{t}_i$.
@@ -259,7 +259,7 @@ The attention mechanism computes
 \mathrm{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \mathrm{softmax} \left( \frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d_k}} \right) \mathbf{V},
 \label{eq:attention}
 \end{equation}
-where queries $\mathbf{Q}$, keys $\mathbf{K}$, and values $\mathbf{V}$ are linear projections of $\{\mathbf{s}_i$, $\mathbf{t}_i\}$, and $d_k$ is the key dimension. Such models can naturally learn long-range couplings between residues, which are essential for recognizing distributed allosteric networks and extended binding sites.\cite{CH5_mou2025deep}
+where queries $\mathbf{Q}$, keys $\mathbf{K}$, and values $\mathbf{V}$ are linear projections of $\{\mathbf{s}_i$, $\mathbf{t}_i\}$, and $d_k$ is the key dimension. Such models can naturally learn long-range couplings between residues, which are essential for recognising distributed allosteric networks and extended binding sites.\cite{CH5_mou2025deep}
 
 \section{Dynamics-Based Methods and Cryptic/Transient Pockets}
 
@@ -267,7 +267,7 @@ Static approaches can capture only pockets present in a single conformation. The
 
 \subsection{Classical Molecular Dynamics and Pocket Ensembles}
 
-Standard MD simulations generate time series of atomic coordinates $\{\mathbf{R}(t)\}$ by integrating Newton’s equations of motion under a molecular mechanics force field (See chapter on MD simulations for detailed explanation \textbf{Link to MD chapter}). Pocket analysis tools such as MDpocket or TRAPP can  detect cavities in each snapshot and accumulate statistics over the trajectory.\cite{CH5_Kuzmanic2020,CH5_Gasparikova2025}
+Standard MD simulations generate time series of atomic coordinates $\{\mathbf{R}(t)\}$ by integrating Newton's equations of motion under a molecular mechanics force field (See chapter on MD simulations for detailed explanation \textbf{Link to MD chapter}). Pocket analysis tools such as MDpocket or TRAPP can detect cavities in each snapshot and accumulate statistics over the trajectory.\cite{CH5_Kuzmanic2020,CH5_Gasparikova2025}
 
 Let $\mathcal{P}_s$ denote the set of grid points assigned to pocket p in snapshot s. The occupancy of grid point k by pocket p over a trajectory of S snapshots is
 \begin{equation}
@@ -280,7 +280,7 @@ Pocket volume distributions over time, $P_p(V)$, provide insight into the dynami
 
 \subsection{Cosolvent and Mixed-Solvent MD}
 
-Mixed-solvent MD (MSMD), also called cosolvent MD, enhances sampling of binding hot spots by adding small organic probes, like isopropanol, acetonitrile, benzene, at low molar fractions to the aqueous solvent.\cite{CH5_Kuzmanic2020,CH5_Gasparikova2025} Probes preferentially accumulate in regions of the protein that can favorably accommodate hydrophobic or polar groups, thereby highlighting potential binding sites.
+Mixed-solvent MD (MSMD), also called cosolvent MD, enhances sampling of binding hot spots by adding small organic probes, like isopropanol, acetonitrile, and benzene, at low molar fractions to the aqueous solvent.\cite{CH5_Kuzmanic2020,CH5_Gasparikova2025} Probes preferentially accumulate in regions of the protein that can favourably accommodate hydrophobic or polar groups, thereby highlighting potential binding sites.
 
 The probe density for species t at grid point $\mathbf{r}_k$ is estimated as
 \begin{equation}
@@ -289,13 +289,13 @@ The probe density for species t at grid point $\mathbf{r}_k$ is estimated as
 \end{equation}
 where $\mathcal{M}_t(s)$ is the set of probe molecules of type t at snapshot s, $\mathbf{r}_m(s)$ their coordinates, and $r_{\mathrm{cut}}$ a cutoff distance. Hot spots are defined as regions where $\rho_t(\mathbf{r}_k)$ exceeds a threshold for one or more probe types.
 
-MSMD provides both location of hot spots, and dynamic information such as occupation times, opening frequencies. However, cryptic pockets that require large backbone movements may still be considered rare events even with cosolvents. Such rare event sampling warrantes the use of enhanced sampling (Section~\ref{sec:enhanced_sampling}) and recent developments such as CrypToth, which integrate MSMD with topological data analysis.\cite{CH5_koseki2025cryptoth,CH5_Gasparikova2025}
+MSMD provides both the location of hot spots and dynamic information such as occupation times and opening frequencies. However, cryptic pockets that require large backbone movements may still be considered rare events even with cosolvents. Such rare event sampling warrants the use of enhanced sampling (Section \ref{sec:enhanced_sampling}) and recent developments such as CrypToth, which integrate MSMD with topological data analysis.\cite{CH5_koseki2025cryptoth,CH5_Gasparikova2025}
 
 
 \subsection{Enhanced Sampling Methods}
 \label{sec:enhanced_sampling}
 
-Enhanced sampling techniques aim to accelerate sampling of conformational space beyond timescales accessible to classical MD simulations. For cryptic pocket discovery, the rare events are transitions between closed and open pocket conformations that might need large backbone movements or rotation of buried residues with significantly large barrier. Methods include accelerated MD, metadynamics, Hamiltonian scaling, e.g., SWISH, SWISH-X, and weighted-ensemble MD.\cite{CH5_Kuzmanic2020,CH5_Borsatto2024SWISHX,CH5_zhang2026decrypting}
+Enhanced sampling techniques aim to accelerate sampling of conformational space beyond timescales accessible to classical MD simulations. For cryptic pocket discovery, rare events are transitions between closed and open pocket conformations that may require large backbone movements or the rotation of buried residues with significantly large barriers. Methods include accelerated MD, metadynamics, Hamiltonian scaling, e.g., SWISH, SWISH-X, and weighted-ensemble MD.\cite{CH5_Kuzmanic2020,CH5_Borsatto2024SWISHX,CH5_zhang2026decrypting}
 
 \subsubsection{Accelerated MD and Ligand-Mapping MD}
 
@@ -315,7 +315,7 @@ where $\alpha$ controls the degree of acceleration. This flattens energy wells, 
 
 \subsubsection{SWISH / SWISH-X}
 
-The SWISH (Sampling Water Interfaces through Scaled Hamiltonians) protocol scales protein--water interactions to facilitate opening of hydrophobic pockets by effectively making water less favorable at certain interfaces.\cite{CH5_Kuzmanic2020} In SWISH-X, SWISH is combined with On-the-fly Probability Enhanced Sampling (OPES) MultiThermal to improve sampling across a spectrum of effective temperatures.\cite{CH5_Borsatto2024SWISHX} These methods explore an ensemble of modified Hamiltonians,
+The SWISH (Sampling Water Interfaces through Scaled Hamiltonians) protocol scales protein--water interactions to facilitate opening of hydrophobic pockets by effectively making water less favourable at certain interfaces.\cite{CH5_Kuzmanic2020} In SWISH-X, SWISH is combined with On-the-fly Probability Enhanced Sampling (OPES) MultiThermal to improve sampling across a spectrum of effective temperatures.\cite{CH5_Borsatto2024SWISHX}. These methods explore an ensemble of modified Hamiltonians,
 \begin{equation}
 U_{\lambda}(\mathbf{R}) = U_{\mathrm{protein}}(\mathbf{R}) + \lambda U_{\mathrm{protein-water}}(\mathbf{R}) + U_{\mathrm{water}}(\mathbf{R}),
 \end{equation}
@@ -330,14 +330,14 @@ Weighted-ensemble (WE) MD methods focus computational effort on rare transitions
 
 \subsubsection{Markov State Models}
 
-Extended MD simulations analyzed with Markov state models (MSMs) have been used to dissect cryptic pocket opening mechanisms and kinetics.\cite{CH5_Kuzmanic2020,CH5_Gasparikova2025} In an MSM, the conformational space is discretized into states, such as microstates based on structural clustering, and a transition probability matrix $\mathbf{T}(\tau)$ is estimated for lag time $\tau$,
+Extended MD simulations analysed with Markov state models (MSMs) have been used to dissect the mechanisms and kinetics of cryptic pocket opening\cite{CH5_Kuzmanic2020,CH5_Gasparikova2025}. In an MSM, the conformational space is discretised into states, such as microstates, based on structural clustering, and a transition probability matrix $\mathbf{T}(\tau)$ is estimated for lag time $\tau$,
 \begin{equation}
 T_{ij}(\tau) = P(\text{state } j \text{ at } t + \tau \mid \text{state } i \text{ at } t).
 \label{eq:msm}
 \end{equation}
-Diagonalization of $\mathbf{T}$ yields implied timescales for slow processes, including pocket opening and closing. MSMs can reveal which conformational pathways lead to cryptic pocket formation and identify gating residues whose motions control access.\cite{CH5_Kuzmanic2020}
+Diagonalisation of $\mathbf{T}$ yields implied timescales for slow processes, including pocket opening and closing. MSMs can reveal which conformational pathways lead to cryptic pocket formation and identify gating residues whose motions control access.\cite{CH5_Kuzmanic2020}
 
-Enhanced-sampling simulations such as SWISH, SWISH-X, and aLMMD can be analyzed similarly, though careful reweighting is required to extract unbiased kinetics.\cite{CH5_Ng2022aLMMD,CH5_Borsatto2024SWISHX,CH5_zhang2026decrypting}
+Enhanced-sampling simulations such as SWISH, SWISH-X, and aLMMD can be analysed similarly, though careful reweighting is required to extract unbiased kinetics.\cite{CH5_Ng2022aLMMD,CH5_Borsatto2024SWISHX,CH5_zhang2026decrypting}
 
 \subsubsection{Data-Centric and Exposon-Based Methods}
 
@@ -347,7 +347,7 @@ Formally, one may compute a correlation matrix $C_{ij}$ of SASA fluctuations,
 \begin{equation}
 C_{ij} = \frac{\langle \delta A_i(t) \, \delta A_j(t) \rangle}{\sqrt{\langle \delta A_i(t)^2 \rangle \langle \delta A_j(t)^2 \rangle}},
 \end{equation}
-cluster residues based on $C_{ij}$, and then analyze structural mapping of these clusters to identify putative cryptic pockets.\cite{CH5_amaro2019will,CH5_Kuzmanic2020}
+cluster residues based on $C_{ij}$, and then analyse structural mapping of these clusters to identify putative cryptic pockets.\cite{CH5_amaro2019will,CH5_Kuzmanic2020}
 
 \subsubsection{CrypToth: MSMD with Topological Data Analysis}
 
@@ -357,11 +357,11 @@ Mathematically, persistent homology constructs a filtration of simplicial comple
 
 \section{Validation of Predicted Binding Sites}
 
-Prediction alone is insufficient; computationally identified sites must be validated and prioritized for using as the plausible site for molecular docking. Validation strategies span internal consistency checks, benchmarking against known datasets, energetic analyses, evolutionary evidence, and direct experimental measurements.
+Prediction alone is insufficient; computationally identified sites must be validated and prioritised for use as plausible molecular docking sites. Validation strategies span internal consistency checks, benchmarking against known datasets, energetic analyses, evolutionary evidence, and direct experimental measurements.
 
 \subsection{Benchmarking and Performance Metrics}
 
-Comparative evaluations of binding site predictors have standardized performance metrics and benchmark datasets.\cite{CH5_ghersi2011beyond,CH5_zhao2020exploring} Given a protein with one or more known binding sites and a predictor that outputs a ranked list of candidate pockets, common metrics include:
+Comparative evaluations of binding site predictors have standardised performance metrics and benchmark datasets.\cite{CH5_ghersi2011beyond,CH5_zhao2020exploring} Given a protein with one or more known binding sites and a predictor that outputs a ranked list of candidate pockets, common metrics include:
 \begin{itemize}
     \item Top N recall: fraction of proteins for which at least one true binding site overlaps with the top N predicted sites.
     \item Precision and recall at residue or grid-point level:
@@ -369,7 +369,7 @@ Comparative evaluations of binding site predictors have standardized performance
     \mathrm{Precision} = \frac{TP}{TP + FP}, \quad \mathrm{Recall} = \frac{TP}{TP + FN},
     \label{eq:precision_recall}
     \end{equation}
-    where TP are true positives (correctly predicted binding residues), FP false positives, and FN false negatives.
+    where TP are true positives (correctly predicted binding residues), FP are false positives, and FN are false negatives.
     \item \textbf{F1-score}:
     \begin{equation}
     F_1 = 2 \frac{\mathrm{Precision} \times \mathrm{Recall}}{\mathrm{Precision} + \mathrm{Recall}}.
@@ -381,10 +381,10 @@ Comparative evaluations of binding site predictors have standardized performance
 A validation step is to compare results across multiple methods:
 \begin{itemize}
     \item Agreement between geometry-based tools (Fpocket, DoGSite), energy-based mapping (FTSite, MSMD), and ML predictors (P2Rank, DL-based) supports the significance of a site.\cite{CH5_LeGuilloux2009,CH5_Volkamer2012,CH5_Krivak2018}
-    \item High cryptic pocket scores from PocketMiner or CryptoSite that coincide with pockets seen in enhanced MD or MSMD simulations improves confidence.\cite{CH5_meller2023predicting,CH5_Kuzmanic2020}
+    \item High cryptic pocket scores from PocketMiner or CryptoSite that coincide with pockets seen in enhanced MD or MSMD simulations improve confidence.\cite{CH5_meller2023predicting,CH5_Kuzmanic2020}
 \end{itemize}
 
-Consensus strategies can be formalized through ensemble averaging or voting schemes. For example, given method specific scores $s_m(p)$ for pocket p, a consensus score might be
+Consensus strategies can be formalised through ensemble averaging or voting schemes. For example, given method specific scores $s_m(p)$ for pocket p, a consensus score might be
 \begin{equation}
 S_{\mathrm{cons}}(p) = \sum_{m} \alpha_m \, \hat{s}_m(p),
 \end{equation}
@@ -394,12 +394,12 @@ where $\hat{s}_m$ are normalized scores and $\alpha_m$ weights chosen based on p
 
 Druggability assessment combines geometric and energetic information to estimate whether a pocket is likely to bind small molecules with high affinity.\cite{CH5_Halgren2009,CH5_LeGuilloux2009} Beyond empirical scoring (Equation~\ref{eq:druggability}), one can perform:
 \begin{itemize}
-    \item Docking of fragment libraries into the predicted site and analyze enrichment of high-scoring poses.
+    \item Docking of fragment libraries into the predicted site and analysing enrichment of high-scoring poses.
     \item Binding free energy estimates for representative ligands using end-point methods such as MM/GBSA:
     \begin{equation}
     \Delta G_{\mathrm{bind}}^{\mathrm{MM/GBSA}} = \langle E_{\mathrm{complex}} \rangle - \langle E_{\mathrm{protein}} \rangle - \langle E_{\mathrm{ligand}} \rangle + \Delta G_{\mathrm{solv}} - T \Delta S,
     \end{equation}
-    where $\langle E \rangle$ are average gas-phase energies and $\Delta G_{\mathrm{solv}}$ solvation contributions (often from a generalized Born model).
+    where $\langle E \rangle$ are average gas-phase energies and $\Delta G_{\mathrm{solv}}$ solvation contributions (often from a generalised Born model).
     \item Alchemical free energy calculations for ligand binding to different pockets or different conformational states (e.g., open v/s closed cryptic pocket) to quantify relative affinities.\cite{CH5_Kuzmanic2020,CH5_zhang2026decrypting}
 \end{itemize}
 
@@ -407,7 +407,7 @@ For cryptic or transient pockets, a key validation is whether ligands designed o
 
 \subsection{Evolutionary and Coevolutionary Signals}
 
-Mapping evolutionary conservation and co-evolutionary couplings onto predicted pockets provides orthogonal evidence of functional relevance.\cite{CH5_ghersi2011beyond} Highly conserved residues located within a predicted pocket suggest functional or regulatory roles. Co-evolutionary analysis (e.g., direct coupling analysis) can identify networks of residues that co-vary, many of which participate in allosteric pathways connecting distant sites to functional regions.
+Mapping evolutionary conservation and coevolutionary couplings onto predicted pockets provides orthogonal evidence of functional relevance.\cite{CH5_ghersi2011beyond} Highly conserved residues located within a predicted pocket suggest functional or regulatory roles. Coevolutionary analysis (e.g., direct coupling analysis) can identify networks of residues that co-vary, many of which participate in allosteric pathways connecting distant sites to functional regions.
 
 For cryptic pockets, conservation may be weaker, as these sites often confer specificity or allosteric regulation unique to subfamilies. Nonetheless, clusters of moderately conserved residues near cryptic pockets can signal evolutionary tuning of allosteric control.\cite{CH5_Gasparikova2025,CH5_zhang2026decrypting}
 
@@ -416,14 +416,14 @@ For cryptic pockets, conservation may be weaker, as these sites often confer spe
 
 \subsection{Static Structure-based workflow}
 
-For a newly determined structure (experimental or high quality computed structure model):
+For a newly determined structure (experimental or high-quality computed structure model):
 \begin{enumerate}
-    \item Preprocessing: assign protonation states, add missing side-chains or loops, and relax the structure with restrained MD or minimization.
+    \item Preprocessing: assign protonation states, add missing side-chains or loops, and relax the structure with restrained MD or minimisation.
     \item Geometry-based screening: run Fpocket, DoGSite, and related tools to identify surface pockets and obtain initial druggability scores.
-    \item Energy-based mapping: apply FTMap/FTSite or equivalent probe mapping to confirm energetically favorable hot spots within geometric pockets.
+    \item Energy-based mapping: apply FTMap/FTSite or equivalent probe mapping to confirm energetically favourable hot spots within geometric pockets.
     \item ML-based scoring: use P2Rank or similar ML predictors to re-rank pockets by druggability.
     \item Template search: compare against binding-site templates, such as SiteMotif, FINDSITE, to detect conserved motifs or cofactor sites.
-    \item Consensus and prioritization: integrate scores into a consensus ranking; select top candidates for docking or experimental follow-up.
+    \item Consensus and prioritisation: integrate scores into a consensus ranking; select top candidates for docking or experimental follow-up.
 \end{enumerate}
 
 \subsection{Dynamics-based workflow for Cryptic/Transient Pockets}
@@ -431,7 +431,7 @@ For a newly determined structure (experimental or high quality computed structur
 When cryptic or transient pockets are suspected in protein--protein interfaces, previously classified as undruggable targets, or kinases with known allosteric regulation:
 \begin{enumerate}
     \item Fast pre-screening: run PocketMiner or related ML tools to identify residues with high cryptic-pocket propensity.
-    \item Classical MD: perform multiple independent MD simulations and analyze pocket dynamics using MDpocket or similar tools, computing occupancy and volume distributions (Equation~\ref{eq:occupancy}).
+    \item Classical MD: perform multiple independent MD simulations and analyse pocket dynamics using MDpocket or similar tools, computing occupancy and volume distributions (Equation~\ref{eq:occupancy}).
     \item MSMD: run mixed-solvent MD with diverse molecular probes to map hot spots and correlate with dynamically opening pockets.
     \item Enhanced sampling: for rarely sampled pockets, apply SWISH-X, aLMMD, or WE MD to enhance sampling of opening events and estimate kinetics.
     \item Post hoc ML/TDA analysis: apply methods like CrypToth to rank MSMD hot spots and quantify cryptic pocket robustness using persistent homology and dynamic flexibility metrics.
