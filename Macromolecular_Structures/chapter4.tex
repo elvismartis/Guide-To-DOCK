@@ -20,13 +20,23 @@
 The questions we ask here are, why does the structure and its quality matter? How to check and validate its quality and correctness? And what are consistent and reliable metrics to depend on?  In many computational pipelines, structural models and their quality dictate the outcome and its accuracy. If the structure is wrong, poorly validated, or misinterpreted, such as wrong oligomeric state, mis-modelled ligand, missing loops, the entire workflow can be driven by artefacts rather than biology. Macromolecular structures in public databases, such as the Protein Data Bank (PDB), are not direct experimental observables; they are models derived from experimental data, and the knowledge of chemistry and physics\cite{CH4_Berman2000_PDB,CH4_wwpdb2019protein,CH4_karplus2012linking}.
 X-ray crystallography, single-particle cryo-electron microscopy (cryo-EM), and nuclear magnetic resonance (NMR) spectroscopy each provide different types and resolutions of structural information\cite{CH4_Evans2013_data_quality,CH4_Wang2015_structure_quality,CH4_Ulrich2008_BMRB}. Of course, each methodology has its own advantages and disadvantages. Some are resolved using modern computational software packages, while others warrant new experiments. Recently, deep learning-based methods such as AlphaFold have produced highly quality predicted models for large part of the proteome. However, these too have noticeable limitations\cite{CH4_Jumper2021_AlphaFold,CH4_Varadi2022_AlphaFoldDB}, in addition to caveats of the large language models (LLM), such as hallucination of structural features or secondary structural elements that may not be true. 
 
-In this chapter, we aim to introduce the nuances of biomacromolecular models: how they are determined, how to retrieve them from appropriate databases, how to interpret their validation metrics, and how to identify and correct docking-related issues. We assume no prior experience in X-ray crystallography, cryo-EM, or NMR. Mathematical details of structure determination and refinement are omitted in favour of conceptual understanding directly relevant to docking.
+\begin{figure}[hbt!]
+    \centering
+
+    \includegraphics[width=1\textwidth]{RCSB_webpage.jpg}
+
+    \caption{The RCSB Protein Data Bank (PDB) homepage highlighting navigation options to deposit, search, visualize, and analyze  experimentally determined and computed 3D structures} 
+\label{fig:RCSBwebpage}
+\end{figure}
+
+In this chapter, we aim to introduce the nuances of biomacromolecular models: how they are determined, how to retrieve them from appropriate databases (\textbf{Figure \ref{fig:RCSBwebpage}}), how to interpret their validation metrics, and how to identify and correct docking-related issues. We assume no prior experience in X-ray crystallography, cryo-EM, or NMR. Mathematical details of structure determination and refinement are omitted in favour of conceptual understanding directly relevant to docking.
+
 The emphasis is on the following practical questions
 \begin{itemize}
   \item Which resolution and crystallographic quality metrics should be checked, and how to interpret them?
   \item How should missing residues and loops be identified and handled?
   \item How can one distinguish crystal packing multimers from biological assemblies?
-  \item What do $\beta$-factors really tell us about dynamics, and what are their limitations?
+  \item What do B-factors really tell us about dynamics, and what are their limitations?
   \item How should post-translational modifications (PTMs) and non-standard residues be treated?
   \item How can ligand and cofactor binding sites and geometries be validated?
   \item How can crystallisation artefacts and crystal environment effects be recognised?
@@ -37,11 +47,22 @@ The emphasis is on the following practical questions
 
 \section{Experimental Methods}
 
+
+
 \subsection{X-ray Crystallography}
 
-Macromolecular X-ray crystallography infers atomic models of biomolecules from X-ray diffraction patterns scattered by crystals.\cite{CH4_Evans2013_data_quality,CH4_Wang2015_structure_quality} A crystal is an ordered array of unit cells, each containing one or more copies of the macromolecule arranged by crystallographic symmetry. The measured diffraction intensities are related to the electron density in the unit cell via a Fourier transform.  From this density, atomic coordinates are built and refined. X-ray crystallography still accounts for the majority of entries in the PDB.\cite{CH4_Berman2000_PDB,CH4_wwpdb2019protein}
+
+Macromolecular X-ray crystallography infers atomic models of biomolecules from X-ray diffraction patterns scattered by crystals.\cite{CH4_Evans2013_data_quality,CH4_Wang2015_structure_quality} A crystal is an ordered array of unit cells, each containing one or more copies of the macromolecule arranged by crystallographic symmetry. The measured diffraction intensities are related to the electron density in the unit cell via a Fourier transform (\textbf{Figure \ref{fig:densitymap}}).  From this density, atomic coordinates are built and refined. X-ray crystallography still accounts for the majority of entries in the PDB.\cite{CH4_Berman2000_PDB,CH4_wwpdb2019protein}
 
 The output from X-ray crystallography relevant to docking are the atomic coordinates, depposited in PDB or mmCIF format for protein, nucleic acids, ligands, cofactors, solvent, and ions. It also gives us structure factors in MTZ or mmCIF format, that contains diffraction amplitudes and, in some cases, phases or anomalous differences. The metadata describe the experimental conditions and global quality metrics such as esolution, R-factors, and completeness
+
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Density_map.jpg}
+
+    \caption{An example of electron density contoured at 1 $\sigma$, of a crystal structure solved to 2.7 \r{A} resolution. An Arginine residue (top left), a tyrosine residue (bottom left) and a disulphide bond (right) are highlighted. The image is reproduced from \url{https://commons.wikimedia.org/wiki/File:Example_of_electron_density_map.png} under the Creative Commons Attribution-Share Alike 3.0 Unported license.} 
+\label{fig:densitymap}
+\end{figure}
 
 \subsubsection{Global Quality Indicators}
 Crystallographic metrics that are important to assess the quality of the structure is reported in PDB entries and wwPDB validation reports\cite{CH4_Evans2013_data_quality,CH4_Wang2015_structure_quality,CH4_karplus2012linking,CH4_shao2017multivariate}. They include the Resolution (\r{A}), which indicates the highest spatial frequency reliably observed in the diffraction data. At resolutions better than about 2.5\r{A}, side-chain conformations and ligand poses are  well determined. However, the resolution 3--4 \r{A} or worse it becomes difficult to accurately place the side-chain and ligand atoms with confidence. The $\textrm{R}_\textrm{work}$ and $\textrm{R}_\textrm{free}$ measures the agreement between observed and calculated structure factor amplitudes. The $\textrm{R}_\textrm{free}$ is computed using a small subset of reflections excluded from refinement and is a robust indicator of overfitting.\cite{CH4_Wang2015_structure_quality,CH4_karplus2012linking} Typically, a well-refined structures shows  $\textrm{R}_\textrm{free} - \textrm{R}_\textrm{work}$ $\approx$ 0.02--0.05 at medium to high resolution. Furthermore, the data quality metrics, such as completeness, multiplicity, mean intensity over noise $\textrm{I}/\sigma(\textrm{I})$ and correlation coefficient $\textrm{CC}_{1/2}$ between symmetry-equivalent intensities\cite{CH4_Evans2013_data_quality,CH4_Read2011_CC12}.
@@ -54,8 +75,15 @@ Several crystallography-specific factors affect the reliability of the structure
 
 
 \subsection{Single Particle Cryo-Electron Microscopy}
-Single particle cryo-EM reconstructs 3D maps of the Coulomb potential from 2D projection images of vitrified biomolecular particles. Individual particle images are aligned and classified, and a 3D reconstruction is computed. Models are then fitted and refined into these maps. The Electron Microscopy Data Bank (EMDB)\cite{CH4_wwpdb2024emdb} is the global archive of 3D CryoEM maps, which are often linked to atomic models deposited in the PDB. An entry in the EMDB that one can download contains the atomic coordinates in PDB/mmCIF file format. The cryo-EM maps and the associated metadata can imported in the MRC/CCP4 format. And lastly, the validation reports, including global and local resolution estimates, and map--model fit metric, can also be obtained.\cite{CH4_pintilie2021validation,CH4_Iudin2016_EM_validation}
 
+Single particle cryo-EM reconstructs 3D maps(\textbf{Figure \ref{fig:cryoEMmap}}) of the Coulomb potential from 2D projection images of vitrified biomolecular particles. Individual particle images are aligned and classified, and a 3D reconstruction is computed. Models are then fitted and refined into these maps. The Electron Microscopy Data Bank (EMDB)\cite{CH4_wwpdb2024emdb} is the global archive of 3D CryoEM maps, which are often linked to atomic models deposited in the PDB. An entry in the EMDB that one can download contains the atomic coordinates in PDB/mmCIF file format. The cryo-EM maps and the associated metadata can imported in the MRC/CCP4 format. And lastly, the validation reports, including global and local resolution estimates, and map--model fit metric, can also be obtained.\cite{CH4_pintilie2021validation,CH4_Iudin2016_EM_validation}
+
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width=1\textwidth]{cryoEM_map.jpg}
+    \caption{The Dimeric human XPR1 was shown as a cyan and blue map, with the InsP7 bound colored in yellow and orange. The image is reproduced from \url{https://commons.wikimedia.org/wiki/File:Human_XPR1_in_complex_with_InsP7.png} under the Creative Commons Attribution 4.0 International license.} 
+\label{fig:cryoEMmap}
+\end{figure}
 
 \subsubsection{Resolution and Validation}
 Cryo-EM uses the Fourier shell correlation (FSC) between independent half-maps to define a global resolution, often reported at the FSC=0.143 threshold\cite{CH4_pintilie2021validation}. However, the map quality is typically heterogeneous, such that the regions of high local resolution co-exist with flexible or disordered regions of much lower resolution. Recent methods, such as FSC-Q and Q-scores\cite{CH4_Pintilie2020_Qscore,CH4_pintilie2021validation}, quantify local map-to-model agreement and highlight regions where the model may be overfitted to noise or under-supported by the data.
@@ -73,7 +101,15 @@ The global resolution can be misleading, such that the nominal overall resolutio
 Therefore, we strongly recommend thoroughly examining local map quality and map--model correlation in the binding site, rather than relying solely on global nominal resolution. 
 
 \subsection{Solution NMR Spectroscopy}
-Solution NMR spectroscopy determines structural information from nuclear spin interactions, like the nuclear Overhauser effects (NOE), scalar couplings, residual dipolar couplings, and chemical shifts. These are translated into distance and angle restraints, from which atomic models are calculated, often yielding an ensemble of conformers consistent with the data\cite{CH4_Ulrich2008_BMRB,CH4_baskaran2024restraint}.  The associated data are archived in the PDB and in the Biological Magnetic Resonance Data Bank (BMRB)\cite{CH4_Ulrich2008_BMRB}, and comprises of the following output:
+
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width=1\textwidth]{NMR.jpg}
+    \caption{2D \textsuperscript{15}N-HSQC spectrum of NleG2-3[90–191] at \ang{25}C and pH 7.0. Selected peaks corresponding to reduced and oxidised conformations are labeled as r (green) and o (blue), respectively. The image is reproduced from \url{https://commons.wikimedia.org/wiki/File:HSQC-NMR.tiff} under the Creative Commons Attribution 2.5 Generic license.} 
+\label{fig:NMR}
+\end{figure}
+
+Solution NMR spectroscopy determines structural information from nuclear spin interactions (\textbf{Figure \ref{fig:NMR}}), like the nuclear Overhauser effects (NOE), scalar couplings, residual dipolar couplings, and chemical shifts. These are translated into distance and angle restraints, from which atomic models are calculated, often yielding an ensemble of conformers consistent with the data\cite{CH4_Ulrich2008_BMRB,CH4_baskaran2024restraint}.  The associated data are archived in the PDB and in the Biological Magnetic Resonance Data Bank (BMRB)\cite{CH4_Ulrich2008_BMRB}, and comprises of the following output:
 \begin{itemize}
   \item Structural ensembles deposited as multiple models per PDB entry.
   \item Restraint lists and chemical shifts, which are accessible via BMRB and wwPDB reports.
@@ -98,345 +134,245 @@ Several additional biophysical techniques provide structural information that ca
 These approaches are rarely used directly as receptor structures for docking. However, they are extremely valuable for validating conformational states sampled in docking or molecular dynamics (MD) that are likely to be relevant in solution.
 
 \section{Structural Data Resources}
-%edit from here
+
 \subsection{The wwPDB Ecosystem}
 
-The Worldwide Protein Data Bank (wwPDB) organisation manages the global archives for three-dimensional biomacromolecular structure data.\cite{CH4_Berman2000_PDB,CH4_wwpdb2019protein,CH4_young2018worldwide} Its main components are:
-\begin{itemize}
-  \item \textbf{PDB core archive.} Atomic coordinates of proteins, nucleic acids, complexes, and their ligands, determined by X-ray, NMR, cryo-EM and other methods.\cite{CH4_Berman2000_PDB,CH4_wwpdb2019protein}
-  \item \textbf{EMDB.} The Electron Microscopy Data Bank, a repository of three-dimensional EM reconstructions, is often linked to fitted atomic models.\cite{CH4_wwpdb2024emdb}
-  \item \textbf{BMRB.} The Biological Magnetic Resonance Data Bank, which archives NMR chemical shifts, restraints, and related spectroscopic data.\cite{CH4_Ulrich2008_BMRB}
+The Worldwide Protein Data Bank (wwPDB) manages the global archives for three-dimensional biomacromolecular structure data.\cite{CH4_Berman2000_PDB,CH4_wwpdb2019protein,CH4_young2018worldwide}. The PDB core archive\cite{CH4_Berman2000_PDB,CH4_wwpdb2019protein} stores atomic coordinates of proteins, nucleic acids, complexes, and their ligands, determined by X-ray, NMR, cryo-EM and other methods. The Electron Microscopy Data Bank(EMDB)\cite{CH4_wwpdb2024emdb} is a repository of three-dimensional cryo-EM reconstructions, is often linked to fitted atomic models. The Biological Magnetic Resonance Data Bank(BMRB)\cite{CH4_Ulrich2008_BMRB} archives NMR chemical shifts, restraints, and related spectroscopic data.
+The regional PDB partners (RCSB PDB, PDBe, PDBj, and PDBj-BMRB)\cite{CH4_wwpdb2019protein,CH4_Velankar2016_PDBe} provide portals, visualisation tools, and value-added annotations. The wwPDB provides standardised \emph{validation reports} for X-ray, cryo-EM, and NMR entries, summarising global and local quality metrics.\cite{CH4_karplus2012linking,CH4_shao2017multivariate,CH4_young2018worldwide}
 
-\end{itemize}
 
-Regional PDB partners (RCSB PDB, PDBe, PDBj, and PDBj-BMRB) provide portals, visualisation tools, and value-added annotations.\cite{CH4_wwpdb2019protein,CH4_Velankar2016_PDBe} Crucially, wwPDB provides standardised \emph{validation reports} for X-ray, EM, and NMR entries, summarising global and local quality metrics.\cite{CH4_karplus2012linking,CH4_shao2017multivariate,CH4_young2018worldwide}
-
-\subsection{PDB-Related Derived Databanks}
-
-Several derived databanks complement the PDB core archive and provide value-added information that is highly relevant to docking:\cite{CH4_Joosten2009_PDB_related_databanks}
-
-\begin{itemize}
-  \item PDB-REDO: An automated pipeline that systematically re-refines and partially rebuilds crystallographic models, often improving R-factors and geometry.\cite{CH4_Joosten2014_PDBREDO}
-  \item PDBREPORT and related quality annotations: Databanks that catalogue model anomalies and potential errors.
-  \item Homology-based and functional annotation resources: Such as HSSP and PDBe-KB, which integrate structural data with sequence and functional information.\cite{CH4_Velankar2016_PDBe}
-\end{itemize}
-
-PDB-REDO is particularly important for computational workflows because it provides more consistent geometry and B-factor models than the original depositions in many cases.\cite{CH4_Joosten2014_PDBREDO}
 \subsection{PDBe, PDBe-KB, and PISA}
-The Protein Data Bank in Europe (PDBe) is a major PDB partner that provides high-quality, integrated views of structural data.\cite{CH4_Velankar2016_PDBe} PDBe and its knowledge base, PDBe-KB, offer:
+The Protein Data Bank in Europe (PDBe)\cite{CH4_Velankar2016_PDBe} is a major PDB partner that provides high-quality, integrated views of structural data. PDBe and its knowledge base provides an interactive structure viewers and summarised validation metrics. It provides cross-links to functional, sequence, and ligand information. And, integrates access to EMDB, BMRB, SASBDB, and related resources. Of particular importance to docking is PDBePISA (Proteins, Interfaces, Structures and Assemblies)\cite{CH4_Krissinel2007_PISA}, which analyses interfaces, surfaces, and assemblies in crystal structures and predicts likely biological oligomeric states. PDBePISA reports (\textbf{Figure \ref{fig:PISA}}) interface areas, solvation energy gains, hydrogen bonds, salt bridges and hydrophobic contacts, and ranks interfaces according to their probability of being biologically relevant.
 
-\begin{itemize}
-  \item Interactive structure viewers and summarised validation metrics.
-  \item Cross-links to functional, sequence, and ligand information.
-  \item Integrated access to EMDB, BMRB, SASBDB, and related resources.
-\end{itemize}
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width=1\textwidth]{PDBPISA.jpg}
+    \caption{An example output obtained from the PDBe PISA webserver.}
+\label{fig:PISA}
+\end{figure}
 
-Of particular importance to docking is PDBePISA (Proteins, Interfaces, Structures and Assemblies), which analyses interfaces, surfaces, and assemblies in crystal structures and predicts likely biological oligomeric states.\cite{CH4_Krissinel2007_PISA} PDBePISA reports interface areas, solvation energy gains, hydrogen bonds, salt bridges and hydrophobic contacts, and ranks interfaces according to their probability of being biologically relevant.
+\subsection{BMRB and associated portals}
 
-\subsection{BMRB and Associated Portals}
-
-BMRB and its Japanese mirror, BMRBj, provide detailed NMR data, including chemical shifts, coupling constants, and restraint lists.\cite{CH4_Ulrich2008_BMRB} These underpin recent wwPDB efforts to validate NMR structures based on restraint violations and consistency between experimental observables and the structural ensemble.\cite{CH4_baskaran2024restraint}
-
-For docking practitioners, BMRB is most useful when:
-
-\begin{itemize}
-  \item Assessing how well experimental data constrain an NMR ensemble.
-  \item Integrating chemical shift-based information on local structure and dynamics with crystallographic or cryo-EM models.
-\end{itemize}
-
-
+BMRB\cite{CH4_Ulrich2008_BMRB} and its Japanese mirror, BMRBj, provide detailed NMR data, including chemical shifts, coupling constants, and restraint lists. These underpin recent wwPDB efforts to validate NMR structures based on restraint violations and consistency between experimental observables and the structural ensemble.\cite{CH4_baskaran2024restraint}
+In the context of molecular docking, the structural information can be helpful to assess how well the experimental data constrains an NMR ensemble. It can be provide valuable input to integrating chemical shift-based information on local structure and dynamics with crystallographic or cryo-EM models.
 
 \subsection{EMDB}
-
-
-The EMDB provides curated access to three-dimensional EM maps, with associated metadata and validation information. Many PDB entries derived from cryo-EM experiments specify an associated EMDB map identifier, making it straightforward to access the underlying map and validation report.
-EMDB provides:
-
-\begin{itemize}
-  \item Processed maps and, increasingly, half-maps enabling independent validation.
-  \item Global and local resolution estimates.
-  \item Cross-links to fitted atomic models and related experimental data.\cite{CH4_pintilie2021validation}
-\end{itemize}
-
-Docking users can thus directly assess whether a particular binding site is supported by strong local density, and whether the fitted ligand or side-chain conformations are justified.
+The EMDB\cite{CH4_wwpdb2024emdb} provides curated access to three-dimensional EM maps, with associated metadata and validation information. Many PDB entries derived from cryo-EM experiments specify an associated EMDB map identifier, making it straightforward to access the underlying map and validation report. It serves to provide processed maps, and half-maps to assist an independent validation. The global and local resolution estimates are helpful to evaluate the quality of the overall structure, and more importantly, the quality of the binding site. It further serves to provide cross-links to fitted atomic models and related experimental data\cite{CH4_pintilie2021validation}. Therefore, docking users can directly assess whether a particular binding site is supported by strong local density, and whether the fitted ligand or side-chain conformations are justified.
 
 \subsection{Small Angle Scattering Biological Data Bank (SASBDB)}
-The SASBDB\cite{CH4_Valentini2015_SASBDB}archives small-angle scattering data and associated structural models. Although docking is rarely performed directly into SAXS-derived models, SASBDB entries can be used to:
-
-\begin{itemize}
-  \item Validate whether global conformational states used in docking (compact vs extended) are compatible with solution scattering data.
-  \item Assess flexibility, oligomeric states, and the presence of large-scale conformational changes.\cite{CH4_pesce2021refining}
-\end{itemize}
+The SASBDB\cite{CH4_Valentini2015_SASBDB} archives small-angle scattering data and associated structural models. Although docking is rarely performed directly into SAXS-derived models, SASBDB entries can be used to validate whether global conformational states used in docking, compact vs extended, are compatible with solution scattering data. It allows one to assess receptor flexibility, oligomeric states, and the presence of large-scale conformational changes.\cite{CH4_pesce2021refining}
 
 \subsection{PDB-REDO}
-PDB-REDO re-refines and partially rebuilds macromolecular crystallographic structures using updated refinement protocols and model-building tools.\cite{CH4_Joosten2014_PDBREDO} Its key features include:
+PDB-REDO\cite{CH4_Joosten2014_PDBREDO} re-refines, and partially rebuilds macromolecular crystallographic structures using updated refinement protocols and model-building tools. Its key features include:
 
 \begin{itemize}
   \item Systematic optimisation of refinement parameters, anisotropic scaling, and B-factor models.
   \item Automated correction of side-chain conformations, peptide flips, and local geometry problems.
-  \item Improved R-factors and stereochemical quality in many cases, often without worsening fit to experimental data.\cite{CH4_Joosten2014_PDBREDO}
+  \item Improved R-factors and stereochemical quality in many cases, often without worsening fit to experimental data.
 \end{itemize}
 
 For docking and SBDD, PDB-REDO models often provide superior starting points than the original PDB entries, especially for older structures refined with now-outdated methods.
 
-\subsection{AlphaFold Protein Structure Database and Related Prediction Resources}
-The AlphaFold Protein Structure Database provides \emph{in silico} structural models for a large fraction of many reference proteomes, generated using AlphaFold2.\cite{CH4_Jumper2021_AlphaFold,CH4_Varadi2022_AlphaFoldDB}. These models are accompanied by per-residue confidence scores (pLDDT) and predicted aligned error (PAE) matrices.
-From a docking perspective, AlphaFold models have several important features:\cite{CH4_Jumper2021_AlphaFold,CH4_Varadi2022_AlphaFoldDB}
+\subsection{AlphaFold protein structure database}
 
-\begin{itemize}
-  \item For many globular domains, regions with high pLDDT (typically $>$70--80) tend to have near-experimental backbone accuracy.
-  \item PAE provides information about uncertainty in relative domain orientations; high PAE indicates that domain arrangements may be incorrect even if individual domains are accurate.
-  \item Ligands, cofactors, metals, and PTMs are \emph{not} modelled; pockets that depend on these features may have incorrect shapes or be absent.
-  \item Multimer predictions (AlphaFold-Multimer) are less reliable than monomeric predictions, particularly for weak or transient interfaces.
-\end{itemize}
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width=1\textwidth]{AF3.jpg}
+    \caption{An example output for protein-DNA complex prediction from the Alphafold3 server.}
+\label{fig:AF3}
+\end{figure}
 
-Predicted structures should therefore be used with caution in docking. They are particularly valuable when no experimental structure is available, but must be filtered by confidence metrics and, where possible, cross-validated against functional and other structural data.\cite{CH4_Varadi2022_AlphaFoldDB}
+The AlphaFold\cite{CH4_Jumper2021_AlphaFold,CH4_Varadi2022_AlphaFoldDB} Protein Structure Database provides \emph{in silico} structural models for a large fraction of many reference proteomes, generated using AlphaFold2 (\textbf{Figure \ref{fig:AF3}}). These models are accompanied by per-residue confidence scores (pLDDT) and predicted aligned error (PAE) matrices. From a docking perspective, AlphaFold models have several important features\cite{CH4_Jumper2021_AlphaFold,CH4_Varadi2022_AlphaFoldDB}.  For many globular domains, regions with high pLDDT (typically $>$70--80) tend to have near-experimental backbone accuracy. The PAE provides information about uncertainty in relative domain orientations. A high PAE indicates that domain arrangements may be incorrect even if individual domains are accurate. Ligands, cofactors, metals, and PTMs are \emph{not} modelled; pockets that depend on these features may have incorrect shapes or be absent. The multimer predictions (AlphaFold-Multimer) are less reliable than monomeric predictions, particularly for weak or transient interfaces. The predicted structures should. therefore, be used with caution in docking. They are particularly valuable when no experimental structures are available, however, one must filter by confidence metrics and, where possible, cross validate against functional and other structural data.\cite{CH4_Varadi2022_AlphaFoldDB}
 
-\section{Working with Structural Data: A Practical, Didactic Pipeline}
-This section presents a step-by-step workflow for preparing biomacromolecular structures for docking and SBDD. The steps focus on issues most likely to affect binding-site shape, polarity, and dynamics, and thus docking outcomes.
+
+\section{Working with Structural Data}
+This section presents a step-by-step workflow for preparing biomacromolecular structures for docking and SBDD. The steps focus on issues most likely to affect binding-site shape, polarity, and dynamics, and thus the accuracy of the docking outcomes.
 
 \subsection{Verify Structure Resolution and Quality Metrics}
 
 \subsubsection{X-ray Structures}
-When evaluating an X-ray structure as a potential docking template, the following checks are recommended:
+When evaluating an X-ray structure as a receptor, the following checks are recommended:
 
 \begin{itemize}
- \item {Global resolution and R-factors.} Using the PDB or PDBe entry, note:
+ \item \textbf{Global resolution and R-factors}: Using the PDB or PDBe entry, note:
 
 \begin{itemize}
   \item The reported resolution limit (highest resolution shell).
   \item $R_\text{work}$ and $R_\text{free}$, and their difference $\Delta R = R_\text{free} - R_\text{work}$.\cite{CH4_Wang2015_structure_quality,CH4_karplus2012linking}
-  \item Data completeness and $CC_{1/2}$ in the highest resolution shell.\cite{CH4_Evans2013_data_quality,CH4_Read2011_CC12}
+  \item Data completeness and $\textrm{CC}_{1/2}$ in the highest resolution shell\cite{CH4_Evans2013_data_quality,CH4_Read2011_CC12}.
 \end{itemize}
 
-A structure with resolution better than about 2.5 \r{A}, complete data, and reasonable R-factors is generally suitable as a starting point, though local issues may still be present.\cite{CH4_Wang2015_structure_quality,CH4_shao2017multivariate} Extremely large $\Delta R$ values ($>$0.07) or very poor R-factors for the nominal resolution suggest either problematic data or overfitted/underfitted models.
+A structure with resolution better than about 2.5 \r{A}, complete data, and reasonable R-factors is generally suitable as a starting point, though local issues may still be present\cite{CH4_Wang2015_structure_quality,CH4_shao2017multivariate}. Extremely large $\Delta R$ values ($>$0.07) or very poor R-factors for the nominal resolution suggest either problematic data or overfitted/underfitted models.
 
- \item {Validation ``slider'' summaries.} wwPDB validation reports present percentile-based sliders for global metrics such as geometry, clashes, R-factors, and more, relative to all structures and to structures at similar resolution.\cite{CH4_karplus2012linking,CH4_shao2017multivariate,CH4_young2018worldwide} Prefer entries where:
+% put figure for validation slider
+ \item \textbf{Validation \emph{slider} summaries}: wwPDB validation reports present percentile-based sliders for global metrics such as geometry, clashes, R-factors, and more, relative to all structures and to structures at similar resolution.\cite{CH4_karplus2012linking,CH4_shao2017multivariate,CH4_young2018worldwide} Prefer entries where:
 
 \begin{itemize}
   \item Geometry and clashscore are within good percentiles.
   \item R-factors are not severe outliers for the given resolution.
 \end{itemize}
 
- \item {Local quality near the binding site.} Global metrics can hide serious local problems.\cite{CH4_chakraborti2021all,CH4_shao2017multivariate} Most PDB and PDBe viewers allow the user to:
+ \item \textbf{Local quality near the binding site}: Global metrics can hide serious local problems\cite{CH4_chakraborti2021all,CH4_shao2017multivariate}. Most PDB and PDBe viewers allow the user to:
 \begin{itemize}
   \item Map per-residue real-space correlation coefficients or B-factors onto the structure.
   \item Identify outliers (clashes, Ramachandran and rotamer outliers) near the binding site.
 \end{itemize}
 
-Docking users should focus on the structural environment of the binding site rather than solely on global summary metrics.
-
 \subsubsection{Cryo-EM Structures}
 For structures derived from cryo-EM:
- \item {Global and local resolution.} Check:
+ \item \textbf{Global and local resolution}: The following checks must be performed:
 
 \begin{itemize}
-  \item The global FSC-based resolution and the FSC curve, noting the threshold used.\cite{CH4_pintilie2021validation}
-  \item Local resolution maps to determine whether the binding-site region has comparable or worse resolution than the global value.\cite{CH4_pintilie2021validation,CH4_Iudin2016_EM_validation}
+  \item The global FSC-based resolution and the FSC curve, noting the threshold used.
+  \item Local resolution maps to determine whether the binding-site region has comparable or worse resolution than the global value.
 \end{itemize}
 
- \item {Map--model validation.} Evaluate:
+ \item \textbf{Map--model validation}: Evaluate:
+ 
 \begin{itemize}
   \item Real-space correlation coefficients per residue and per ligand.
   \item Local map-to-model quality metrics such as Q-scores.\cite{CH4_Pintilie2020_Qscore,CH4_pintilie2021validation}
   \item Geometry metrics (Ramachandran, rotamers, clashes) in the binding-site region.\cite{CH4_Williams2018_MolProbity}
 \end{itemize}
 \end{itemize}
-If the pocket is situated in a low-resolution region or shows poor map support for key residues and ligands, the structure may be unreliable as a docking template.
+
+If the pocket is situated in a low-resolution region or shows poor map support for key residues and ligands, the structure may be unsuitable for docking, and yield unreliable results. 
 
 \subsubsection{NMR Structures}
 
 For NMR-derived structures:
 
 \begin{itemize}
-  \item{Ensemble and restraint statistics.} Examine:
+  \item \textbf{Ensemble and restraint statistics}: Examine:
 
 \begin{itemize}
 
-  \item The ensemble RMSD, particularly for backbone atoms in the folded core.
-
+  \item The ensemble RMSD, particularly for backbone atoms in the folded structure.
   \item The number and type of restraints (NOEs, RDCs) per residue.
-
   \item Restraint violation statistics from wwPDB or BMRB reports.\cite{CH4_baskaran2024restraint}
 
 \end{itemize}
 
-
-
-  \item{Geometry and accuracy assessments.} Use wwPDB validation reports and specialised tools such as ANSURR:\cite{CH4_fowler2020method,CH4_Williams2018_MolProbity}
+  \item \textbf{Geometry and accuracy assessments}: Use wwPDB validation reports and specialised tools such as ANSURR:\cite{CH4_fowler2020method,CH4_Williams2018_MolProbity}
 
 \begin{itemize}
   \item Ensure Ramachandran and rotamer outliers are minimal in the binding-site region.
   \item Verify that the rigidity inferred from chemical shifts (ANSURR) is consistent with the modelled structure in key regions.\cite{CH4_fowler2020method}
 \end{itemize}
 \end{itemize}
-For docking, it is often prudent to select a subset of conformers that best represent compact, well-defined pocket geometries, guided by both restraints and functional data.
+
+For docking, it is often prudent to select a subset of conformers that best represent compact, well-defined pocket geometries, guided by restraints and functional data.
 
 \subsection{Identify and Fix Missing Residues}
 Most macromolecular structures have missing residues: segments present in the SEQRES sequence but absent from the ATOM records. These may be flexible loops, termini, or regions disordered under the experimental conditions.
 
 \begin{itemize}
-\item{Identify missing segments.} PDB and PDBe pages list missing residues explicitly. Consider:
+\item \textbf{Identify missing segments}: PDB and PDBe pages list missing residues explicitly. Consider:
 
 \begin{itemize}
-  \item N- and C-terminal tails, which often have limited functional impact.
+  \item N- and C-terminal regions, which often have limited functional impact.
   \item Internal loops proximal to the binding site, which can gate access or contribute directly to ligand recognition.
-  \item Missing side chains (e.g.\ incomplete modelling of long side chains such as lysine or arginine).
+  \item Missing side chains from incomplete modelling of long side chains, such as lysine or arginine. These are generally observed when the residues with long side chains are solvent exposed and highly dynamic.
 
 \end{itemize}
 
-\item{Assess functional impact.} Determine whether the missing region:
+\item \textbf{Assess functional impact}: Determine whether the missing region:
 
 \begin{itemize}
   \item Lines the binding pocket.
-  \item Controls access to the site (e.g.\ an activation loop).
+  \item Controls access to the site (e.g. an activation loop).
   \item Participates in oligomeric contacts that shape the binding site.
 \end{itemize}
 
-\item{Options for handling missing regions.}
+\item \textbf{How to handle missing regions?}:
 
 \begin{itemize}
-  \item \textbf{Ignore remote, non-critical segments}: Tails far from the binding site can often be omitted.
-  \item \textbf{Model critical loops and segments.} Use:
-  \begin{itemize}
-    \item Homology modelling or loop-building tools, ideally guided by related high-resolution structures.
-    \item AlphaFold or AlphaFold-Multimer predictions, carefully aligned and grafted onto the experimental model, guided by pLDDT and PAE to gauge confidence.\cite{CH4_Jumper2021_AlphaFold,CH4_Varadi2022_AlphaFoldDB}
-  \end{itemize}
-  \item \textbf{Constrain docking away from uncertain regions.} If reliable modelling is not possible, restrict docking to regions whose shapes are experimentally supported.
+  \item Ignore remote, non-critical segments: Terminal regions far from the binding site can often be neglected, unless one wishes to perfomed MD simulations after docking.
+  \item To model critical loops and segments, use homology modelling or loop-building tools, ideally guided by related high-resolution structures. Or use AlphaFold or AlphaFold-Multimer predictions\cite{CH4_Jumper2021_AlphaFold,CH4_Varadi2022_AlphaFoldDB}, carefully aligned and grafted onto the experimental model, guided by pLDDT and PAE to gauge confidence.
+  \item Constrain docking away from uncertain regions If reliable modelling is not possible, restrict docking to regions whose shapes are experimentally supported.
 \end{itemize}
 \end{itemize}
-Modelled loops are hypotheses informed by data and prior knowledge; docking results that depend critically on modelled features should be interpreted with appropriate caution.
 
 \subsection{Differentiating Crystal Packing Multimers from Biological Multimers}
 The asymmetric unit of a crystal is not necessarily the biological oligomeric state. For docking, especially at protein--protein interfaces or quaternary allosteric sites, using the correct biological assembly is essential.
 
 \begin{itemize}
-\item {Asymmetric unit vs biological assembly.} PDB entries specify:
+\item \textbf{Asymmetric unit vs biological assembly}: PDB entries specify the \emph{asymmetric unit} (ASU), the minimal crystallographic repeating unit. Futhermore, the transformation matrices (BIOMT/BIOMATRIX) defines the putative biological assemblies.
 
-\begin{itemize}
-  \item The \emph{asymmetric unit} (ASU), the minimal crystallographic repeating unit.
-  \item Transformation matrices (BIOMT/BIOMATRIX) defining putative biological assemblies.
-\end{itemize}
+\item \textbf{Use PDBePISA to analyse interfaces}: The PDBePISA\cite{CH4_Krissinel2007_PISA} evaluates crystal packing interfaces and predicts likely biological oligomers. It reports the buried surface area and solvation free-energy gain ($\Delta \textrm{G}$) upon complex formation. It shows the hydrogen bonds, salt bridges, and hydrophobic contacts. It also provides a probability score for each interface being biologically significant. Interfaces with large buried surface area, favourable $\Delta \textrm{G}$, and hydrophobic cores are more likely to be physiological relevant. Whereas small, polar contacts are more likely to be crystal artefacts.
 
-\item {Use PDBePISA to analyse interfaces.} PDBePISA evaluates crystal packing interfaces and predicts likely biological oligomers.\cite{CH4_Krissinel2007_PISA} It reports:
+\item \textbf{Use independent interface discrimination methods}: Methods that examine shape complementarity, conservation, and physicochemical complementarity can distinguish biological from crystal contacts.
 
-\begin{itemize}
-  \item Buried surface area and solvation free-energy gain ($\Delta G$) upon complex formation.
-  \item Hydrogen bonds, salt bridges, and hydrophobic contacts.
-  \item A probability score for each interface being biologically significant.
-\end{itemize}
-
-Interfaces with large buried surface area, favourable $\Delta G$ and hydrophobic cores are more likely to be physiological; small, polar contacts are more likely to be crystal artefacts.
-\item {Use independent interface discrimination methods.} Methods that examine shape complementarity, conservation, and physicochemical complementarity can distinguish biological from crystal contacts.
-\item {Cross-check with solution data.} When possible, compare with:
-
+\item \textbf{Cross-check with solution data}: When possible, compare with:
 \begin{itemize}
   \item Size-exclusion chromatography, analytical ultracentrifugation.
-  \item SAXS profiles and envelopes.\cite{CH4_Valentini2015_SASBDB,CH4_pesce2021refining}
-  \item NMR data (e.g.\ chemical shift perturbations upon oligomerisation).\cite{CH4_Ulrich2008_BMRB}
+  \item SAXS\cite{CH4_Valentini2015_SASBDB,CH4_pesce2021refining} profiles and envelopes.
+  \item NMR data\cite{CH4_Ulrich2008_BMRB}, such as, the chemical shift perturbations upon oligomerisation.
 \end{itemize}
 
-For docking at interfaces, always construct the predicted biological assembly, rather than using the ASU by default.
+For docking at interfaces, it always recommended to construct the predicted biological assembly, rather than using the ASU by default.
 
 \subsection{Understanding B-factors and Crystal Packing Effects on Dynamics}
 B-factors (atomic displacement parameters) quantify the mean-square displacement of atoms from their average positions in the model. They reflect a combination of physical motion, static disorder, and model uncertainty.
 
-\item {Interpretation within a single structure.} Within one structure:
-\begin{itemize}
-  \item The relative B-factors can help identify rigid cores (low B) and flexible loops or termini (high B).
-  \item Very high B-factors or partial occupancy on ligands and side chains suggest poorly defined positions.
-\end{itemize}
+\item \textbf{Interpretation within a single structure}: Within one structure,  the relative B-factors can help identify rigid cores (low B-factors) and flexible loops or termini (high B-factors). However, very high B-factors or partial occupancy on ligands and side chains suggest poorly defined positions. The B-factors are influenced by refinement choices, such as individual vs group refinement, TLS models, resolution, and should not be interpreted as quantitative measures of physical mobility.\cite{CH4_Wang2015_structure_quality,CH4_shao2017multivariate}
 
-However, B-factors are influenced by refinement choices (individual vs group refinement, TLS models, resolution), and should not be interpreted as quantitative measures of physical mobility.\cite{CH4_Wang2015_structure_quality,CH4_shao2017multivariate}
-
-\item {Crystal packing effects.} Lattice contacts can stabilise conformations that are less populated in solution; these will often have relatively low B-factors despite being constrained by non-physiological interactions. Conversely, some high B-factors reflect poor data quality at the resolution limit rather than true dynamics.\cite{CH4_Evans2013_data_quality,CH4_Joosten2009_PDB_related_databanks}
-
-Cryo-EM models often use sharpened B-factors that reflect map processing rather than atomic mobility, and thus need to be interpreted cautiously.\cite{CH4_pintilie2021validation}
+\item \textbf{Crystal packing effects}: The lattice contacts can stabilise conformations that are less populated in solution.  These will often have relatively low B-factors despite being constrained by non-physiological interactions. Conversely, some high B-factors reflect poor data quality at the resolution limit rather than true dynamics.\cite{CH4_Evans2013_data_quality,CH4_Joosten2009_PDB_related_databanks} Cryo-EM models often use sharpened B-factors that reflect map processing rather than atomic mobility, and thus need to be interpreted cautiously.\cite{CH4_pintilie2021validation}
 
 
-\item {Implications for docking.} Use B-factors as a qualitative guide:
-
-
+\item \textbf{Implications for docking}: Use B-factors as a qualitative guide:
 
 \begin{itemize}
-  \item High B-factors on side chains directly involved in ligand binding indicate uncertainty in their orientations; these may need to be sampled during docking or MD.
+  \item High B-factors on side chains directly involved in ligand binding indicate uncertainty in their orientations. These may need to be sampled during docking or MD simulations.
   \item Low B-factors in the core support more rigid-body treatments, at least within a given conformational state.
 \end{itemize}
 \end{itemize}
 
 Combine B-factors with ensemble information from multiple structures, NMR, and MD simulations to decide which regions should be treated as flexible in docking protocols.
 
-\subsection{Model Non-Standard Residues and Account for Post-Translational Modifications}
+\subsection{Model Non-Standard Residues }
 
-Many drug targets carry PTMs or bind essential cofactors, metals, lipids, or glycans. Experimental structures may incompletely capture these features:
-
-\begin{itemize}
-  \item PTMs may be explicitly modelled using modified residue codes (e.g.\ SEP for phosphoserine), or omitted altogether.
-  \item Glycan chains may be truncated.
-  \item Essential cofactors or metals might be absent in apo structures or replaced by analogues.
-  \item Mutations inserted to aid crystallisation may alter local structure.
-\end{itemize}
+Many drug targets carry Post-Translational Modifications (PTMs) or bind essential cofactors, metals, lipids, or glycans. Experimental structures may incompletely capture the PTMs which should be explicitly modelled using modified residue codes (e.g. SEP for phosphoserine). Glycan chains may be truncated when appropriate. The essential cofactors or metals might be absent in apo structures or replaced by analogues which must added to the correct site. Certain mutations may be inserted to aid crystallisation may alter local structure, these mutations should reverted to wild-type amino acid.
 
 \begin{itemize}
-  \item{Identify non-standard residues and cofactors.} Examine HETATM records and ligand lists in PDB/PDBe entries:
-
+  \item \textbf{Identify non-standard residues and cofactors}: Examine \emph{HETATM} records and ligand lists in PDB/PDBe entries:
 \begin{itemize}
   \item Distinguish biologically relevant components (ATP, NAD\textsuperscript{+}, Zn\textsuperscript{2+}, heme, lipids) from crystallisation artefacts (sulfate, glycerol, polyethene glycol).
-
   \item Use LINK records and annotations to identify PTMs and covalent linkages.
-
 \end{itemize}
 
+  \item \textbf{Model missing PTMs and cofactors}: If biochemical data indicate that a PTM or cofactor is essential for function but absent from the structure, one may consider to graft the PTM or cofactor from a related structure, such as a homologue or another conformational state. Positioning it may be based on conserved sequence motifs, coordination geometry, and electrostatics. And lastly, validate the geometry against small-molecule crystallographic distributions using tools such as Mogul\cite{CH4_bruno2004retrieval,CH4_nicholls2017ligand}.
 
-
-  \item{Model missing PTMs and cofactors.} If biochemical data indicate that a PTM or cofactor is essential for function but absent from the structure, consider:
-
-
-
+  \item \textbf{Parameterisation for docking}: Non-standard residues, PTMs, and cofactors often require parameter generation for docking and MD:
 \begin{itemize}
-
-  \item Grafting the PTM or cofactor from a related structure (homologue or another conformational state).
-
-  \item Positioning it based on conserved sequence motifs, coordination geometry, and electrostatics.
-
-  \item Validating geometry against small-molecule crystallographic distributions using tools such as Mogul.\cite{CH4_bruno2004retrieval,CH4_nicholls2017ligand}
-
-\end{itemize}
-
-
-
-  \item{Parameterisation for docking.} Non-standard residues, PTMs, and cofactors often require parameter generation for docking and MD:
-
-\begin{itemize}
-  \item Use small-molecule parameter generators (e.g.\ AceDRG, eLBOW) or quantum-chemistry-derived parameters consistent with your force field.\cite{CH4_nicholls2017ligand,CH4_bruno2004retrieval}
+  \item Use small-molecule parameter generators (e.g. AceDRG\cite{CH4_long2017}, automated-topology builder (ATB)\cite{CH4_stroet2018}, antechamber\cite{CH4_wang2001}) or quantum chemistry-derived parameters consistent with the force field.\cite{CH4_nicholls2017ligand,CH4_bruno2004retrieval}
   \item Ensure charges and protonation states are appropriate for the physiological pH and binding environment.
 \end{itemize}
 \end{itemize}
-As a rule, keep biologically essential PTMs and cofactors in the model, and exclude obvious crystallisation artefacts unless you are explicitly modelling their effects.
+As a rule, keep biologically essential PTMs and cofactors in the model, and exclude obvious crystallisation artefacts unless one needs to explicitly model their effects.
 
 \subsection{Validate Ligand and Cofactor Binding Sites and Geometries}
-
 Ligand models in PDB structures range from excellent to seriously flawed. Incorrect ligand geometries or poses will mislead docking and SBDD.\cite{CH4_chakraborti2021all,CH4_emsley2017tools}
+
 \begin{itemize}
-\item{Density support.} For X-ray structures:
+\item \textbf{Density support}: For X-ray structures:
 \begin{itemize}
-  \item Inspect 2$F_o-F_c$ and $F_o-F_c$ maps around the ligand using Coot or other viewers.\cite{CH4_Emsley2010_Coot}
-  \item Check for continuous, well-defined 2$F_o-F_c$ density enveloping the ligand, and absence of strong negative $F_o-F_c$ peaks on ligand atoms.
-  \item Use residue-level density metrics (real-space correlation, real-space R-factors) when available.\cite{CH4_karplus2012linking,CH4_Joosten2014_PDBREDO}
+  \item Inspect 2$\textrm{F}_\textrm{o}-\textrm{F}_\textrm{c}$ and $\textrm{F}_\textrm{o}-\textrm{F}_\textrm{c}$ maps around the ligand using Coot\cite{CH4_Emsley2010_Coot} or other viewers.
+  \item Check for continuous, well-defined 2$\textrm{F}_\textrm{o}-\textrm{F}_\textrm{c}$density surrounding the ligand, and absence of strong negative $\textrm{F}_\textrm{o}-\textrm{F}_\textrm{c}$ peaks on ligand atoms.
+  \item Use residue-level density metrics, such as real-space correlation, and real-space R-factors, when available.\cite{CH4_karplus2012linking,CH4_Joosten2014_PDBREDO}
 \end{itemize}
 
 For cryo-EM structures, examine the EMDB map in the binding-site region and ensure the ligand is supported by clear density, rather than being floated into weak or noisy features.\cite{CH4_pintilie2021validation}
 
-\item{Geometry and conformation.} Assess ligand geometry using:
+\item \textbf{Geometry and conformation}: Assess ligand geometry using:
 \begin{itemize}
   \item Internal bond lengths, angles, and ring conformations.
-  \item Comparison to distributions from small-molecule databases (e.g.\ Mogul).\cite{CH4_bruno2004retrieval}
-  \item Tools in Coot and CCP4 for ligand validation and refinement.\cite{CH4_emsley2017tools,CH4_nicholls2017ligand}
+  \item Comparison to distributions from small-molecule databases (e.g. Mogul)\cite{CH4_bruno2004retrieval}.
+  \item Tools like Coot and CCP4 for ligand validation and refinement\cite{CH4_emsley2017tools,CH4_nicholls2017ligand}.
 \end{itemize}
-
 Distorted geometries or unnatural ring conformations not justified by strong interactions suggest mis-modelling.
-\item{Interactions and environment.} Evaluate:
 
+\item \textbf{Interactions and environment}: Evaluate:
 \begin{itemize}
   \item Hydrogen-bonding patterns, salt bridges, and hydrophobic contacts.
   \item Consistency with known structure--activity relationships (SAR) and mutagenesis data.
@@ -445,482 +381,99 @@ Distorted geometries or unnatural ring conformations not justified by strong int
 
 Ligands with very high B-factors or low occupancy may represent partial binding or multiple orientations.
 
-\item{Template selection for docking.} Prefer complexes where:
+\item \textbf{Receptor selection for docking}: Prefer complexes where:
 \begin{itemize}
   \item Ligand density is strong and unambiguous.
-  \item Ligand geometry is plausible and supported by small-molecule statistics.
+  \item Ligand geometry is plausible and supported by small molecule statistics.
   \item Binding interactions align with SAR and functional data.
 \end{itemize}
 \end{itemize}
-Questionable complexes may still be used as sources of protein conformations, but ligands should be removed and refitted, or the structure discarded as a docking template.
+
+
 
 \subsection{Check Experimental Methods and Their Limitations}
 The suitability of a structure for docking depends on its determination method:
 
 \begin{itemize}
+  \item \textbf{X-ray crystallography}: It provides high spatial resolution but is subject to crystal packing, cryogenic artefacts, and model bias; ligands can be over-interpreted if density is weak.\cite{CH4_Evans2013_data_quality,CH4_karplus2012linking,CH4_chakraborti2021all}
 
-  \item \textbf{X-ray crystallography} provides high spatial resolution but is subject to crystal packing, cryogenic artefacts, and model bias; ligands can be over-interpreted if density is weak.\cite{CH4_Evans2013_data_quality,CH4_karplus2012linking,CH4_chakraborti2021all}
+  \item \textbf{Cryo-EM}: It is powerful for large complexes and membrane proteins, but map quality is locally variable; flexibility can obscure side chains and ligands.\cite{CH4_pintilie2021validation}
 
-  \item \textbf{Cryo-EM} is powerful for large complexes and membrane proteins, but map quality is locally variable; flexibility can obscure side chains and ligands.\cite{CH4_pintilie2021validation}
+  \item \textbf{NMR}: It captures solution dynamics and ensembles, but some regions may be under-defined. The global folds of large complexes can be challenging to determine.\cite{CH4_Ulrich2008_BMRB,CH4_fowler2020method}
 
-  \item \textbf{NMR} captures solution dynamics and ensembles, but some regions may be under-defined; global folds of large complexes can be challenging to determine.\cite{CH4_Ulrich2008_BMRB,CH4_fowler2020method}
-
-  \item \textbf{Predicted structures} (e.g.\ AlphaFold) can be very accurate for many monomeric domains, but uncertain for disordered regions, multi-domain arrangements, complexes, and ligand-dependent pockets.\cite{CH4_Jumper2021_AlphaFold,CH4_Varadi2022_AlphaFoldDB}
-
+  \item \textbf{Predicted structures} (e.g. AlphaFold)\cite{CH4_Jumper2021_AlphaFold,CH4_Varadi2022_AlphaFoldDB}: It can be very accurate for many monomeric domains, but uncertain for disordered regions, multi-domain arrangements, complexes, and ligand-dependent pockets.
 \end{itemize}
 
-Template selection should take these limitations into account. For example:
+Selection of the receptor structure should take following limitations into account:
 \begin{itemize}
   \item For an enzyme with multiple high-resolution X-ray complexes, choose the structure that best reflects the ligand chemotype and functional state of interest.
   \item For a membrane receptor available only in cryo-EM form, examine local map quality, and use AlphaFold predictions and NMR/SAXS data to refine loops and termini.
   \item For intrinsically disordered proteins, neither crystallography nor AlphaFold will provide a stable pocket; docking may be uninformative without additional constraints.
-
 \end{itemize}
 
-\subsection{Recognise Crystallisation Artefacts and Crystal Environment Effects}
-
-Crystallisation often requires non-physiological conditions, leading to:
-
-\begin{itemize}
-
-  \item Non-native oligomeric assemblies or domain swaps enforced by lattice contacts.\cite{CH4_Joosten2009_PDB_related_databanks}
-
-  \item Bound buffer components, precipitants, and additives (e.g.\ sulfate, phosphate, glycerol, polyethene glycol, organic solvents) occupying pockets.
-
-  \item Conformations stabilised by engineered mutations or truncations.
-
-\end{itemize}
-
-
-
-\paragraph{Non-physiological ligands and ions.} Identify common crystallisation components:
-
-
-
-\begin{itemize}
-
-  \item Sulfate and phosphate often mimic phosphorylated residues or ligands, but may not represent true binding sites.
-
-  \item Organic solvents may occupy hydrophobic cavities during crystallisation, without physiological relevance.
-
-\end{itemize}
-
-
-
-\paragraph{Engineered constructs.} Examine the construct used for crystallisation:
-
-
-
-\begin{itemize}
-
-  \item Truncations may expose surfaces not accessible in the full-length protein.
-
-  \item Fusion partners and stabilising mutations may bias conformational equilibria.
-
-\end{itemize}
-
-
-
-\paragraph{Lattice contacts.} Use PDBePISA or crystallographic viewers to identify strong crystal contacts; loops pinned by such contacts may adopt rare conformations.\cite{CH4_Krissinel2007_PISA}
-
-
-
-For docking, obvious crystallisation artefacts should generally be removed, and pockets that appear only under a single set of conditions should be treated with scepticism unless corroborated by other data.
-
-
-
-\subsection{Understanding Electron Density Maps and Coefficient Files}
-
-
-
-A basic understanding of density and coefficient files can greatly assist in judging structural reliability.
-
-
-
-\subsubsection{X-ray: Structure Factors and Electron Density Maps}
-
-
-
-Diffraction data are stored as structure factors, typically in MTZ or mmCIF files. Common maps include:
-
-
-
-\begin{itemize}
-
-  \item 2$F_o-F_c$ maps: main working maps combining observed data and current model; they should show continuous density at atomic positions.
-
-  \item $F_o-F_c$ difference maps: highlight discrepancies between data and model; positive peaks indicate missing atoms, negative peaks indicate over-modelled atoms.
-
-\end{itemize}
-
-
-
-Docker and SBDD practitioners, even without deep crystallographic training, can benefit from loading these maps (where available) in Coot or similar programs to:
-
-
-
-\begin{itemize}
-
-  \item Confirm that ligands and key side chains are well supported by density.
-
-  \item Detect unmodelled alternative conformations or waters in the binding site.
-
-\end{itemize}
-
-
-
-Quantitative density-fit metrics at the residue or ligand level (real-space correlation, EDSTATS) are increasingly available via PDB-REDO and wwPDB validation reports.\cite{CH4_karplus2012linking,CH4_Joosten2014_PDBREDO}
-
-
-
-\subsubsection{Cryo-EM Maps}
-
-
-
-Cryo-EM maps represent Coulomb potential in real space. For docking:
-
-
-
-\begin{itemize}
-
-  \item Visualise the EMDB map together with the PDB model in the binding-site region.
-
-  \item Verify that side chains and ligands are placed into clear, coherent density features rather than noise.
-
-  \item Use local resolution maps and map--model correlation to differentiate well-defined from speculative parts of the model.\cite{CH4_pintilie2021validation,CH4_Iudin2016_EM_validation}
-
-\end{itemize}
-
-
-
-Recognising strong, continuous density vs weak, fragmented, or noisy features around ligands is often sufficient for a docking practitioner to judge whether a complex is trustworthy.
-
-
-
-\subsection{Use Updated Structure Models (PDB-REDO)}
-
-
-
-Over the decades, structural refinement methods have evolved substantially. Older PDB entries may have been refined with less sophisticated models and looser geometric restraints. PDB-REDO addresses this by systematically re-refining and partially rebuilding X-ray structures.\cite{CH4_Joosten2014_PDBREDO}
-
-
-\begin{itemize}
-\item{Benefits of PDB-REDO models.}
-
-
-
-\begin{itemize}
-
-  \item Often improved $R_\text{free}$ and geometry without sacrificing fit to data.
-
-  \item Correction of misfitting side chains, peptide flips, and other local issues.
-
-  \item More consistent B-factor models across structures, aiding comparative analyses.\cite{CH4_Joosten2014_PDBREDO}
-
-\end{itemize}
-
-
-\item{Comparing original and PDB-REDO models.} When both are available:
-
-
-
-\begin{itemize}
-
-  \item Examine differences in side-chain conformations and backbone geometry in the binding site.
-
-  \item Check whether ligands have been re-fitted or altered.
-
-  \item Re-inspect maps (if available) to verify that PDB-REDO changes are density-supported.
-
-\end{itemize}
-
-
-
-In many cases, the PDB-REDO model is a better starting point for docking, but it is wise to review any major changes manually.
-
-\end{itemize}
-
-\subsection{Validate Your Chosen Structure Against Complementary Data}
-
-
-
-Even after careful structural validation, it is important to test whether your chosen template is consistent with other knowledge about the system.
-
-
-\begin{itemize}
-\item{Biochemistry and mutagenesis.}
-
-
-
-\begin{itemize}
-
-  \item Do mutations known to affect activity or binding line the modelled binding site?
-
-  \item Are resistance mutations located at or near docked ligand interactions?
-
-\end{itemize}
-
-
-
-\item{Structure--activity relationships (SAR).}
-
-
-
-\begin{itemize}
-
-  \item Do interactions implied by the structure rationalise observed SAR across a compound series?
-
-  \item Do subtle chemical modifications map onto strengthened or weakened contacts in a chemically sensible way?
-
-\end{itemize}
-
-
-
-\item{Other structures.}
-
-
-
-\begin{itemize}
-
-  \item Compare with orthologous or homologous structures, alternative ligands, or structures obtained by different methods (X-ray vs cryo-EM vs NMR).\cite{CH4_shao2017multivariate,CH4_Joosten2009_PDB_related_databanks}
-
-  \item Look for recurring features (conserved side-chain orientations, pocket shapes) across conditions.
-
-\end{itemize}
-
-
-
-\item{Biophysical data.}
-
-
-
-\begin{itemize}
-
-  \item Use SAXS, HDX-MS, and NMR data to validate global and local conformations.\cite{CH4_Valentini2015_SASBDB,CH4_pesce2021refining,CH4_fowler2020method}
-
-  \item Integrate chemical shift perturbations and cross-linking data to confirm binding-site locations and contacts.
-
-\end{itemize}
-
-
-
-\item{Computational diagnostics.}
-
-
-\begin{itemize}
-  \item Use short MD simulations to identify models that rapidly relax or exhibit unrealistic strain in the binding site.
-  \item Redock known ligands to test whether the template can reproduce experimental binding poses.
-\end{itemize}
-
-\end{itemize}
-A structure that passes geometric and density-based validation but fails biochemical or SAR consistency checks should be treated with suspicion as a docking template.
-
-\section{A Practical Preparation Checklist for Docking and SBDD}
-
-To summarise the preceding sections, a practical checklist for preparing a biomacromolecular structure for docking and SBDD is:
-
-\begin{enumerate}
-  \item \textbf{Select candidate structures.}
-
-  \begin{itemize}
-    \item Search PDB/PDBe for relevant entries.
-    \item Prioritise appropriate species, constructs, ligands, and experimental conditions.
-  \end{itemize}
-  \item \textbf{Check experimental method and global metrics.}
-  \begin{itemize}
-    \item X-ray: resolution, $R_\text{work}$/$R_\text{free}$, completeness, $CC_{1/2}$, validation sliders.\cite{CH4_Evans2013_data_quality,CH4_Wang2015_structure_quality,CH4_karplus2012linking}
-  
-    \item Cryo-EM: global and local resolution, map--model validation.\cite{CH4_pintilie2021validation}
-    \item NMR: ensemble and restraint statistics, geometry and ANSURR scores.\cite{CH4_baskaran2024restraint,CH4_fowler2020method}
-  \end{itemize}
-
-  \item \textbf{Inspect the binding site.}
-  \begin{itemize}
-    \item Visualise protein and ligands together with electron density or EM maps.
-    \item Check local quality metrics (real-space correlation, B-factors, outliers).
-  \end{itemize}
-
-  \item \textbf{Determine the correct oligomeric state.}
-  \begin{itemize}
-    \item Use PDBePISA\cite{CH4_Krissinel2007_PISA} and PDB annotations to build the likely biological assembly.
-    \item Avoid docking to crystal contacts not supported by PISA or solution data.
-  \end{itemize}
-
-  \item \textbf{Handle missing residues and loops.}
-  \begin{itemize}
-    \item Identify missing segments and assess their proximity to the binding site.
-    \item Model critical loops using homology and/or AlphaFold, or limit docking away from uncertain regions.\cite{CH4_Jumper2021_AlphaFold,CH4_Varadi2022_AlphaFoldDB}
-  \end{itemize}
-
-  \item \textbf{Treat non-standard residues, PTMs, and cofactors.}
-  \begin{itemize}
-
-    \item Identify biologically essential modifications and cofactors; retain them.
-    \item Remove obvious crystallisation artefacts.
-    \item Generate appropriate parameters for docking and MD.\cite{CH4_bruno2004retrieval,CH4_nicholls2017ligand}
-  \end{itemize}
-
-  \item \textbf{Validate ligands and cofactors.}
-
-  \begin{itemize}
-    \item Check density support, geometry, and interactions.
-    \item Use ligand validation tools; re-fit or discard questionable ligands.\cite{CH4_chakraborti2021all,CH4_emsley2017tools}
-
-  \end{itemize}
-
-  \item \textbf{Consider updated models.}
-  \begin{itemize}
-    \item Retrieve PDB-REDO versions where available; compare binding-site conformations and validation metrics.\cite{CH4_Joosten2014_PDBREDO}
-  \end{itemize}
-
-  \item \textbf{Integrate complementary data.}
-
-  \begin{itemize}
-    \item Cross-check with mutagenesis, SAR, biophysical data, and alternative structures.\cite{CH4_shao2017multivariate,CH4_Valentini2015_SASBDB}
-  \end{itemize}
-
-  \item \textbf{Final receptor preparation for docking.}
-  \begin{itemize}
-    \item Assign protonation states and tautomeric forms.
-    \item Decide which waters and ions to retain based on structural and functional arguments.
-    \item Generate multiple receptor conformations if warranted by dynamics.
-  \end{itemize}
-\end{enumerate}
 
 \section{Working with Computed Structure Models from the Protein Data Bank}
-
 For decades, structural biology has relied primarily on experimentally determined macromolecular structures deposited in the Protein Data Bank (PDB), including X-ray crystallography, nuclear magnetic resonance (NMR) spectroscopy, and, more recently, cryo-electron microscopy (cryo-EM).\cite{CH4_Berman2000_PDB,CH4_wwpdb2019protein} These experimental structures have enabled structure-based drug design, functional annotation, and mechanistic understanding across essentially all areas of biology. However, experimental structure determination remains costly and time-consuming, and many proteins — especially membrane proteins, large complexes, and intrinsically disordered regions — remain structurally uncharacterised.
 
-Recent advances in machine-learning-based structure prediction, most prominently AlphaFold2 and related methods, have transformed this landscape.\cite{CH4_Jumper2021_AlphaFold,CH4_Varadi2022_AlphaFoldDB} High-accuracy \emph{computed structure models} (CSMs) can now be generated at scale, and millions of predicted protein structures are accessible through resources that are integrated with, or closely linked to, the PDB. RCSB PDB, PDBe, and other World Wide Protein Data Bank (wwPDB) partners now provide portals where users can browse both experimentally determined structures and CSMs side by side.\cite{CH4_wwpdb2019protein,CH4_Burley2022}
+Recent advances in machine-learning-based structure prediction, most prominently AlphaFold2\cite{CH4_Jumper2021_AlphaFold,CH4_Varadi2022_AlphaFoldDB} and related methods, have transformed this landscape. High-accuracy \emph{computed structure models} (CSMs) can now be generated at scale, and millions of predicted protein structures are accessible through resources that are integrated with, or closely linked to, the PDB. RCSB PDB, PDBe, and wwPDB partners now provide portals where users can browse both experimentally determined structures and CSMs side by side.\cite{CH4_wwpdb2019protein,CH4_Burley2022}
 
-This essay discusses how to work with computed-structure models within the PDB ecosystem. It focuses on what CSMs are, how they are presented through PDB-related portals, how to evaluate their reliability, and how to incorporate them into structural biology and structure-based drug discovery workflows while recognising their limitations.
 
-\section{From Experimental Structures to Computed Structure Models}
-
-Historically, the PDB accepted only experimentally determined macromolecular structures.\cite{CH4_Berman2000_PDB,CH4_Burley2022} This strict policy ensured that PDB entries were rooted in physical measurements and could be validated against experimental data. In parallel, homology models and other computed structures were stored in separate resources such as the Model Archive.\cite{CH4_tauriello2025modelarchive} These resources were loosely linked to the PDB but clearly segregated to avoid confusion between experimental and predicted models.
-
-The advent of AlphaFold2 changed expectations about what computational models can achieve. In the Critical Assessment of Structure Prediction (CASP14), AlphaFold2 achieved near-experimental accuracy for many globular domains.\cite{CH4_Jumper2021_AlphaFold} Following this breakthrough, the AlphaFold Protein Structure Database (AlphaFold DB) was launched, providing computed models for large fractions of many proteomes.\cite{CH4_Varadi2022_AlphaFoldDB}. These models are not PDB entries in the traditional sense, but they are distributed in PDB/mmCIF formats and are tightly integrated with PDB portals.
-As a result, users visiting the RCSB PDB or PDBe website can often choose between an experimentally determined structure (if available) and one or more computed models for the same UniProt sequence.\cite{CH4_wwpdb2019protein,CH4_Burley2022} This co-visualisation encourages users to treat CSMs as first-class structural hypotheses, while still distinguishing them from experimentally validated structures.
-
-\section{Accessing Computed Structure Models via the PDB Ecosystem}
+\subsection{Accessing Computed Structure Models}
 
 The wwPDB partners collaborate with external CSM providers, such as the AlphaFold DB and RoseTTAFold servers, to make predicted structures discoverable through familiar PDB interfaces.\cite{CH4_wwpdb2019protein,CH4_Varadi2022_AlphaFoldDB} A typical access pattern is:
-
 \begin{itemize}
-
   \item A user searches for a protein of interest using a PDB portal (e.g. RCSB PDB or PDBe), by name or by UniProt accession.
   \item If experimental structures are available, they are listed first, often with associated ligands, complexes, and validation metrics.
   \item In addition, a \emph{Computed Structure Models} section highlights links to AlphaFold or other prediction resources, with direct download options for the predicted structures.
 
 \end{itemize}
 
-This approach has several advantages:
+This approach has several advantages, such as, it keeps the PDB archive itself focused on experimental entries, preserving historical continuity and validation frameworks. However, it allows users to easily discover CSMs when no experimental structure exists, or when only fragmentary experimental coverage is available. This facilitates comparisons between experimental and computed models, for example, overlaying an AlphaFold model with a partial crystal structure to assess how well predicted domains align with experimental density. The PDB and its partners databases clearly label CSMs as predicted, and typically direct users to the originating resource (e.g. AlphaFold DB) for detailed information on prediction methods, confidence metrics, and licensing.\cite{CH4_Varadi2022_AlphaFoldDB,CH4_Burley2022}
 
-\begin{itemize}
-  \item It keeps the PDB archive itself focused on experimental entries, preserving historical continuity and validation frameworks.
-  \item It allows users to easily discover CSMs when no experimental structure exists, or when only fragmentary experimental coverage is available.
-  \item It facilitates comparisons between experimental and computed models, for example, overlaying an AlphaFold model with a partial crystal structure to assess how well predicted domains align with experimental density.
-\end{itemize}
+\subsection{Interpreting Confidence Metrics in Computed Models}
 
-The PDB and its partners clearly label CSMs as predicted, and typically direct users to the originating resource (e.g.\ AlphaFold DB) for detailed information on prediction methods, confidence metrics, and licensing.\cite{CH4_Varadi2022_AlphaFoldDB,CH4_Burley2022}
+The main challenge in working with CSMs is that there are no experimental structure factors or EM maps to validate against. Instead, users must rely on internal confidence measures and external comparisons to experimental structures and functional data.
+\subsubsection{Per-residue Confidence: pLDDT}
 
-\section{Interpreting Confidence Metrics in Computed Models}
+AlphaFold2\cite{CH4_Jumper2021_AlphaFold,CH4_Varadi2022_AlphaFoldDB} introduces the per-residue predicted local-distance difference test (pLDDT) score, which estimates the expected accuracy of local structure. In practice, the pLDDT values $>$70--80 typically indicate high confidence in the backbone conformation for globular regions. Whereas, lower pLDDT values suggest uncertainty. However, it has been noted that such residues may be disordered, or the model may not have converged on a unique conformation. Many PDB-linked viewers colour code the structure according to pLDDT, making it straightforward to identify well-defined cores vs flexible or poorly predicted regions.
 
-A central challenge in working with CSMs is that there are no experimental structure factors or EM maps to validate against. Instead, users must rely on internal confidence measures and external comparisons to experimental structures and functional data.
-
-\subsection{Per-residue Confidence: pLDDT}
-
-AlphaFold2 introduces the per-residue predicted local-distance difference test (pLDDT) score, which estimates the expected accuracy of local structure.\cite{CH4_Jumper2021_AlphaFold,CH4_Varadi2022_AlphaFoldDB} In practice:
-
-\begin{itemize}
-
-  \item pLDDT values $>$70--80 typically indicate high confidence in the backbone conformation for globular regions.
-  \item Lower pLDDT values suggest uncertainty; residues may be disordered in reality, or the model may not have converged on a unique conformation.
-  \item Many PDB-linked viewers colour the structure according to pLDDT, making it straightforward to identify well-defined cores vs flexible or poorly predicted regions.
-\end{itemize}
-
-For docking and functional interpretation, pLDDT is a useful first filter: residues in high-confidence regions can generally be treated as structurally reliable, whereas low-confidence segments should be treated cautiously, modelled flexibly, or excluded from detailed interpretation.
+For docking and functional interpretation, pLDDT is a useful first filter. The residues in high-confidence regions can generally be treated as structurally reliable, whereas low-confidence segments should be treated cautiously, modelled flexibly, or excluded from detailed interpretation if far outside the region of interest (binding site).
 
 \subsection{Domain-level Confidence: Predicted Aligned Error (PAE)}
 
-AlphaFold's predicted aligned error (PAE) matrix encodes anticipated positional errors between residue pairs under an optimal superposition.\cite{CH4_Jumper2021_AlphaFold} This provides information about relative domain orientations:
+AlphaFold's\cite{CH4_Jumper2021_AlphaFold} predicted aligned error (PAE) matrix encodes anticipated positional errors between residue pairs under an optimal superposition. This provides information about relative domain orientations, such that, low PAE between two domains suggests that their relative placement is predicted with confidence. Whereas, high PAE indicates that the model is uncertain about how domains pack relative to each other, even if each domain individually has high pLDDT. Through PDB-linked viewers or AlphaFold DB itself, users can visualise the PAE matrix interactively. For example, a particular enzyme domain \emph{A}, and another domain \emph{B} may each be well predicted, however, the PAE matrix might reveal that their relative orientation is uncertain. For docking, this implies caution when interpreting inter-domain interfaces or using them as rigid scaffolds.
 
+\subsection{Using Computed Models}
+
+\subsubsection{Model Selection}
+
+When multiple CSMs are available, model selection is guided by the coverage of the region of interest (e.g. inclusion of a particular domain or motif). High pLDDT values in the binding site or functional interface should be preferred. And, low PAE between interacting domains that form the pocket are highly recommended.  Often, the first practical step is to \emph{trim} the model by removing the low-confidence N- and C-terminal regions that are likely to bedisordered and irrelevant for the analysis. Furthermore, consider deleting linkers or insertions with very low pLDDT that do not contribute directly to binding. Such trimming simplifies tasks such as docking and molecular dynamics (MD), while focusing computational efforts on the high-confidence low-error regions of the model.
+
+\subsubsection{Aligning Computed and Experimental Structures}
+
+Computed models can complement experimental structures in the following ways:
 \begin{itemize}
-  \item Low PAE between two domains suggests that their relative placement is predicted with confidence.
-  \item High PAE indicates that the model is uncertain about how domains pack relative to each other, even if each domain individually has high pLDDT.
-\end{itemize}
-
-Through PDB-linked viewers or AlphaFold DB itself, users can explore the PAE matrix interactively. For example, a kinase domain and a regulatory domain may each be well predicted, but the PAE matrix might reveal that their relative orientation is uncertain. For docking, this implies caution when interpreting inter-domain interfaces or using them as rigid scaffolds for ligand placement.
-
-\section{Using Computed Models in Structural Biology Workflows}
-
-\subsection{Model Selection}
-
-When multiple CSMs are available, model selection is guided by:
-\begin{itemize}
-
-  \item Coverage of the region of interest (e.g.\ inclusion of a particular domain or motif).
-  \item High pLDDT values in the binding site or functional interface.
-  \item Low PAE between interacting domains that form the pocket.
-
-\end{itemize}
-Often, the first practical step is to \emph{trim} the model:
-
-\begin{itemize}
-  \item Remove low-confidence N- and C-terminal tails that are likely disordered and irrelevant for the intended analysis.
-  \item Remove linkers or insertions with very low pLDDT that do not contribute directly to binding.
-\end{itemize}
-
-Such trimming simplifies downstream tasks such as docking and molecular dynamics (MD), while focusing computational effort on the better-supported parts of the model.
-
-\subsection{Aligning Computed and Experimental Structures}
-
-Computed models can complement experimental structures in several ways:
-\begin{itemize}
-
   \item Filling gaps where experimental structures lack certain domains or loops.
   \item Suggesting alternative conformational states not captured in crystals or cryo-EM reconstructions.
-  \item Providing starting models for experimental phasing or for integrative modelling.\cite{CH4_Burley2022}
-
+  \item Providing starting models for experimental phasing or for integrative modelling.
 \end{itemize}
+Overlaying an AlphaFold model with an experimental structure in the PDB portals allows users to assess how well predicted and observed regions agree\cite{CH4_Varadi2022_AlphaFoldDB,CH4_Burley2022}. Systematic deviations might reveal crystallisation artefacts, domain rearrangements, or functional state differences. Conversely, good agreement increases confidence in using the computed model to extend or interpret the experimental data.
 
-Overlaying an AlphaFold model with an experimental structure via the PDB portals allows users to assess how well predicted and observed regions agree.\cite{CH4_Varadi2022_AlphaFoldDB,CH4_Burley2022} Systematic deviations might reveal crystallisation artefacts, domain rearrangements, or functional state differences. Conversely, good agreement increases confidence in using the computed model to extend or interpret the experimental data.
+\subsubsection{Incorporating Ligands, Cofactors, and PTMs}
 
-\subsection{Incorporating Ligands, Cofactors, and PTMs}
-By default, most CSMs do not contain ligands, metal ions, cofactors, or post-translational modifications (PTMs).\cite{CH4_Jumper2021_AlphaFold,CH4_Varadi2022_AlphaFoldDB} When working through PDB-related interfaces, users must therefore:
+By default, most CSMs do not contain ligands, metal ions, cofactors, or post-translational modifications (PTMs).  When working through PDB-related interfaces, users must therefore,  identify biologically essential ligands and cofactors from experimental structures, UniProt annotations, or biochemical data. It is feasible and advised to manually \emph{graft} these components onto the computed model by aligning to related PDB entries or by docking them into the predicted pocket. Manually modify the natural amino acids to insert PTMs, and parameterise them appropriately for MD or docking.
 
-\begin{itemize}
+\subsubsection{Docking and MD with Computed Models}
+Computed models can be used as receptors for docking and as starting points for MD simulations. However, we recommend exercising caution at every step to ensure the correction and biological validity of the model(s). Docking into a purely computed pocket is most reliable when pLDDT is high, and the pocket is defined by conserved structural motifs (e.g. catalytic triads, metal-binding sites). For flexible loops or uncertain domains, ensemble docking or enhanced-sampling MD simulations can be used to explore alternative conformations. Moreover, we recommend short MD simulations to relax strained local geometries in computed models and reveal whether the predicted pocket is stable. Since CSMs are not constrained by experimental density, it is particularly important to validate docking results against orthogonal data, such as mutagenesis, SAR, or biochemical assays, before drawing conclusions.
 
-  \item Identify biologically essential ligands and cofactors from experimental structures, UniProt annotations, or biochemical data.
-  \item Manually \emph{graft} these components onto the computed model by aligning to related PDB entries or by docking them into the predicted pocket.
-  \item Introduce PTMs where strongly supported by evidence, and parameterise them appropriately for MD or docking.
-\end{itemize}
-
-This process mirrors standard receptor preparation workflows for experimental structures, but must be done entirely in silico. The absence of density maps requires extra care: ligand poses and PTM conformations cannot be validated against electron density, so they should be cross-checked against known binding motifs, conserved residues, and functional data.
-
-\subsection{Docking and MD with Computed Models}
-Computed models can be used as receptors for docking and as starting points for MD simulations, but with caveats:
-
-\begin{itemize}
-
-  \item Docking into a purely computed pocket is most reliable when pLDDT is high, and the pocket is defined by conserved structural motifs (e.g.\ catalytic triads, metal-binding sites).
-  \item For flexible loops or uncertain domains, ensemble docking or enhanced-sampling MD can be used to explore alternative conformations.
-  \item Short MD simulations can help relax strained local geometries in computed models and reveal whether the predicted pocket is stable.
-
-\end{itemize}
-
-Because CSMs are not constrained by experimental density, it is particularly important to validate docking results against orthogonal data (mutagenesis, SAR, biochemical assays) before drawing strong conclusions.
-
-\section{Limitations and Best Practices}
+\subsection{Limitations and Best Practices}
 While the high accuracy of many CSMs is impressive, they also have systematic limitations:
 
 \begin{itemize}
-
-  \item \textbf{No direct experimental validation:} Confidence metrics such as pLDDT and PAE are internal to the prediction model; they do not replace experimental verification.\cite{CH4_Jumper2021_AlphaFold}
-  \item \textbf{Uncertain complexes and interfaces:} Multimer predictions can be less reliable than monomeric models, and many PDB portals distinguish clearly between experimental complexes and predicted oligomeric assemblies.\cite{CH4_Burley2022}
-  \item \textbf{Absence of ligands and PTMs:} As noted, most CSMs lack explicit ligands and modifications, which must be introduced and validated separately.\cite{CH4_Varadi2022_AlphaFoldDB}
-  \item \textbf{Disordered regions:} Low-pLDDT regions often correspond to intrinsically disordered segments, where a single static model is not a meaningful representation of reality.
-
+  \item \textbf{No direct experimental validation:} Confidence metrics such as pLDDT and PAE are internal to the prediction model, and hence, they do not replace experimental verification.
+  \item \textbf{Uncertain complexes and interfaces:} Multimer predictions can be less reliable than monomeric models, and many PDB portals distinguish clearly between experimental complexes and predicted oligomeric assemblies.
+  \item \textbf{Absence of ligands and PTMs:} As noted, most CSMs lack explicit ligands and modifications, which must be introduced and validated separately.
+  \item \textbf{Disordered regions:} Low-pLDDT regions often correspond to intrinsically disordered segments, where a single static model is not a meaningful representation of biological state.
 \end{itemize}
 
 Best practices for working with CSMs from PDB-related portals, therefore, include:
@@ -934,10 +487,9 @@ Best practices for working with CSMs from PDB-related portals, therefore, includ
 
 \section{Summary}
 
-Biomacromolecular structures from X-ray crystallography, cryo-EM, NMR, and recent prediction methods such as AlphaFold are indispensable for modern SBDD. However, they are hypotheses constrained by data and prior knowledge, not immutable truths. The quality, completeness, and interpretation of these models — especially in the binding-site region — have profound effects on docking outcomes. The wwPDB ecosystem and derived databanks now provide rich validation tools, updated models (PDB-REDO), integrative views (PDBe, PDBe-KB), and complementary experimental data (EMDB, BMRB, SASBDB).\cite{CH4_wwpdb2019protein,CH4_Velankar2016_PDBe,CH4_young2018worldwide,CH4_Valentini2015_SASBDB} Docking practitioners who systematically exploit these resources, and who adopt a structurally informed workflow to interrogate, curate, and prepare their receptor models, can greatly reduce the risk of chasing artefacts. Investing effort upfront to understand how a structure was determined, how it has been validated, and how it relates to the biological system of interest will almost always pay off in more reliable docking results, more coherent SAR interpretation, and tighter integration between structural biology and medicinal chemistry. In effect, robust structure preparation transforms docking from a purely computational exercise into a multidisciplinary endeavour grounded in experimental realities.
+Biomacromolecular structures from X-ray crystallography, cryo-EM, NMR, and prediction methods such as AlphaFold are indispensable for modern SBDD workflows. The quality, completeness, and interpretation of these models, especially in the binding-site region, have profound effects on the docking outcomes. The wwPDB ecosystem and derived databanks now provide rich validation tools, updated models (PDB-REDO), integrative views (PDBe, PDBe-KB), and complementary experimental data (EMDB, BMRB, SASBDB).\cite{CH4_wwpdb2019protein,CH4_Velankar2016_PDBe,CH4_young2018worldwide,CH4_Valentini2015_SASBDB}. Users are advised to systematically explore these resources, and adopt a structurally informed workflow to interrogate, curate, and prepare their receptor models for docking. This ensures a reduced risk of letting model artefacts to corrupt the docking outcomes. Investing effort to understand how a structure was determined, how it has been validated, and how it relates to the biological system of interest will almost always pay off in more reliable docking results. Thus a more coherent SAR interpretation, and tighter integration between structural biology and medicinal chemistry can be achieved. 
 
-Computed structure models accessible through the PDB ecosystem represent a major expansion of structural coverage in biology. They provide immediate structural hypotheses for many proteins that lack experimental structures and can be integrated seamlessly with PDB-based workflows for visualisation, analysis, docking, and MD simulations.\cite{CH4_wwpdb2019protein,CH4_Burley2022,CH4_Varadi2022_AlphaFoldDB} At the same time, working effectively with CSMs requires an appreciation of their confidence metrics, their systematic limitations, and their relationship to experimental data. PDB portals and associated tools make it increasingly easy to navigate between computed and experimental structures, compare them, and incorporate both into a coherent structural model of the system under study. When used judiciously and validated against experiment, computed structure models are powerful additions to the structural biologist's toolkit, accelerating discovery while preserving the critical distinction between prediction and measurement.
-
+Computed structure models accessible through the PDB portal represent a major expansion of structural coverage in biology. They provide immediate structural hypotheses for many proteins that lack experimental structures and can be integrated with PDB-based workflows for visualisation, analysis, docking, and MD simulations.\cite{CH4_wwpdb2019protein,CH4_Burley2022,CH4_Varadi2022_AlphaFoldDB} At the same time, working with CSMs requires an appreciation of their confidence metrics, systemic limitations, and relationship to experimental data. PDB portals and associated tools make it easy to navigate between computed and experimental structures, compare them, and incorporate both into a coherent structural model of the system under study. When used judiciously and validated against experiment, computed structure models are powerful additions to the structural biologist's toolkit, accelerating drug discovery while preserving the critical distinction between prediction and measurement.
 
 
 \bibliographystyle{unsrtnat}
