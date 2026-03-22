@@ -72,8 +72,17 @@ A simplified version of the protocol is shown as follows:
 
 \section{Docking for PROTAC Design}
 
-PROTACs are heterobifunctional molecules that recruit an E3 ligase to a target protein, triggering ubiquitination and proteasomal degradation.  Structurally, a PROTAC contains a scaffold that binds the target, a ligand for an E3 ligase, such as VHL or cereblon, and a linker that connects the two moieties.  
+PROTACs are heterobifunctional (\textbf{Figure \ref{fig:protac}B}) molecules that recruit an E3 ligase to a target protein, triggering ubiquitination and proteasomal degradation(\textbf{Figure \ref{fig:protac}A}).  Structurally, a PROTAC contains a scaffold that binds the target, a ligand for an E3 ligase, such as VHL or cereblon, and a linker that connects the two moieties.  
 The pharmacologically relevant species is a ternary complex comprising the target protein, the E3 ligase, and the PROTAC; the stability and geometry of this assembly strongly influence degradation efficiency.
+
+\begin{figure}[hbt!]
+    \centering
+
+    \includegraphics[width=1\textwidth]{PROTAC.jpg}
+
+    \caption{\textbf{A.} Proteolysis targeting chimera mechanism. E1, E2, E3: ubiquitination enzymes; Ub = ubiquitin; PROTAC = proteolysis targeting chimera; target = protein to be degraded \textbf{B.} Chemical structure of ARV-110, an investigational, orally bioavailable PROTAC. Ligands targeting androgen receptors (green), linkers (orange), and ligands targeting E3 CRBN (blue). This image is partially reproduced under the Creative Commons CC0 1.0 Universal Public Domain Dedication} 
+\label{fig:protac}
+\end{figure}
 
 Docking for PROTACs is intrinsically more complex than conventional docking for several reasons.  First, one must consider protein–protein interactions between the target and ligase, which may be weak or absent in the absence of the PROTAC. Second, the PROTAC must adopt a conformation that simultaneously satisfies the binding requirements of both pockets and accommodates the protein–protein interface. Third, the space of linker conformations and protein orientations is very high–dimensional, so classical sampling is computationally prohibitive. These issues mean that simple sequential docking of the two monovalent ligands into their respective binding sites, with a generic linker built afterwards, often fails to reproduce crystallographic ternary complexes or to correlate with observed degradation efficiencies\cite{CH14_Drummond2020,CH14_PRosettaC2020}. 
 
