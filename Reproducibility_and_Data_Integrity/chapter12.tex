@@ -30,11 +30,11 @@ For an object to be reusable, it must first be \emph{Findable}. This principle e
 
 \begin{itemize}
   \item Assign persistent identifiers, for example, DOIs from Zenodo\cite{CH12_sicilia2017community} or institutional repositories, to curated datasets, input decks, workflows, and software releases.
-  \item Provide descriptive metadata that includes, at minimum, the scientific context, such as the targets, ligands, and chemical series. For methods, include software, versions, key parameters, and citations to relevant publications.
+  \item Provide descriptive metadata that includes, at minimum, the scientific context, such as the targets, ligands, and chemical series. For methods, include the software used, versions, key parameters, and citations to relevant publications.
   \item Register datasets and software in catalogues such as re3data or FAIRsharing where appropriate, to improve global visibility.
 \end{itemize}
 
-In docking, findability also involves clear linking between the publication, the primary data, e.g., ligand libraries, receptor structures, and the computational workflows used to generate the scores and poses\cite{CH12_plos2025tenDocking,CH12_rigorRepro2020}.
+In docking, findability also involves clear linking between the publication, the primary data (e.g., ligand libraries, receptor structures), and the computational workflows used to generate scores and poses\cite{CH12_plos2025tenDocking,CH12_rigorRepro2020}.
 
 \subsection{Accessible}
 
@@ -75,7 +75,7 @@ The ultimate aim of FAIR is to maximise the potential for reuse of digital objec
 
 \subsection{Overview of a docking workflow}
 
-A typical structure-based virtual screening workflow consists of: (i) defining and preparing the biological target(s), (ii) assembling and curating a ligand library, (iii) configuring and running the docking engine, (iv) post-processing and analysing the results, and often (v) validating the docking protocol against known ligands or experimental data\cite{CH12_plos2025tenDocking,CH12_rigorRepro2020}. At each stage, there are choices that can affect the outcome: alternate receptor conformations and protonation states, grid definition and search parameters, ligand protonation and tautomeric states, scoring functions, and ranking criteria. Without full disclosure of these choices, it is impossible to assess whether a reported enrichment curve or pose prediction is robust or an artefact of arbitrary settings. The community guidelines for docking emphasise careful validation against reference ligands and experimental binding data, and stress that all input files, preparation steps, and docking parameters should be shared to comply with FAIR recommendations\cite{CH12_plos2025tenDocking,CH12_toolsRepro2016,CH12_reproWorkflows2017}. Journals and funders increasingly expect such practices; however, adoption remains inconsistent.
+A typical structure-based virtual screening workflow consists of: (i) defining and preparing the biological target(s), (ii) assembling and curating a ligand library, (iii) configuring and running the docking engine, (iv) post-processing and analysing the results, and often (v) validating the docking protocol against known ligands or experimental data\cite{CH12_plos2025tenDocking,CH12_rigorRepro2020}. At each stage, there are choices that can affect the outcome: alternate receptor conformations and protonation states; grid definition and search parameters; ligand protonation and tautomeric states; scoring functions; and ranking criteria. Without full disclosure of these choices, it is impossible to assess whether a reported enrichment curve or pose prediction is robust or an artefact of arbitrary settings. The community guidelines for docking emphasise careful validation against reference ligands and experimental binding data, and stress that all input files, preparation steps, and docking parameters should be shared to comply with FAIR recommendations\cite{CH12_plos2025tenDocking,CH12_toolsRepro2016,CH12_reproWorkflows2017}. Journals and funders increasingly expect such practices; however, adoption remains inconsistent.
 
 \subsection{Reporting the biological target}
 
@@ -148,7 +148,7 @@ These services typically provide:
 \begin{figure}[hbt!]
     \centering
     \includegraphics[width=1\textwidth]{zenodo.jpg}
-    \caption{A screenshot of zenodo's page} 
+    \caption{A screenshot of Zenodo's page} 
     \label{fig:zenodo}
 \end{figure}
 
@@ -167,7 +167,7 @@ These services typically provide:
     \label{fig:osf}
 \end{figure}
 
-Comparison charts from library and society initiatives can help researchers select a repository based on factors such as size limits, curation services, and costs\cite{CH12_aguRepos,CH12_uMassOpenData}. Several funding agencies explicitly recommend or mandate depositing data and code in repositories registered in catalogues like re3data or FAIRsharing\cite{CH12_publisherReqs,CH12_helpingFAIR2019}.
+Comparison charts from library and society initiatives can help researchers select a repository based on factors such as size limits, curation services, and costs\cite{CH12_aguRepos,CH12_uMassOpenData}. Several funding agencies explicitly recommend or mandate depositing data and code in repositories registered in catalogues such as re3data or FAIRsharing\cite{CH12_publisherReqs,CH12_helpingFAIR2019}.
 
 \subsection{Discipline-specific and institutional infrastructures}
 
@@ -184,7 +184,7 @@ To maximise reusability and minimise barriers for reviewers and future users, we
   \item Clear licensing files specifying permissions for data and code reuse, for example, \texttt{LICENSE} for software and an explicit Creative Commons or CC0 statement for data.
 \end{itemize}
 
-Once organised, this directory tree can be archived and uploaded to a generalist repository such as Zenodo, or OSF, which in turn will assign a DOI and allow the dataset to be cited alongside the associated article\cite{CH12_uTexasRepos,CH12_aguRepos,CH12_snsfRepos}.
+Once organised, this directory tree can be archived and uploaded to a generalist repository such as Zenodo or OSF, which in turn will assign a DOI and allow the dataset to be cited alongside the associated article\cite{CH12_uTexasRepos,CH12_aguRepos,CH12_snsfRepos}.
 
 \subsection{Code repositories and archival integration}
 
@@ -267,7 +267,7 @@ Building on published recommendations for docking\cite{CH12_plos2025tenDocking} 
   \item Instructions in the \texttt{README} for reproducing key figures and tables from the raw data.
 \end{itemize}
 
-Authors and reviewers can use such a checklist as a concrete interpretation of FAIR principles for docking and related computational chemistry workflows\cite{CH12_plos2025tenDocking,CH12_mdChecklist2023,CH12_rigorRepro2020}.
+Authors and reviewers can use such a checklist as a concrete implementation of FAIR principles for docking and related computational chemistry workflows\cite{CH12_plos2025tenDocking,CH12_mdChecklist2023,CH12_rigorRepro2020}.
 
 \section{Open versus closed source software and data}
 
@@ -283,7 +283,7 @@ From a reproducibility perspective, open-source software offers several advantag
   \item Equity: researchers in institutions or countries with limited resources are not excluded by licence fees.
 \end{itemize}
 
-These benefits align closely with FAIR expectations that software artefacts should be well documented, accessible, and reusable\cite{CH12_goFairPrinciples,CH12_tenCleanOSS,CH12_barba2022role}. AutoDock Vina is a good example: it is one of the most widely used, open-source docking engines, distributed under a permissive Apache licence, with active development on public GitHub and extensive integration in graphical interfaces and pipelines\cite{CH12_trott2010vina,CH12_autodockVinaGit}. Its open status has facilitated community-driven benchmarking, method extensions, and incorporation into automated virtual screening workflows.
+These benefits align closely with FAIR expectations that software artefacts should be well documented, accessible, and reusable\cite{CH12_goFairPrinciples,CH12_tenCleanOSS,CH12_barba2022role}. AutoDock Vina is a good example: it is one of the most widely used open-source docking engines, distributed under a permissive Apache licence, with active development on GitHub and extensive integration into graphical interfaces and pipelines\cite{CH12_trott2010vina,CH12_autodockVinaGit}. Its open status has facilitated community-driven benchmarking, method extensions, and incorporation into automated virtual screening workflows.
 
 \subsection{Closed-source and proprietary tools}
 
@@ -308,7 +308,7 @@ A related debate concerns open data versus controlled-access data. FAIR does not
   \item Sharing all non-sensitive details openly, for example, code, container images, generic workflows, so that barriers apply only where absolutely necessary.
 \end{itemize}
 
-A useful concept here is \emph{open verifiable reproducibility}, where the computational workflow and environment are open, however, the sensitive input data are accessed via controlled channels that nonetheless allow independent verification by authorized parties\cite{CH12_computationalReproGuide}.
+A useful concept here is \emph{open verifiable reproducibility}, where the computational workflow and environment are open; however, the sensitive input data are accessed via controlled channels that nonetheless allow independent verification by authorised parties\cite{CH12_computationalReproGuide}.
 
 \subsection{Towards a balanced ecosystem}
 
