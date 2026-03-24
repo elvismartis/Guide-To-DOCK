@@ -18,7 +18,7 @@
 
 Molecular docking is now a routine component of structure-based drug discovery pipelines, used at scales ranging from hypothesis-driven pose analysis of a handful of ligands to ultra–large virtual screens of hundreds of millions of compounds. Despite this apparent maturity, interpreting and validating docking results remains non-trivial and is often the weakest link in otherwise sophisticated workflows. Numerous benchmarking studies have shown that while many docking programs can often recover crystallographic binding modes with reasonable accuracy, their ability to rank ligands by affinity or to drive robust hit discovery is far more limited and system-dependent\cite{CH8_Warren2006,CH8_Kitchen2004,CH8_Cheng2009}.
 
-This chapter focuses on practical aspects of analysing and validating docking results. We emphasise not only the good practices that experienced practitioners follow, but also the common failures and negative examples encountered in the literature and in early–stage projects. The goal is to provide a realistic view of what docking can and cannot do, and to design and interpret calculations so they educate rather than mislead.
+This chapter focuses on practical aspects of analysing and validating docking results. We emphasise not only the good practices followed by experienced practitioners, but also the common failures and negative examples encountered in the literature and in early–stage projects. The goal is to provide a realistic view of what docking can and cannot do, and to design and interpret calculations so they educate rather than mislead.
 
 \section{Docking Outputs}
 
@@ -103,7 +103,7 @@ Best practices for re-docking include:
   \item Ensuring that protein and ligand preparation protocols used in re-docking match those planned for virtual screening.
 \end{itemize}
 
-Only the best RMSD achievable by any pose, while ignoring that the near-native pose was ranked very low; such protocols often fail in screening contexts and must be avoid as it is misleading. 
+Only the best RMSD achievable by any pose, while ignoring that the near-native pose was ranked very low; such protocols often fail in screening contexts and must be avoided as they are misleading. 
 
 \subsection{Cross-Docking and Induced Fit Considerations}
 
@@ -153,8 +153,8 @@ Public benchmarks such as DUD-E, DEKOIS, and others provide standardised actives
 
 \subsection{Consensus scoring}
 
-Consensus scoring combines outputs from multiple docking programs or scoring functions, typically by averaging scores, aggregating ranks, or using more sophisticated schemes such as weighted or exponential rank combinations\cite{CH8_Cheng2009,CH8_ConsensusDocking2022}. Thus, it can reduce method-specific noise and systematic biases. It has shown to improve enrichment in retrospective virtual screening. It is often straightforward to apply when multiple methods are already in use.
-However, it requires careful standardisation of input scores (e.g., sign conventions, scales). A poor avergaging or weighting scheme can lead to poor performance or over-weightage to one scoring method. If additional docking trials are warranted this increases computational cost.
+Consensus scoring combines outputs from multiple docking programs or scoring functions, typically by averaging scores, aggregating ranks, or using more sophisticated schemes such as weighted or exponential rank combinations\cite{CH8_Cheng2009,CH8_ConsensusDocking2022}. Thus, it can reduce method-specific noise and systematic biases. It has been shown to improve enrichment in retrospective virtual screening. It is often straightforward to apply when multiple methods are already in use.
+However, it requires careful standardisation of input scores (e.g., sign conventions, scales). A poor averaging or weighting scheme can lead to poor performance or excessive weighting of one scoring method. If additional docking trials are warranted, this increases computational cost.
 
 \subsection{Empirical and knowledge-based Re-scoring functions}
 
@@ -207,8 +207,8 @@ Robust protein and ligand preparation is foundational. Recommended steps include
 
 \begin{itemize}
   \item Choose high-quality experimental structures, preferably in complex with ligands similar to the intended chemotypes;
-  \item Assign protonation states and tautomers for ionizable residues and ligands at relevant pH using established tools; consider alternative states for borderline cases;
-  \item Model missing loops and side chains where necessary, however, avoid over-modelling when structural uncertainty is high;
+  \item Assign protonation states and tautomers for ionisable residues and ligands at relevant pH using established tools; consider alternative states for borderline cases;
+  \item Model missing loops and side chains where necessary, however, avoid over-modelling when structural uncertainty is high.
   \item Retain or remove crystallographic waters based on well-defined criteria (e.g., buried, conserved waters vs bulk-like, weakly bound waters).
 \end{itemize}
 
@@ -296,7 +296,7 @@ Best practice is to use independent training and test sets, employ property-matc
 
 \section{Summary}
 
-In a nutshell, the chapter presents a critical framework for interpreting and validating molecular docking results, highlighting that the analysis stage represents the weakest link in docking workflows. While docking methods can often reproduce experimental binding poses, their capacity to rank ligands by binding affinity remains limited and is highly dependent on the specific system. Qualitative inspection is crucial for reliable interpretation of docking results. Valid docking poses should demonstrate geometric correctness, appropriate pharmacophoric interactions, minimal strain, and consistent with established structural features. From a quantitative perspective, docking scores are most appropriately used for relative ranking within a single, validated protocol. Minor differences in scores are typically insignificant, and comparisons across different targets are unreliable. Key validation strategies include re-docking, cross-docking, and enrichment studies using property-matched decoys. Emphasis is placed on the necessity of target-specific validation, as well as the need for caution to avoid overfitting and improper use of benchmark datasets. Post-processing strategies, such as consensus scoring, MM/GBSA or MM-PBSA, and molecular dynamics-based refinement, can improve ranking accuracy and structural reliability. These methods require careful implementation and sufficient sampling to ensure validity, and they primarily serve as tools for generating hypotheses. The validity of the conclusions depend on integration with experimental data, thorough validation, and avoiding of common pitfalls, such as over-interpretation of scores, neglecting chemical intuitions, and selective reporting of favorable results.
+In a nutshell, the chapter presents a critical framework for interpreting and validating molecular docking results, highlighting that the analysis stage represents the weakest link in docking workflows. While docking methods can often reproduce experimental binding poses, their capacity to rank ligands by binding affinity remains limited and is highly dependent on the specific system. Qualitative inspection is crucial for reliable interpretation of docking results. Valid docking poses should demonstrate geometric correctness, appropriate pharmacophoric interactions, minimal strain, and be consistent with established structural features. From a quantitative perspective, docking scores are most appropriately used for relative ranking within a single, validated protocol. Minor differences in scores are typically insignificant, and comparisons across different targets are unreliable. Key validation strategies include re-docking, cross-docking, and enrichment studies using property-matched decoys. Emphasis is placed on the necessity of target-specific validation and the need for caution to avoid overfitting and improper use of benchmark datasets. Post-processing strategies, such as consensus scoring, MM/GBSA or MM-PBSA, and molecular dynamics-based refinement, can improve ranking accuracy and structural reliability. These methods require careful implementation and sufficient sampling to ensure validity, and they primarily serve as tools for generating hypotheses. The validity of the conclusions depends on integration with experimental data, thorough validation, and avoiding common pitfalls, such as over-interpretation of scores, neglecting chemical intuitions, and selective reporting of favourable results.
 
 \bibliographystyle{unsrtnat}
 \bibliography{chapter8}
