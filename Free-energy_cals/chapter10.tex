@@ -16,7 +16,7 @@
 
 \section{Introduction}
 
-Structure-based virtual screening and molecular docking are now routine tools in early-stage drug discovery, enabling rapid evaluation of large compound libraries against biomolecular targets\cite{CH10_brooijmans2003docking,CH10_jorgensen2004science}. However, classical scoring functions, such as those based on empirical, knowledge-based, or force field-based models, often provide only semi-quantitative estimates of binding affinity. They can often fail to rank ligands reliably across diverse chemical series\cite{CH10_gohlke2000knowledge,CH10_michel2006binding}. To address these limitations, more rigorous approaches based on statistical mechanics have been developed to compute binding free energies using molecular simulations. These free energy methods can be employed to refine docking poses, re-score candidates, and support lead optimisation programs.
+Structure-based virtual screening and molecular docking are now routine tools in early-stage drug discovery, enabling rapid evaluation of large compound libraries against biomolecular targets\cite{CH10_brooijmans2003docking,CH10_jorgensen2004science}. However, classical scoring functions, such as those based on empirical, knowledge-based, or force field-based models, often provide only semi-quantitative estimates of binding affinity. They can often fail to rank ligands reliably across diverse chemical series\cite{CH10_gohlke2000knowledge,CH10_michel2006binding}. To address these limitations, more rigorous approaches based on statistical mechanics have been developed to compute binding free energies using molecular simulations (See \textbf{chapter 9} for in-depth discussion on molecular simulation techniques). These free energy methods can be employed to refine docking poses, re-score candidates, and support lead optimisation programs.
 
 In this chapter, we introduce free energy calculations for ligand binding, with an emphasis on methods that can improve or complement docking results. We discuss the underlying thermodynamic and statistical mechanical principles, then discuss a major class of methods, including end-state methods (such as MM-PBSA and MM-GBSA), linear interaction energy (LIE), and alchemical free energy methods such as free energy perturbation (FEP) and thermodynamic integration (TI). 
 Particular attention is paid to the distinction between relative and absolute binding free energy (RBFE and ABFE) calculations, and to how these techniques can be integrated into practical docking-based workflows. 
@@ -25,51 +25,61 @@ Particular attention is paid to the distinction between relative and absolute bi
 
 \subsection{Free energy and binding equilibria}
 
-The crux of accurately estimating protein--ligand binding finding is the standard binding free energy, $\Delta G^\circ_\mathrm{bind}$, which is directly related to the equilibrium association constant $K_\mathrm{a}$ and the experimental dissociation constant $K_\mathrm{d}$. 
+The crux of accurately estimating protein--ligand binding is the standard binding free energy, $\Delta \textrm{G}^\circ_\textrm{bind}$, which is directly related to the equilibrium association constant $\textrm{K}_\textrm{a}$ and the experimental dissociation constant $\textrm{K}_\textrm{d}$. 
 For the binding reaction
+
 \begin{equation}
 \mathrm{P} + \mathrm{L} \rightleftharpoons \mathrm{PL}
 \end{equation}
-The standard free energy of binding is given by
-\[
-\Delta G^\circ_\mathrm{bind} = -RT \ln K_\mathrm{a} = RT \ln K_\mathrm{d}, 
-\]
-where R is the gas constant, and T is the absolute temperature. 
-Here, $K_\mathrm{a}$ or $K_\mathrm{d}$ is defined at a standard concentration $C^\circ$, usually $1\ \mathrm{M}$, so that the free energy is unambiguously defined up to standard state corrections. 
 
-Macroscopic binding constants are, in turn, related to microscopic partition functions. In the canonical ensemble at temperature T, the classical configurational partition function of a system with potential energy $U(\mathbf{x})$ is
-\[
+The standard free energy of binding is given by
+\begin{equation}
+\Delta G^\circ_\mathrm{bind} = -RT \ln K_\mathrm{a} = RT \ln K_\mathrm{d}, 
+\end{equation}
+
+where R is the gas constant, and T is the absolute temperature. 
+Here, $\textrm{K}_\textrm{a}$ or $\textrm{K}_\textrm{d}$ is defined at a standard concentration $\textrm{C}^\circ$, usually $\textrm{1}\ \textrm{M}$, so that the free energy is unambiguously defined up to standard state corrections. 
+
+Macroscopic binding constants are, in turn, related to microscopic partition functions(Z). In the canonical ensemble at temperature T, the classical configurational partition function of a system with potential energy $\textrm{U}(\text{x})$ is
+\begin{equation}
 Z = \int \mathrm{d}\mathbf{x}\, \exp[-\beta U(\mathbf{x})],
-\]
-where $\beta = 1/(k_\mathrm{B}T)$ and $k_\mathrm{B}$ is Boltzmann's constant. 
-The corresponding Helmholtz free energy is
-\[
-A = -k_\mathrm{B} T \ln Z + \text{constant},
-\]
-where the constant collects kinetic and quantum contributions that may cancel when differences between similar states are considered\cite{CH10_zwanzig1954high,CH10_chipot2007free}. Formally, the standard binding free energy can be expressed as the difference between the free energies of the complex and protein and ligand separately in the same standard state,
-\[
+\end{equation}
+
+where $\beta = \textrm{1}/(\textrm{k}_\textrm{B}\textrm{T})$ and $\textrm{k}_\textrm{B}$ is Boltzmann's constant. 
+The corresponding Helmholtz free energy is computed using \textbf{equation \ref{eq:helmhotz}}.
+\begin{equation}
+A = -k_\mathrm{B} T \ln Z + \text{constant}
+\label{eq:helmhotz}
+\end{equation}
+
+Where the \emph{constant} collects kinetic and quantum contributions that may cancel when differences between similar states are considered\cite{CH10_zwanzig1954high,CH10_chipot2007free}. Formally, the standard binding free energy can be expressed as the difference between the free energies of the complex and protein and ligand separately in the same standard state as shown in \textbf{equation \ref{eq:stdG}}. Free energy methods for binding affinity prediction approximate this difference by simulating one or more of these states, or related alchemical or restrained states, and exploiting relationships between free energy and ensemble averages.
+
+\begin{equation}
 \Delta G^\circ_\mathrm{bind} 
-= G^\circ(\mathrm{PL}) - G^\circ(\mathrm{P}) - G^\circ(\mathrm{L}) 
-\]
-Free energy methods for binding affinity prediction approximate this difference by simulating one or more of these states, or related alchemical or restrained states, and exploiting relationships between free energy and ensemble averages. 
+= G^\circ(\mathrm{PL}) - G^\circ(\mathrm{P}) - G^\circ(\mathrm{L})
+\label{eq:stdG} 
+\end{equation}
+
 
 \subsection{Thermodynamic cycles}
 
-Direct estimation of $\Delta G^\circ_\mathrm{bind}$  by simulating the association process itself is challenging. This can be attributed to the complex binding process, which involves large changes in translational, rotational, and conformational degrees of freedom, as well as solvent reorganisation. 
-Instead, most approaches employ the thermodynamic cycles that connect the physical binding process to more convenient alchemical or decoupling steps. A frequently used construction is the \emph{double decoupling} cycle for absolute binding free energies.\cite{CH10_gilson1997calculation,CH10_deng2009abfe} 
-In this approach, one considers turning interactions between the ligand and its environment on or off in two contexts: in aqueous solution and at the receptor's binding site. 
-Denoting by $\lambda$ a coupling parameter that interpolates between a fully interacting state ($\lambda = 1$) and a non-interacting or \emph{decoupled} state ($\lambda = 0$), one defines a cycle in which
+Direct estimation of $\Delta \textrm{G}^\circ_\textrm{bind}$  by simulating the association process itself is challenging. This can be attributed to the complex binding process, which involves large changes in translational, rotational, and conformational degrees of freedom, as well as solvent reorganisation. 
+Instead, most approaches employ the thermodynamic cycles that connect the physical binding process to more convenient alchemical or decoupling steps. A frequently used construction is the \emph{double decoupling} cycle for absolute binding free energies\cite{CH10_gilson1997calculation,CH10_deng2009abfe}. 
+In this approach, one considers turning interactions between the ligand and its environment \emph{on} or \emph{off} in two contexts: in aqueous solution and at the receptor's binding site. 
+Denoted by $\lambda$, a coupling parameter, that interpolates between a fully interacting state ($\lambda = \textrm{1}$) and a non-interacting or \emph{decoupled} state ($\lambda = \textrm{0}$), one defines a cycle in which
+
 \begin{enumerate}
-  \item the ligand is decoupled from solvent in bulk solvent (usually water),
-  \item the ligand is restrained and inserted, or removed, from the binding site,
-  \item the ligand is recoupled in the complex,
-  \item and standard state corrections are applied. 
+  \item Ligand is decoupled from solvent in bulk solvent (usually water)
+  \item Ligand is restrained and inserted, or removed, from the binding site
+  \item Ligand is recoupled in the complex
+  \item Standard state corrections are applied. 
 \end{enumerate}
-Summing the free energy changes around the cycle yields $\Delta G^\circ_\mathrm{bind}$ in terms of alchemical transformation free energies that are more amenable to simulation. Related cycles can be constructed for relative binding free energies, wherein one ligand is alchemically transformed into another in both bound and unbound states. This latter approach works very well for structurally similar ligands.
+
+Summing the free energy changes around the cycle yields $\Delta \textrm{G}^\circ_\textrm{bind}$ in terms of alchemical transformation free energies that are more amenable to simulation. Related cycles can be constructed for relative binding free energies, wherein one ligand is alchemically transformed into another in both bound and unbound states. This latter approach works very well for structurally similar ligands.
 
 \section{Classification of free energy methods}
 
-A large number of computational techniques have been proposed to estimate binding free energies, differing in the level of theory, sampling strategy, and approximations used. 
+Many computational techniques have been proposed to estimate binding free energies, differing in the level of theory, sampling strategy, and approximations used. 
 The following broad classification is widely accepted:
 \begin{itemize}
   \item Level of theory: 
@@ -97,16 +107,16 @@ End-state methods estimate the free energy difference between two states, e.g.\ 
 
 \subsection{Alchemical free energy methods}
 
-Alchemical methods define a non-physical path in the parameter space that continuously transforms one molecular system into another, e.g. ligand A into ligand B, or an interacting ligand into a non-interacting \emph{ghost}, controlled by a coupling parameter $\lambda$\cite{CH10_chipot2007free,CH10_choderamobley2011perspective}. Free energy differences along this path are obtained using exact relationships from statistical mechanics, such as free energy perturbation (FEP) or thermodynamic integration (TI). These methods can, in principle, yield highly accurate relative or absolute binding free energies, provided that adequate sampling is achieved and the underlying force fields are reliable. 
+Alchemical methods define a non-physical path in the parameter space that continuously transforms one molecular system into another, e.g. ligand A into ligand B, or an interacting ligand into a non-interacting \emph{ghost} ligand, controlled by a coupling parameter $\lambda$\cite{CH10_chipot2007free,CH10_choderamobley2011perspective}. Free energy differences along this path are obtained using exact relationships from statistical mechanics, such as free energy perturbation (FEP) or thermodynamic integration (TI). These methods can, in principle, yield highly accurate relative or absolute binding free energies, provided that adequate sampling is achieved and the underlying force fields are reliable. 
 
 \subsection{Relative v/s absolute binding free energies}
 
 Relative binding free energy (RBFE) methods estimate the difference in binding free energies between two ligands, A and B, for the same target:
-\[
+\begin{equation}
 \Delta\Delta G^\circ_\mathrm{bind} = \Delta G^\circ_\mathrm{bind}(\mathrm{B}) - \Delta G^\circ_\mathrm{bind}(\mathrm{A}). 
-\]
-This is often achieved by alchemically transforming ligand A into ligand B in both the bound complex and in solution, and subtracting the two transformation free energies. 
-Absolute binding free energy (ABFE) methods, by contrast, aim to compute $\Delta G^\circ_\mathrm{bind}$ for a single ligand from first principles, usually via decoupling or insertion schemes coupled to restraints and standard state corrections\cite{CH10_gilson1997calculation,CH10_deng2009abfe,CH10_choderamobley2011perspective}. In practice, RBFEs are widely used for lead optimisation within a congeneric series, while ABFEs are attractive for ranking more diverse chemotypes or for assessing absolute potency. 
+\end{equation}
+
+This is often achieved by alchemically transforming ligand A into ligand B in both the bound complex and in solution, and subtracting the two transformation free energies. Absolute binding free energy (ABFE) methods, by contrast, aim to compute $\Delta \textrm{G}^\circ_\textrm{bind}$ for a single ligand from first principles, usually via decoupling or insertion schemes coupled to restraints and standard state corrections\cite{CH10_gilson1997calculation,CH10_deng2009abfe,CH10_choderamobley2011perspective}. In practice, RBFEs are widely used for lead optimisation within a congeneric series, while ABFEs are attractive for ranking more diverse chemotypes or for assessing absolute potency. 
 
 \section{End-state free energy methods}
 
@@ -114,39 +124,43 @@ Absolute binding free energy (ABFE) methods, by contrast, aim to compute $\Delta
 
 MM-PBSA and MM-GBSA combine molecular mechanics (MM) energies with implicit-solvent electrostatics (Poisson--Boltzmann (PB) or generalised Born (GB) models) and a non-polar solvation term to estimate binding free energies from conformations obtained from MD trajectories\cite{CH10_kollman1993free,CH10_srinivasan1998mmpbsa,CH10_homeyer2012mmpbsa}. 
 For a protein--ligand complex, the binding free energy is approximated as
-\[
+\begin{equation}
 \Delta G_\mathrm{bind} \approx 
 \langle G_\mathrm{complex} \rangle 
 - \langle G_\mathrm{protein} \rangle 
 - \langle G_\mathrm{ligand} \rangle,
-\]
+\end{equation}
 where the angle brackets denote an ensemble average over conformations extracted from explicit-solvent simulations (or, in simpler protocols, minimised structures). 
 
 Each free energy term is decomposed as
-\[
-G \approx E_\mathrm{MM} + G_\mathrm{solv} - TS_\mathrm{conf},
-\]
+\begin{equation}
+G \approx E_\mathrm{MM} + G_\mathrm{solv} - TS_\mathrm{conf}
+\end{equation}
 with
-\[
-E_\mathrm{MM} = E_\mathrm{bonded} + E_\mathrm{vdW} + E_\mathrm{elec},
-\]
+\begin{equation}
+E_\mathrm{MM} = E_\mathrm{bonded} + E_\mathrm{vdW} + E_\mathrm{elec}
+\end{equation}
 and
-\[
-G_\mathrm{solv} = G_\mathrm{polar} + G_\mathrm{nonpolar}. 
-\]
-The polar solvation free energy, $G_\mathrm{polar}$, is obtained either by solving the Poisson--Boltzmann equation (MM-PBSA) or using a GB approximation (MM-GBSA), while the non-polar term is often modelled empirically as
-\[
-G_\mathrm{nonpolar} = \gamma\, \mathrm{SASA} + b,
-\]
-where SASA is the solvent-accessible surface area, and $\gamma$ and $b$ are empirical parameters. 
+\begin{equation}
+G_\mathrm{solv} = G_\mathrm{polar} + G_\mathrm{nonpolar} 
+\end{equation}
+The $\textrm{E}_\textrm{MM}$ term is computed using the molecular mechanics (MM) force fields in the gas phase. The  $\textrm{G}_\textrm{solv}$ term adds the solvation correction to the gas phase $\textrm{E}_\textrm{MM}$. The $\textrm{G}_\textrm{solv}$ comprises the polar solvation free energy, $\textrm{G}_\textrm{polar}$, obtained either by solving the Poisson--Boltzmann equation (MM-PBSA) or using a GB approximation (MM-GBSA), and the non-polar term, which is often modelled empirically as
 
-The configurational entropy $S_\mathrm{conf}$ is estimated by normal-mode analysis, quasi-harmonic analysis, or other approximate schemes. However, in many applications, it is neglected or assumed to cancel when comparing similar ligands. The resulting estimate of $\Delta G_\mathrm{bind}$ is therefore best interpreted as a relative or semi-quantitative measure, particularly reliable when ranking closely related compounds\cite{CH10_homeyer2012mmpbsa}. 
+\begin{equation}
+G_\mathrm{nonpolar} = \gamma\, \mathrm{SASA} + b
+\end{equation}
 
-\subsubsection{Equations for MM-PBSA}
+where SASA is the solvent-accessible surface area, and $\gamma$ and b are empirical parameters. 
 
-In a more explicit notation, the MM-PBSA estimate of the binding free energy can be written as
+The configurational entropy $\textrm{S}_\textrm{conf}$ is estimated by normal-mode analysis, quasi-harmonic analysis, or other approximate schemes. However, in many applications, it is neglected or assumed to cancel when comparing similar ligands. The resulting estimate of $\Delta \textrm{G}_\textrm{bind}$ is therefore best interpreted as a relative or semi-quantitative measure, particularly reliable when ranking closely related compounds\cite{CH10_homeyer2012mmpbsa}. 
+
+\subsubsection{Equations for MM-PBSA/MM-GBSA}
+
+In a more explicit notation, the MM-PBSA or MM-GBSA estimate of the binding free energy can be written as
+
+
 \begin{align*}
-\Delta G_\mathrm{bind}^{\mathrm{MM\mbox{-}PBSA}} 
+\Delta G_\mathrm{bind} 
 &\approx 
 \big( \langle E_\mathrm{MM}^\mathrm{complex} \rangle 
 + \langle G_\mathrm{solv}^\mathrm{complex} \rangle 
@@ -158,47 +172,51 @@ In a more explicit notation, the MM-PBSA estimate of the binding free energy can
 &\quad - 
 \big( \langle E_\mathrm{MM}^\mathrm{ligand} \rangle 
 + \langle G_\mathrm{solv}^\mathrm{ligand} \rangle 
-- T \langle S_\mathrm{conf}^\mathrm{ligand} \rangle \big).
+- T \langle S_\mathrm{conf}^\mathrm{ligand} \rangle \big)
 \end{align*}
+
+
 In practice, the conformational entropy term is often omitted or estimated from a reduced set of snapshots due to its high computational cost. 
 
 \subsubsection{Advantages and limitations}
 
 The main advantages of MM-PBSA/GBSA are:
 \begin{itemize}
-  \item They can reuse trajectories from classical MD simulations with explicit solvent, requiring only post-processing.
+  \item They can re-use trajectories from classical MD simulations with explicit solvent, requiring only post-processing.
   \item They provide an interpretable decomposition of binding free energy into enthalpic and solvation contributions, and can be further decomposed into residue-wise contributions.
-  \item They are computationally cheaper than fully alchemical methods. This can be applied to tens or hundreds of complexes in docking or virtual screening programs.\cite{CH10_homeyer2012mmpbsa} 
+  \item They are computationally cheaper than fully alchemical methods. This can be applied to tens or hundreds of complexes in docking or virtual screening programs\cite{CH10_homeyer2012mmpbsa}. 
 \end{itemize}
 
 Limitations of these methods include:
 \begin{itemize}
   \item Dependence on the quality of the underlying force field and implicit-solvent models.
-  \item Sensitivity to input structures, simulation length, and parameters, such as dielectric constants, atomic radii (Born radii), and ion concentration.
+  \item Sensitivity to input structures, simulation length, and parameters, such as dielectric constants, atomic radii (Born radii\cite{CH10_onufriev2002effective}), and ion concentration.
   \item Approximate treatment or neglect of configurational entropy and protein reorganisation.
 \end{itemize}
 Despite these limitations, MM-PBSA/GBSA remain widely used as end-state re-scoring tools to filter or re-rank docking poses and to support SAR. 
 
 \subsection{Linear interaction energy (LIE)}
 
-The linear interaction energy (LIE) method is another end-state approach that estimates binding free energies from averaged interaction energies in bound and unbound simulations\cite{CH10_hansson1998lie}. 
+The linear interaction energy (LIE)\cite{CH10_hansson1998lie} method is another end-state approach that estimates binding free energies from averaged interaction energies in bound and unbound simulations. 
 In its simplest form, the LIE equation for the binding free energy of a ligand is
-\[
+\begin{equation}
 \Delta G_\mathrm{bind} \approx 
 \alpha \left\langle V_\mathrm{elec}^{\mathrm{L\mbox{-}S}} \right\rangle_\mathrm{bound}
 + \beta \left\langle V_\mathrm{vdW}^{\mathrm{L\mbox{-}S}} \right\rangle_\mathrm{bound}
-+ \gamma,
-\]
-where $V_\mathrm{elec}^{\mathrm{L\mbox{-}S}}$ and $V_\mathrm{vdW}^{\mathrm{L\mbox{-}S}}$ are the electrostatic and van der Waals interaction energies between the ligand and its surroundings (solvent and protein), and $\alpha$, $\beta$, and $\gamma$ are empirical parameters. 
++ \gamma
+\end{equation}
+
+where $\textrm{V}_\textrm{elec}^{\textrm{L\mbox{-}S}}$ and $\textrm{V}_\textrm{vdW}^{\textrm{L\mbox{-}S}}$ are the electrostatic and van der Waals interaction energies between the ligand and its surroundings (solvent and protein), and $\alpha$, $\beta$, and $\gamma$ are empirical parameters. 
 In some variants, differences between bound and unbound averages are used:
-\[
+
+\begin{equation}
 \Delta G_\mathrm{bind} \approx 
 \alpha \left( \left\langle V_\mathrm{elec}^{\mathrm{L\mbox{-}S}} \right\rangle_\mathrm{bound}
 - \left\langle V_\mathrm{elec}^{\mathrm{L\mbox{-}S}} \right\rangle_\mathrm{unbound} \right)
 + \beta \left( \left\langle V_\mathrm{vdW}^{\mathrm{L\mbox{-}S}} \right\rangle_\mathrm{bound}
 - \left\langle V_\mathrm{vdW}^{\mathrm{L\mbox{-}S}} \right\rangle_\mathrm{unbound} \right)
-+ \gamma.
-\]
++ \gamma
+\end{equation}
 
 The parameters are calibrated against a training set of ligands with known experimental binding free energies for a given target class, which makes LIE semi-empirical. Because it relies on relatively short MD simulations and simple energy averages, LIE can be computationally efficient while still capturing important trends in binding\cite{CH10_hansson1998lie}. 
 
@@ -208,112 +226,130 @@ The parameters are calibrated against a training set of ligands with known exper
 \subsection{Free energy perturbation (FEP)}
 
 Free energy perturbation is based on a relationship introduced by Zwanzig\cite{CH10_zwanzig1954high}, which expresses the Helmholtz free energy difference between two states A and B in terms of an ensemble average over configurations of state A. 
-Let $U_A(\mathbf{x})$ and $U_B(\mathbf{x})$ be the potential energy functions of states A and B, respectively, defined over the same configurational space. 
-The free energy difference $\Delta G_{A\to B} = G_B - G_A$ is given exactly by the Zwanzig equation:
-\[
+Let $\textrm{U}_\textrm{A}(\textrm{x})$ and $\textrm{U}_\textrm{B}(\textrm{x})$ be the potential energy functions of states A and B, respectively, defined over the same configurational space. 
+The free energy difference $\Delta \textrm{G}_{A\to B} = \textrm{G}_\textrm{B} - \textrm{G}_\textrm{A}$ is given by the Zwanzig equation (\textbf{Equation \ref{eq:zwanzig}}).
+\
+\begin{equation}
 \Delta G_{A\to B} 
 = -k_\mathrm{B}T \ln 
 \left\langle 
 \exp\left[ -\beta \left( U_B(\mathbf{x}) - U_A(\mathbf{x}) \right) \right]
-\right\rangle_A.
-\]
-In practice, this average is estimated from configurations sampled from simulations of state A, either by MD or the Monte Carlo method. 
-The exponential reweighting in this equation makes FEP very sensitive to the overlap between the configurational ensembles of states A and B. If A and B are too dissimilar, the estimate becomes noisy and biased. This warrants the use of multiple intermediate states and more sophisticated estimators. 
+\right\rangle_A
+\label{eq:zwanzig}
+\end{equation}
+
+In practice, the average is estimated from configurations sampled from simulations of state A, either by MD or the Monte Carlo method. 
+The exponential reweighting in \textbf{Equation \ref{eq:zwanzig}} makes FEP very sensitive to the overlap between the configurational ensembles of states A and B. If A and B are too dissimilar, the estimate becomes noisy and biased. This warrants the use of multiple intermediate states and more sophisticated estimators. 
 
 \subsubsection{Multi-state FEP and windows}
 
-To improve convergence, one must introduce a sequence of intermediate states parameterised by $\lambda_0=0,\lambda_1,\ldots,\lambda_N=1$, with potential energies $U(\mathbf{x};\lambda)$ that smoothly morph A into B.  Adjacent states are chosen such that their ensembles overlap significantly, and free energy differences between neighbours are computed via FEP.
-\[
+To improve convergence, one must introduce a sequence of intermediate states parameterised by $\lambda_\textrm{0}=\textrm{0},\lambda_\textrm{1},\ldots,\lambda_\textrm{N}=\textrm{1}$, with potential energies $\textrm{U}(\textrm{x};\lambda)$ that smoothly morph A into B.  Adjacent states are chosen such that their ensembles overlap significantly, and free energy differences between neighbours are computed via FEP (\textbf{Equation \ref{eq:multiFEP}}). Then, they are summed to obtain the total(\textbf{Equation \ref{eq:FEPTOT}}). This multi-state FEP strategy underlies many implementations of relative free energy calculations in drug discovery, where it is often combined with soft-core potentials, enhanced sampling, and cycle closure methods to ensure convergence\cite{CH10_aldeghi2018accurate,CH10_wang2015accurate}. 
+
+\begin{equation}
 \Delta G_{\lambda_i \to \lambda_{i+1}} 
 = -k_\mathrm{B}T \ln 
 \left\langle 
 \exp\left[ -\beta \left( U(\mathbf{x};\lambda_{i+1}) - U(\mathbf{x};\lambda_i) \right) \right]
-\right\rangle_{\lambda_i},
-\]
-Then, they were summed to obtain the total.
-\[
-\Delta G_{A\to B} = \sum_{i=0}^{N-1} \Delta G_{\lambda_i \to \lambda_{i+1}}.
-\]
-This multi-state FEP strategy underlies many implementations of relative free energy calculations in drug discovery, where it is often combined with soft-core potentials, enhanced sampling, and cycle closure methods to ensure convergence\cite{CH10_aldeghi2018accurate,CH10_wang2015accurate}. 
+\right\rangle_{\lambda_i}
+\label{eq:multiFEP}
+\end{equation}
+
+\begin{equation}
+\Delta G_{A\to B} = \sum_{i=0}^{N-1} \Delta G_{\lambda_i \to \lambda_{i+1}}
+\label{eq:FEPTOT}
+\end{equation}
+
+
 
 \subsection{Thermodynamic integration (TI)}
 
-Thermodynamic integration was originally developed by Kirkwoo\cite{CH10_kirkwood1935ti}. It expresses the free energy difference between A and B as an integral over $\lambda$ of the ensemble average of the derivative of the potential energy with respect to $\lambda$. Defining the $\lambda$-dependent potential $(U(\mathbf{x};\lambda)$ that interpolates between A and B, one obtains
-\[
+Thermodynamic integration was originally developed by Kirkwood\cite{CH10_kirkwood1935ti}. It expresses the free energy difference between states A and B as an integral over $\lambda$ of the ensemble average of the derivative of the potential energy with respect to $\lambda$. Defining the $\lambda$-dependent potential $\textrm{U}(\textrm{x};\lambda)$ that interpolates between A and B, one obtains
+\begin{equation}
 \Delta G_{A\to B} 
 = \int_0^1 
 \left\langle 
 \frac{\partial U(\mathbf{x};\lambda)}{\partial \lambda}
 \right\rangle_{\lambda}
-\, \mathrm{d}\lambda.
-\]
-In practice, this integral is evaluated numerically by performing simulations at a discrete set of $\lambda$ values and computing the ensemble average $\left\langle \partial U/\partial \lambda \right\rangle_\lambda$ at each $ \lambda$. Standard quadrature schemes such as trapezoidal rule, Simpson's rule, or Gauss--Legendre, are used to approximate the integral.\cite{CH10_deruiter2013comparison}  TI avoids the exponential average inherent in FEP, and can be more stable when the integrand varies smoothly with $\lambda$. However, the accuracy of TI depends mainly on the choice and density of $\lambda$-points and on adequate sampling at each state. Sharp changes in the integrand, for example, near endpoints or phase transitions, require careful treatment, e.g. non-linear $\lambda$ intervals or soft-core potentials. 
+\, \mathrm{d}\lambda
+\end{equation}
+
+In practice, this integral is evaluated numerically by performing simulations at a discrete set of $\lambda$ values and computing the ensemble average $\left\langle \partial \textrm{U}/\partial \lambda \right\rangle_\lambda$ at each $ \lambda$. Standard quadrature schemes such as trapezoidal rule, Simpson's rule, or Gauss--Legendre, are used to approximate the integral\cite{CH10_deruiter2013comparison}.  TI avoids the exponential average inherent in FEP, and can be more stable when the integrand varies smoothly with $\lambda$. However, the accuracy of TI depends mainly on the choice and density of $\lambda$-points and on adequate sampling at each state. Sharp changes in the integrand, for example, near endpoints or phase transitions, require careful treatment, e.g. non-linear $\lambda$ intervals or soft-core potentials. 
 
 
-\subsection{Bennett acceptance ratio (BAR) and MBAR}
+\subsection{BAR and MBAR methods}
 
-The Bennett acceptance-ratio method provides an optimal estimator of the free-energy difference between two states using samples from both states\cite{CH10_bennett1976efficient}. If one has ensembles of configurations from states A and B, with potential energies $U_A(\mathbf{x})$ and $U_B(\mathbf{x})$, BAR determines $\Delta G_{A\to B}$ as the solution of
-\[
+The Bennett acceptance-ratio (BAR) method provides an optimal estimator of the free-energy difference between two states using samples from both states\cite{CH10_bennett1976efficient}. If one has ensembles of configurations from states A and B, with potential energies $\textrm{U}_\textrm{A}(\textrm{x})$ and $\textrm{U}_\textrm{B}(\textrm{x})$, BAR determines $\Delta \textrm{G}_{A\to B}$ by solving \textbf{Equation \ref{eq:bar}}.
+\begin{equation}
 \sum_{i=1}^{N_A} 
 \frac{1}{1 + \exp\left[ \beta \left( \Delta U_i - \Delta G_{A\to B} - C \right) \right]}
 =
 \sum_{j=1}^{N_B} 
-\frac{1}{1 + \exp\left[ \beta \left( \Delta U'_j + \Delta G_{A\to B} + C \right) \right]},
-\]
-where $\Delta U_i = U_B(\mathbf{x}_i^A) - U_A(\mathbf{x}_i^A)$, $\Delta U'_j = U_A(\mathbf{x}_j^B) - U_B(\mathbf{x}_j^B)$, and C is an adjustable constant, often chosen near $\Delta G_{A\to B}$, to improve the numerical stability. This equation is typically solved iteratively. BAR can be viewed as a statistically optimal combination of forward and reverse FEP estimates and is less sensitive to poor overlap than single-direction FEP\cite{CH10_bennett1976efficient,CH10_deruiter2013comparison}. 
+\frac{1}{1 + \exp\left[ \beta \left( \Delta U'_j + \Delta G_{A\to B} + C \right) \right]}
+\label{eq:bar}
+\end{equation}
 
-The multi-state Bennett acceptance ratio (MBAR) extends BAR to multiple thermodynamic states, e.g. many intermediate $\lambda$-windows.\cite{CH10_shirts2008mbar}  Given samples from several states with reduced potentials $u_k(\mathbf{x}) = \beta_k U_k(\mathbf{x})$, MBAR produces statistically optimal estimates of free energies $f_k$ up to an additive constant, by solving a system of self-consistent equations:
-\[
+where,
+\begin{equation}
+ \Delta \textrm{U}_\textrm{i} = \textrm{U}_\textrm{B}(\textrm{x}_\textrm{i}^\textrm{A}) - \textrm{U}_\textrm{A}(\textrm{x}_\textrm{i}^\textrm{A}) 
+\end{equation}
+\begin{equation}
+ \Delta \textrm{U'}_\textrm{j} = \textrm{U}_\textrm{A}(\textrm{x}_\textrm{j}^\textrm{B}) - \textrm{U}_\textrm{B}(\textrm{x}_\textrm{j}^\textrm{B})
+\end{equation}
+ and C is an adjustable constant, often chosen near $\Delta G_{A\to B}$, to improve the numerical stability. \textbf{Equation \ref{eq:bar}} is typically solved iteratively. BAR can be viewed as a statistically optimal combination of forward and reverse FEP estimates and is less sensitive to poor overlap than single-direction FEP\cite{CH10_bennett1976efficient,CH10_deruiter2013comparison}. 
+
+The multi-state Bennett acceptance ratio (MBAR) extends BAR to multiple thermodynamic states, e.g. many intermediate $\lambda$-windows\cite{CH10_shirts2008mbar}.  Given samples from several states with reduced potentials $\textrm{u}_\textrm{k}(\textrm{x}) = \beta_\textrm{k} \textrm{U}_\textrm{k}(\textrm{x})$, MBAR produces statistically optimal estimates of free energies $\textrm{f}_\textrm{k}$ up to an additive constant, by solving a system of self-consistent equations:
+\begin{equation}
 \hat{f}_k = -\ln \sum_{n=1}^{N} 
 \frac{\exp\left[ -u_k(\mathbf{x}_n) \right]}
-{\sum_{l} N_l \exp\left[ \hat{f}_l - u_l(\mathbf{x}_n) \right]},
-\]
-where $N_l$ is the number of samples from state l, and the sum over n runs over all configurations pooled from all states. 
-MBAR has become a standard analysis tool for alchemical free energy simulations, enabling efficient reuse of data and rigorous uncertainty estimates\cite{CH10_shirts2008mbar}. 
+{\sum_{l} N_l \exp\left[ \hat{f}_l - u_l(\mathbf{x}_n) \right]}
+\label{eq:mbar}
+\end{equation}
+
+where $\textrm{N}_\textrm{l}$ is the number of samples from state l, and the sum over n runs over all configurations pooled from all states. MBAR has become a standard analysis tool for alchemical free energy simulations, enabling efficient reuse of data and rigorous uncertainty estimates\cite{CH10_shirts2008mbar}. 
 
 \section{Relative and absolute binding free energy calculations}
 
-Relative binding free energy calculations consider a pair of ligands, A and B, binding to the same receptor. 
+Relative binding free energy (RBFE) calculations consider a pair of ligands, A and B, binding to the same receptor. 
 The quantity of interest is
-\[
+\begin{equation}
 \Delta\Delta G^\circ_\mathrm{bind}
 = \Delta G^\circ_\mathrm{bind}(\mathrm{B}) 
-- \Delta G^\circ_\mathrm{bind}(\mathrm{A}),
-\]
+- \Delta G^\circ_\mathrm{bind}(\mathrm{A})
+\end{equation}
+
 which directly relates to differences in potency. 
 
 A standard thermodynamic cycle for RBFE can be written as
-\[
+\begin{equation}
 \Delta\Delta G^\circ_\mathrm{bind}
 = \Delta G_{A\to B}^{\mathrm{bound}} 
-- \Delta G_{A\to B}^{\mathrm{solv}},
-\]
-where $\Delta G_{A\to B}^{\mathrm{bound}}$ is the alchemical free energy of transforming ligand A into ligand B in the binding site, and $\Delta G_{A\to B}^{\mathrm{solv}}$ is the same transformation in bulk solvent.\cite{CH10_wang2015accurate} 
-Both transformation free energies are computed with FEP, TI, or BAR/MBAR (\textbf{Confirm this fact}) along a set of $\lambda$-windows. 
+- \Delta G_{A\to B}^{\mathrm{solv}}
+\end{equation}
 
-In lead optimisation programs, a network of pairwise transformations among a series of ligands can be constructed, and free-energy methods are used to predict relative potencies\cite{CH10_wang2015accurate,CH10_aldeghi2018accurate} and to guide synthetic optimisation strategies. Consistency checks around cycles in the network, cycle closure, provide diagnostics of convergence and sampling quality. 
+where $\Delta \textrm{G}_{A\to B}^{\textrm{bound}}$ is the alchemical free energy of transforming ligand A into ligand B in the binding site, and $\Delta \textrm{G}_{A\to B}^{\textrm{solv}}$ is the same transformation in bulk solvent\cite{CH10_wang2015accurate}. Both transformation free energies are computed with FEP, TI, BAR or MBAR methods along a set of $\lambda$-windows.  In lead optimisation programs, a network of pairwise transformations among a series of ligands can be constructed, and free-energy methods are used to predict relative potencies\cite{CH10_wang2015accurate,CH10_aldeghi2018accurate} and to guide synthetic optimisation strategies. Consistency checks around cycles in the network, cycle closure, provide diagnostics of convergence and sampling quality. 
 
-Absolute binding free energy methods aim to compute $\Delta G^\circ_\mathrm{bind}$ for a single ligand with respect to the standard state. The double decoupling approach is widely used, in which one constructs a cycle in which the ligand is decoupled or coupled to its environment at both the binding site and in bulk solvent, subject to restraints that define the bound state\cite{CH10_gilson1997calculation,CH10_deng2009abfe}. 
+Absolute binding free energy (ABFE) methods aim to compute $\Delta \textrm{G}^\circ_\textrm{bind}$ for a single ligand with respect to the standard state. The double decoupling approach is widely used, in which one constructs a cycle such that the ligand is decoupled or coupled to its environment at both the binding site and in bulk solvent, subject to restraints that define the bound state\cite{CH10_gilson1997calculation,CH10_deng2009abfe}. 
 
 A typical double-decoupling cycle is:
-\[
+\begin{equation}
 \Delta G^\circ_\mathrm{bind}
 = \Delta G_\mathrm{dec}^{\mathrm{solv}} 
 - \Delta G_\mathrm{dec}^{\mathrm{bound}}
 + \Delta G_\mathrm{rest}
-+ \Delta G_\mathrm{std},
-\]
-where $\Delta G_\mathrm{dec}^{\mathrm{solv}}$ and $\Delta G_\mathrm{dec}^{\mathrm{bound}}$ are the free energies of decoupling the ligand in solvent and in the binding site, respectively, $\Delta G_\mathrm{rest}$ accounts for the introduction and removal of positional/orientational restraints, and $\Delta G_\mathrm{std}$ corrects for the change from the simulation box concentration to the standard concentration. The decoupling free energies are obtained via alchemical transformations using FEP or TI. At the same time, restraint and standard-state corrections can be calculated analytically from statistical mechanics, often using harmonic or flat-bottom potentials\cite{CH10_gilson1997calculation,CH10_deng2009abfe,CH10_choderamobley2011perspective}. Although computationally more demanding than RBFE, ABFE techniques provide a direct link to experimental binding constants. Therefore, in principle, it can be applied across diverse chemical scaffolds. 
++ \Delta G_\mathrm{std}
+\end{equation}
+
+where $\Delta \textrm{G}_\textrm{dec}^{\textrm{solv}}$ and $\Delta \textrm{G}_\textrm{dec}^{\textrm{bound}}$ are the free energies of decoupling the ligand in solvent and in the binding site, respectively, $\Delta \textrm{G}_\textrm{rest}$ accounts for the introduction and removal of positional/orientational restraints, and $\Delta \textrm{G}_\textrm{std}$ corrects for the change from the simulation box concentration to the standard concentration. The decoupling free energies are obtained via alchemical transformations using FEP or TI. At the same time, restraint and standard-state corrections can be calculated analytically from statistical mechanics, often using harmonic or flat-bottom potentials\cite{CH10_gilson1997calculation,CH10_deng2009abfe,CH10_choderamobley2011perspective}. Although computationally more demanding than RBFE, ABFE techniques provide a direct link to experimental binding constants. Therefore, in principle, it can be applied across diverse chemical scaffolds. 
 
 \section{Practical considerations for alchemical calculations}
 
 \subsection{Force fields and solvent models}
 
-The reliability of free energy calculations depends largely on the accuracy of the underlying molecular mechanics force fields and solvent models. Most biomolecular force fields, such as  AMBER, CHARMM, and OPLS, are parameterised to reproduce a variety of thermodynamic and structural data. However, imperfections can still introduce systematic errors, especially for challenging chemotypes, metal centres, or unusual protonation states.\cite{CH10_wang2004amber}  Explicit solvent, e.g. TIP3P, TIP4P-Ew, SPC/E water models, is commonly used for alchemical simulations, as it allows more realistic treatment of solvation and hydrogen bonding. Implicit solvent can be used for speed, however, it may lead to larger deviations from experiment. 
+The reliability of free energy calculations depends largely on the accuracy of the underlying molecular mechanics force fields and solvent models. Most biomolecular force fields, such as  AMBER, CHARMM, and OPLS, are parameterised to reproduce a variety of thermodynamic and structural data. However, imperfections can still introduce systematic errors, especially for challenging chemotypes, metal centres, or unusual protonation states\cite{CH10_wang2004amber}.  Explicit solvent, e.g. TIP3P, TIP4P-Ew, SPC/E water models, is commonly used for alchemical simulations, as it allows more realistic treatment of solvation and hydrogen bonding. Implicit solvent can be used for speed, however, it may lead to larger deviations from experiment. 
 
 \subsection{Sampling and convergence}
 
-Sampling is a central challenge in free energy calculations. Binding processes often involve slow degrees of freedom, such as side-chain rearrangements, loop motions, or large-scale conformational changes, which may not be adequately sampled on the time scales accessible to routine MD. Insufficient sampling can lead to hysteresis between forward and reverse transformations, inconsistent cycle closure, and large statistical uncertainties.\cite{CH10_aldeghi2018accurate} 
+Sampling is a central challenge in free energy calculations. Binding processes often involve slow degrees of freedom, such as side-chain motions, loop motions, or large-scale conformational changes, which may not be adequately sampled on the time scales accessible to routine MD. Insufficient sampling can lead to hysteresis between forward and reverse transformations, inconsistent cycle closure, and large statistical uncertainties\cite{CH10_aldeghi2018accurate}. 
 
 Strategies to improve sampling include:
 \begin{itemize}
@@ -325,11 +361,12 @@ Strategies to improve sampling include:
 
 \subsection{Restraints and standard state corrections}
 
-When computing ABFEs, positional and orientational restraints are necessary to define the bound state and prevent the ligand from drifting away during decoupling. Common choices include harmonic restraints between ligand and protein reference atoms or flat-bottom distance and angle restraints.\cite{CH10_gilson1997calculation,CH10_deng2009abfe} The free energy associated with these restraints must be accounted for analytically, and appropriate corrections must be made to convert from the effective simulation concentration to the standard $1\ \mathrm{M}$ reference state. The standard state correction associated with a restraining volume $V_\mathrm{rest}$ is typically of the form.
-\[
-\Delta G_\mathrm{std} = -k_\mathrm{B}T \ln \left( \frac{C^\circ V_\mathrm{rest}}{1} \right),
-\]
-where $C^\circ = 1/(1661 \ \r{A}^3)$ in units of molecules per \r{A}$^3$.  Proper treatment of these corrections is essential for comparing computed ABFEs with experimental binding free energies. 
+When computing ABFEs, positional and orientational restraints are necessary to define the bound state and prevent the ligand from drifting away during decoupling. Common choices include harmonic restraints between ligand and protein reference atoms or flat-bottom distance and angle restraints\cite{CH10_gilson1997calculation,CH10_deng2009abfe}. The free energy associated with these restraints must be accounted for analytically, and appropriate corrections must be made to convert from the effective simulation concentration to the standard $\textrm{1}\ \textrm{M}$ reference state. The standard state correction associated with a restraining volume $\textrm{V}_\textrm{rest}$ is typically of the form.
+\begin{equation}
+\Delta G_\mathrm{std} = -k_\mathrm{B}T \ln \left( \frac{C^\circ V_\mathrm{rest}}{1} \right)
+\end{equation}
+
+where $\textrm{C}^\circ = \textrm{1}/(\textrm{1661} \ \r{A}^\textrm{3})$ in units of molecules per \r{A}$^3$.  Proper treatment of these corrections is essential for comparing computed ABFEs with experimental binding free energies. 
 
 \section{Integration of free energy methods with docking}
 
@@ -340,25 +377,25 @@ Typical workflows include:
 \begin{enumerate}
   \item Dock a library of ligands to generate multiple poses per ligand.
   \item Filter by docking score and visual inspection to select plausible poses.
-  \item Subject selected complexes to short explicit-solvent MD simulations to relax unrealistic contacts and allow local rearrangements.
+  \item Subject selected complexes to short explicit-solvent MD simulations to relax unrealistic contacts and allow local confomational changes.
   \item Apply end-state methods (MM-PBSA/GBSA) or LIE to rescore the complexes and refine the ranking.
 \end{enumerate}
 
-For a still smaller subset of promising ligands, alchemical RBFE or ABFE calculations can be performed to provide more quantitative predictions, often with errors on the order of 1-2 kcal/mol when best practices are followed.\cite{CH10_wang2015accurate,CH10_aldeghi2018accurate} This hierarchical approach leverages the speed of docking and the rigour of free energy simulations in a complementary manner. 
+For a still smaller subset of promising ligands, alchemical RBFE or ABFE calculations can be performed to provide more quantitative predictions, often with errors on the order of 1-2 kcal/mol when best practices are followed\cite{CH10_wang2015accurate,CH10_aldeghi2018accurate}. This hierarchical approach leverages the speed of docking and the rigour of free energy simulations in a complementary manner. 
 
-\subsection{Lead optimisation and SAR support}
+\subsection{Lead optimisation and SAR}
 
-In medicinal chemistry programs, free energy calculations are particularly powerful for:
+In medicinal chemistry programs, free energy calculations are particularly employed for:
 \begin{itemize}
   \item Ranking congeneric series of analogues that differ by relatively small chemical modifications.
   \item Interpreting structure--activity relationships and suggesting modifications that improve potency while maintaining desirable physicochemical properties.
-  \item Decomposing contributions into enthalpy and entropy components of binding, which can suggest optimisation strategies, such as rigidification, desolvation, substituent placement.\cite{CH10_gilson1997calculation} 
+  \item Decomposing contributions into enthalpy and entropy components of binding, which can suggest optimisation strategies, such as rigidification, desolvation, substituent placement or replacements\cite{CH10_gilson1997calculation}. 
 \end{itemize}
-RBFEs are especially suitable for proposing relative potency shifts between analogue pairs, while ABFEs can help benchmark entire series against experimental data or compare distinct chemotypes. 
+RBFEs are especially suitable for suggesting relative potency shifts between analogue pairs, while ABFEs can help benchmark entire series against experimental data or compare distinct chemotypes. 
 
 \section{Summary}
 
-\textbf{To be written}
+We discussed various computational methods to estimate the protein–ligand binding affinities using free-energy methods as a post-processing method to improve docking results. Although docking is efficient for virtual screening, its scoring functions are typically only semi-quantitative. In contrast, free energy methods, based on statistical mechanics, offer a more robust framework for predicting binding affinities. Such methods are classified into end-state and alchemical approaches. End-state methods, such as MM-PBSA, MM-GBSA, and LIE, estimate binding free energies from equilibrium simulations of the bound and unbound states.  The alchemical methods, including free energy perturbation (FEP) and thermodynamic integration (TI), compute free energy changes along a parameterised pathway between states and are considered theoretically rigorous. The accuracy of these methods depends on sufficient sampling and reliable force fields. Advanced estimators, such as the Bennett acceptance ratio (BAR) and multistate Bennett acceptance ratio (MBAR), enhance statistical efficiency. A distinction exists between relative binding free energy (RBFE) and absolute binding free energy (ABFE) calculations. RBFE is commonly applied in lead optimisation to compare structurally similar ligands, while ABFE yields absolute affinity estimates across diverse chemotypes, though it requires greater computational resources. The practical reliability of free energy calculations depends on the accuracy of the force field, solvent representation, and extent of sampling. Enhanced sampling techniques, careful scheduling of the coupling parameter ($\lambda$), and appropriate treatment of restraints and standard-state corrections are particularly important for ABFE calculations. An lastly, we discussed how free energy methods are integrated with docking within a drug design workflow. Docking generates initial binding poses, end-state methods refine candidate rankings, and alchemical methods predict the binding affinity with high accuracy for selected compounds. These computational approaches are central to contemporary drug discovery, especially for lead optimisation and structure–activity relationship analysis.
 
 \bibliographystyle{unsrtnat}
 \bibliography{chapter10}
