@@ -1,8 +1,8 @@
 # A Practical Guide To Molecular Docking  (Backup repo)
 *by Elvis A. F.  Martis*
 
-Welcome to the official repository for **A Practical Guide To Molecular Docking** by Elvis A. F. Martis. This book is a comprehensive guide designed to equip students, researchers, and professionals with the knowledge and tools needed to master molecular docking techniques and their real-world applications in drug discovery. The objective of this textbook is to serve as a handy "user manual" that can explain key steps and points to keep in mind while performing molecular docking.
-**To be Published as [Lecture Notes in Chemistry](https://link.springer.com/series/0632)**
+Welcome to the official repository for [**A Practical Guide To Molecular Docking**](https://link.springer.com/book/9783032281661) by Elvis A. F. Martis. This book is a comprehensive guide designed to equip students, researchers, and professionals with the knowledge and tools needed to master molecular docking techniques and their real-world applications in drug discovery. The objective of this textbook is to serve as a handy "user manual" that can explain key steps and points to keep in mind while performing molecular docking.
+**To be Published as [Lecture Notes in Chemistry](https://link.springer.com/book/9783032281661)**
 
 ## Overview
 
